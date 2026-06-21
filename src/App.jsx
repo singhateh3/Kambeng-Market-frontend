@@ -7,16 +7,27 @@ import { Login } from './components/auth/Login';
 import { Register } from './components/auth/Register';
 import { AuthProvider } from './context/AuthContext';
 import { Dashboard } from './pages/Dashboard';
+import { Home } from './pages/Home';
 import { Profile } from './pages/Profile';
+
+// Admin Components
+import { AdminProducts } from './pages/admin/AdminProducts';
+import { AdminDashboard } from './pages/admin/Dashboard';
+import { FarmerVerification } from './pages/admin/FarmerVerification';
+import { AdminUsers } from './pages/admin/Users';
+
 
 export const App = () => {
     return (
         <AuthProvider>
             <Routes>
+                {/* Public Routes */}
+                <Route path="/" element={<Home />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
                 <Route path="/forgot-password" element={<ForgotPassword />} />
                 
+                {/* Protected Routes (Requires Authentication) */}
                 <Route
                     path="/"
                     element={
@@ -28,6 +39,8 @@ export const App = () => {
                     <Route index element={<Navigate to="/dashboard" />} />
                     <Route path="dashboard" element={<Dashboard />} />
                     <Route path="profile" element={<Profile />} />
+                    
+                    {/* Farmer Routes */}
                     <Route
                         path="products"
                         element={
@@ -40,6 +53,19 @@ export const App = () => {
                         }
                     />
                     <Route
+                        path="products/create"
+                        element={
+                            <ProtectedRoute requiredRole="farmer">
+                                <div className="bg-white shadow rounded-lg p-6">
+                                    <h1 className="text-2xl font-bold text-gray-900">Create Product</h1>
+                                    <p className="text-gray-600">List your produce for sale.</p>
+                                </div>
+                            </ProtectedRoute>
+                        }
+                    />
+                    
+                    {/* Buyer Routes */}
+                    <Route
                         path="browse"
                         element={
                             <ProtectedRoute requiredRole="buyer">
@@ -50,6 +76,8 @@ export const App = () => {
                             </ProtectedRoute>
                         }
                     />
+                    
+                    {/* Common Routes */}
                     <Route
                         path="orders"
                         element={
@@ -57,6 +85,49 @@ export const App = () => {
                                 <h1 className="text-2xl font-bold text-gray-900">My Orders</h1>
                                 <p className="text-gray-600">You have no orders yet.</p>
                             </div>
+                        }
+                    />
+                    
+                    {/* Admin Routes (Requires Admin Role) */}
+                    <Route
+                        path="admin"
+                        element={
+                            <ProtectedRoute requiredRole="admin">
+                                <Navigate to="/admin/dashboard" />
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="admin/dashboard"
+                        element={
+                            <ProtectedRoute requiredRole="admin">
+                                <AdminDashboard />
+                            </ProtectedRoute>
+                        }
+                    />
+                    
+                    <Route
+                        path="admin/users"
+                        element={
+                            <ProtectedRoute requiredRole="admin">
+                                <AdminUsers />
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="admin/farmers/verification"
+                        element={
+                            <ProtectedRoute requiredRole="admin">
+                                <FarmerVerification />
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="admin/products"
+                        element={
+                            <ProtectedRoute requiredRole="admin">
+                                <AdminProducts />
+                            </ProtectedRoute>
                         }
                     />
                 </Route>

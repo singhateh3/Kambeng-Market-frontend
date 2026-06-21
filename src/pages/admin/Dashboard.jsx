@@ -1,3 +1,4 @@
+// src/pages/admin/AdminDashboard.jsx
 import { useEffect, useState } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import api from '../../services/api';
@@ -30,6 +31,14 @@ export const AdminDashboard = () => {
         );
     }
 
+    // Helper function to format currency
+    const formatCurrency = (amount) => {
+        if (amount === undefined || amount === null) return 'GMD 0.00';
+        const numAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
+        if (isNaN(numAmount)) return 'GMD 0.00';
+        return `GMD ${numAmount.toFixed(2)}`;
+    };
+
     return (
         <div>
             <div className="mb-8">
@@ -59,7 +68,7 @@ export const AdminDashboard = () => {
                 />
                 <StatCard
                     title="Revenue"
-                    value={`GMD ${stats?.orders?.total_revenue?.toFixed(2) || '0'}`}
+                    value={formatCurrency(stats?.orders?.total_revenue)}
                     icon="💰"
                     color="yellow"
                 />
@@ -79,42 +88,67 @@ export const AdminDashboard = () => {
                 </div>
 
                 <div className="bg-white shadow rounded-lg p-6">
-                    <h3 className="font-semibold text-gray-900 mb-4">Top Categories</h3>
+                    <h3 className="font-semibold text-gray-900 mb-4">User Stats</h3>
                     <div className="space-y-2">
-                        {stats?.products?.top_categories?.map((category, index) => (
-                            <CategoryBar
-                                key={index}
-                                name={category.category}
-                                count={category.count}
-                                index={index}
-                            />
-                        ))}
+                        <StatusBar label="Total Users" count={stats?.users?.total || 0} color="bg-blue-500" />
+                        <StatusBar label="Farmers" count={stats?.users?.farmers || 0} color="bg-green-500" />
+                        <StatusBar label="Buyers" count={stats?.users?.buyers || 0} color="bg-purple-500" />
+                        <StatusBar label="Admins" count={stats?.users?.admins || 0} color="bg-red-500" />
+                        <StatusBar 
+                            label="Verified Farmers" 
+                            count={stats?.users?.verified_farmers || 0} 
+                            color="bg-teal-500" 
+                        />
                     </div>
                 </div>
             </div>
 
-            {/* Recent Activity */}
-            <div className="mt-8">
+            {/* Quick Links */}
+            <div className="mt-8 grid grid-cols-1 gap-4 lg:grid-cols-3">
                 <div className="bg-white shadow rounded-lg p-6">
+                    <h3 className="font-semibold text-gray-900 mb-4">Quick Actions</h3>
+                    <div className="space-y-3">
+                        <a href="/admin/farmers/verification" className="block text-primary-600 hover:text-primary-700">
+                            → Verify Pending Farmers
+                        </a>
+                        <a href="/admin/users" className="block text-primary-600 hover:text-primary-700">
+                            → Manage Users
+                        </a>
+                        <a href="/admin/products" className="block text-primary-600 hover:text-primary-700">
+                            → Manage Products
+                        </a>
+                        <a href="/admin/orders" className="block text-primary-600 hover:text-primary-700">
+                            → Manage Orders
+                        </a>
+                    </div>
+                </div>
+
+                <div className="bg-white shadow rounded-lg p-6 lg:col-span-2">
                     <h3 className="font-semibold text-gray-900 mb-4">Recent Activity</h3>
-                    <div className="space-y-4">
-                        {stats?.recent_activity?.recent_orders?.map((order) => (
+                    <div className="space-y-3">
+                        {stats?.recent_activity?.recent_orders?.slice(0, 5).map((order) => (
                             <div key={order.id} className="flex items-center justify-between border-b pb-2">
                                 <div>
-                                    <span className="font-medium">{order.buyer?.name}</span>
+                                    <span className="font-medium">{order.buyer?.name || 'Unknown'}</span>
                                     <span className="text-gray-500 text-sm ml-2">
-                                        ordered {order.product?.name}
+                                        ordered {order.product?.name || 'Unknown product'}
                                     </span>
                                 </div>
                                 <span className={`text-sm px-2 py-1 rounded-full ${
                                     order.status === 'delivered' ? 'bg-green-100 text-green-800' :
                                     order.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                                    order.status === 'confirmed' ? 'bg-blue-100 text-blue-800' :
+                                    order.status === 'shipped' ? 'bg-purple-100 text-purple-800' :
+                                    order.status === 'cancelled' ? 'bg-red-100 text-red-800' :
                                     'bg-gray-100 text-gray-800'
                                 }`}>
-                                    {order.status}
+                                    {order.status || 'Unknown'}
                                 </span>
                             </div>
                         ))}
+                        {(!stats?.recent_activity?.recent_orders || stats?.recent_activity?.recent_orders?.length === 0) && (
+                            <p className="text-gray-500 text-center py-4">No recent orders</p>
+                        )}
                     </div>
                 </div>
             </div>
@@ -128,6 +162,8 @@ const StatCard = ({ title, value, icon, color }) => {
         green: 'bg-green-50 text-green-600',
         purple: 'bg-purple-50 text-purple-600',
         yellow: 'bg-yellow-50 text-yellow-600',
+        red: 'bg-red-50 text-red-600',
+        teal: 'bg-teal-50 text-teal-600',
     };
 
     return (
@@ -145,31 +181,18 @@ const StatCard = ({ title, value, icon, color }) => {
     );
 };
 
-const StatusBar = ({ label, count, color }) => (
-    <div className="flex items-center justify-between">
-        <span className="text-sm text-gray-600">{label}</span>
-        <div className="flex items-center">
-            <span className="text-sm font-medium mr-2">{count}</span>
-            <div className="w-20 h-2 bg-gray-200 rounded-full">
-                <div className={`h-2 rounded-full ${color}`} style={{ width: `${Math.min(count * 10, 100)}%` }} />
-            </div>
-        </div>
-    </div>
-);
-
-const CategoryBar = ({ name, count, index }) => {
-    const colors = ['bg-blue-500', 'bg-green-500', 'bg-purple-500', 'bg-yellow-500', 'bg-pink-500'];
-    const maxCount = 10;
-
+const StatusBar = ({ label, count, color }) => {
+    const maxCount = 100; // Adjust based on your data
+    
     return (
         <div className="flex items-center justify-between">
-            <span className="text-sm text-gray-600">{name}</span>
+            <span className="text-sm text-gray-600">{label}</span>
             <div className="flex items-center">
                 <span className="text-sm font-medium mr-2">{count}</span>
-                <div className="w-32 h-2 bg-gray-200 rounded-full">
-                    <div
-                        className={`h-2 rounded-full ${colors[index % colors.length]}`}
-                        style={{ width: `${Math.min((count / maxCount) * 100, 100)}%` }}
+                <div className="w-24 h-2 bg-gray-200 rounded-full">
+                    <div 
+                        className={`h-2 rounded-full ${color}`} 
+                        style={{ width: `${Math.min((count / maxCount) * 100, 100)}%` }} 
                     />
                 </div>
             </div>
