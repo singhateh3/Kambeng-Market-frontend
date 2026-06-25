@@ -26,10 +26,12 @@ export const AuthProvider = ({ children }) => {
 
             const response = await authService.getUser();
             setUser(response.data);
+            return response.data;
         } catch (error) {
             console.error('Failed to refresh user:', error);
             setUser(null);
             localStorage.removeItem('authToken');
+            return null;
         }
     };
 
@@ -47,12 +49,14 @@ export const AuthProvider = ({ children }) => {
         const response = await authService.login(data);
         localStorage.setItem('authToken', response.data.token);
         setUser(response.data.user);
+        return response.data;
     };
 
     const register = async (data) => {
         const response = await authService.register(data);
         localStorage.setItem('authToken', response.data.token);
         setUser(response.data.user);
+        return response.data;
     };
 
     const logout = async () => {
@@ -69,6 +73,7 @@ export const AuthProvider = ({ children }) => {
     const updateProfile = async (data) => {
         const response = await authService.updateProfile(data);
         setUser(response.data);
+        return response.data;
     };
 
     const value = {
