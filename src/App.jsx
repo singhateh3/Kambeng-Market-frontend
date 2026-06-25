@@ -29,6 +29,10 @@ import { Products } from './pages/farmer/Products';
 import { OrderDetailsPage } from './pages/orders/OrderDetailsPage';
 import { Orders } from './pages/orders/Orders';
 
+// Review
+import { WriteReview } from './pages/orders/WriteReview';
+
+
 export const App = () => {
     return (
         <AuthProvider>
@@ -165,6 +169,14 @@ export const App = () => {
                             element={
                                 <ProtectedRoute requiredRole="admin">
                                     <AdminProducts />
+                                </ProtectedRoute>
+                            }
+                        />
+                        <Route
+                            path="orders/:orderId/review"
+                            element={
+                                <ProtectedRoute>
+                                    <WriteReview />
                                 </ProtectedRoute>
                             }
                         />
