@@ -245,7 +245,7 @@ const RegularDashboard = () => {
                             title="Add New Product"
                             description="List a new product for sale"
                             icon="➕"
-                            link="products/create"
+                            link="/app/products/create"
                             color="green"
                         />
                     )}
