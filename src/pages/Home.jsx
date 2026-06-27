@@ -1,6 +1,7 @@
 // src/pages/Home.jsx
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { Skeleton } from '../components/common/Skeleton';
 import { useAuth } from '../hooks/useAuth';
 import api from '../services/api';
 
@@ -40,13 +41,167 @@ export const Home = () => {
         }
     };
 
+    // Skeleton Components
+    const NavbarSkeleton = () => (
+        <nav className="bg-white border-b border-slate-200 sticky top-0 z-50">
+            <div className="max-w-6xl mx-auto px-6 flex items-center gap-6" style={{ height: 60 }}>
+                <div className="flex items-center gap-2 flex-shrink-0">
+                    <Skeleton className="w-6 h-6 rounded-full" />
+                    <Skeleton className="h-6 w-24" />
+                </div>
+                <div className="flex-1 max-w-md">
+                    <Skeleton className="h-10 w-full rounded-lg" />
+                </div>
+                <div className="ml-auto flex items-center gap-3 flex-shrink-0">
+                    <Skeleton className="h-8 w-16 rounded-lg" />
+                    <Skeleton className="h-8 w-24 rounded-lg" />
+                </div>
+            </div>
+        </nav>
+    );
+
+    const HeroSkeleton = () => (
+        <section className="bg-white border-b border-slate-100">
+            <div className="max-w-6xl mx-auto px-6 py-16 grid grid-cols-2 gap-16 items-center">
+                <div>
+                    <Skeleton className="h-6 w-40 rounded-full mb-5" />
+                    <Skeleton className="h-12 w-full mb-3" />
+                    <Skeleton className="h-12 w-3/4 mb-4" />
+                    <Skeleton className="h-6 w-80 mb-8" />
+                    <div className="flex gap-3 flex-wrap">
+                        <Skeleton className="h-12 w-32 rounded-lg" />
+                        <Skeleton className="h-12 w-32 rounded-lg" />
+                    </div>
+                    <Skeleton className="h-5 w-60 mt-6" />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                    {[1, 2, 3, 4].map((i) => (
+                        <div key={i} className="bg-slate-50 border border-slate-200 rounded-xl p-5">
+                            <Skeleton className="h-8 w-8 mb-2" />
+                            <Skeleton className="h-8 w-16 mb-1" />
+                            <Skeleton className="h-4 w-16" />
+                        </div>
+                    ))}
+                </div>
+            </div>
+        </section>
+    );
+
+    const CategoriesSkeleton = () => (
+        <section className="bg-white border-b border-slate-100 py-6">
+            <div className="max-w-6xl mx-auto px-6">
+                <div className="flex items-center justify-between mb-4">
+                    <Skeleton className="h-6 w-40" />
+                    <Skeleton className="h-5 w-28" />
+                </div>
+                <div className="flex gap-2 overflow-x-auto pb-1">
+                    {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+                        <Skeleton key={i} className="h-9 w-24 rounded-full flex-shrink-0" />
+                    ))}
+                </div>
+            </div>
+        </section>
+    );
+
+    const ProductCardSkeleton = () => (
+        <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+            <Skeleton className="w-full h-36" />
+            <div className="p-3 space-y-2">
+                <Skeleton className="h-3 w-24" />
+                <Skeleton className="h-5 w-3/4" />
+                <div className="flex items-center justify-between">
+                    <Skeleton className="h-6 w-16" />
+                    <Skeleton className="h-4 w-12" />
+                </div>
+                <Skeleton className="h-9 w-full rounded-lg" />
+            </div>
+        </div>
+    );
+
+    const FeaturedProductsSkeleton = () => (
+        <section className="py-10">
+            <div className="max-w-6xl mx-auto px-6">
+                <div className="flex items-center justify-between mb-5">
+                    <div>
+                        <Skeleton className="h-7 w-48 mb-1" />
+                        <Skeleton className="h-4 w-36" />
+                    </div>
+                    <Skeleton className="h-5 w-20" />
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                    {[1, 2, 3, 4].map((i) => (
+                        <ProductCardSkeleton key={i} />
+                    ))}
+                </div>
+            </div>
+        </section>
+    );
+
+    const WhyKambengSkeleton = () => (
+        <section className="bg-white border-t border-slate-100 py-14">
+            <div className="max-w-6xl mx-auto px-6">
+                <Skeleton className="h-7 w-48 mb-8" />
+                <div className="grid grid-cols-3 gap-6">
+                    {[1, 2, 3].map((i) => (
+                        <div key={i} className="bg-slate-50 border border-slate-200 rounded-xl p-6">
+                            <Skeleton className="h-10 w-10 mb-3" />
+                            <Skeleton className="h-5 w-32 mb-2" />
+                            <Skeleton className="h-4 w-full" />
+                            <Skeleton className="h-4 w-3/4 mt-1" />
+                        </div>
+                    ))}
+                </div>
+            </div>
+        </section>
+    );
+
+    const CTASkeleton = () => (
+        <section className="bg-green-600 py-14 px-6">
+            <div className="max-w-xl mx-auto text-center">
+                <Skeleton className="h-8 w-64 mx-auto mb-3 bg-green-500" />
+                <Skeleton className="h-5 w-80 mx-auto mb-7 bg-green-500" />
+                <div className="flex gap-3 justify-center flex-wrap">
+                    <Skeleton className="h-12 w-40 rounded-lg bg-white" />
+                    <Skeleton className="h-12 w-32 rounded-lg bg-green-500" />
+                </div>
+            </div>
+        </section>
+    );
+
     if (loading) {
         return (
-            <div className="flex items-center justify-center min-h-screen bg-slate-50">
-                <div className="text-center">
-                    <div className="w-12 h-12 border-4 border-slate-200 border-t-green-600 rounded-full animate-spin mx-auto mb-4" />
-                    <p className="text-slate-500 text-sm">Loading fresh produce...</p>
-                </div>
+            <div className="bg-slate-50 min-h-screen">
+                <NavbarSkeleton />
+                <HeroSkeleton />
+                <CategoriesSkeleton />
+                <FeaturedProductsSkeleton />
+                <WhyKambengSkeleton />
+                <CTASkeleton />
+                {/* Footer Skeleton */}
+                <footer className="bg-slate-900 px-6 pt-12 pb-8">
+                    <div className="max-w-6xl mx-auto">
+                        <div className="grid grid-cols-4 gap-10 mb-10">
+                            <div>
+                                <Skeleton className="h-6 w-32 mb-3 bg-slate-700" />
+                                <Skeleton className="h-4 w-40 bg-slate-700" />
+                            </div>
+                            {[1, 2, 3].map((i) => (
+                                <div key={i}>
+                                    <Skeleton className="h-4 w-24 mb-4 bg-slate-700" />
+                                    <div className="space-y-2">
+                                        <Skeleton className="h-3 w-32 bg-slate-700" />
+                                        <Skeleton className="h-3 w-28 bg-slate-700" />
+                                        <Skeleton className="h-3 w-24 bg-slate-700" />
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                        <div className="border-t border-slate-800 pt-6 flex items-center justify-between">
+                            <Skeleton className="h-3 w-48 bg-slate-700" />
+                            <Skeleton className="h-3 w-32 bg-slate-700" />
+                        </div>
+                    </div>
+                </footer>
             </div>
         );
     }
