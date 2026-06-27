@@ -5,7 +5,7 @@ import { Skeleton } from '../components/common/Skeleton';
 import { useAuth } from '../hooks/useAuth';
 import api from '../services/api';
 
-export const Home = () => {
+const Home = () => {
     const { user, isAuthenticated } = useAuth();
     const navigate = useNavigate();
     const [featuredProducts, setFeaturedProducts] = useState([]);
@@ -520,3 +520,6 @@ const getCategoryIcon = (category) => {
     };
     return icons[category] || '📦';
 };
+
+// ✅ DEFAULT EXPORT - This is the key fix!
+export default Home;
