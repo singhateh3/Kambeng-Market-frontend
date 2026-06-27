@@ -130,14 +130,14 @@ export const AdminDashboard = () => {
                             title="Verify Farmers"
                             description="Review & verify"
                             icon="✅"
-                            link="/admin/farmers/verification"
+                            link="/app/admin/farmers/verification"
                             color="green"
                         />
                         <QuickActionCard
                             title="Products"
                             description="Manage products"
                             icon="📦"
-                            link="/admin/products"
+                            link="/app/admin/products"
                             color="purple"
                         />
                     </div>
