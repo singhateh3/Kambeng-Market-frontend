@@ -1,8 +1,8 @@
 // src/services/api.js
 import axios from 'axios';
 
-// Use environment variable for API URL
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
+// Use your Render backend URL
+const API_URL = 'https://kambeng-market.onrender.com/api';
 
 const api = axios.create({
     baseURL: API_URL,
@@ -10,9 +10,9 @@ const api = axios.create({
         'Content-Type': 'application/json',
         'Accept': 'application/json',
     },
+    withCredentials: false,
 });
 
-// Request interceptor
 api.interceptors.request.use(
     (config) => {
         const token = localStorage.getItem('authToken');
@@ -24,30 +24,33 @@ api.interceptors.request.use(
     (error) => Promise.reject(error)
 );
 
-// Response interceptor
 api.interceptors.response.use(
     (response) => response,
     (error) => {
-        const apiError = {
-            message: 'An error occurred',
-        };
-
         if (error.response) {
             const data = error.response.data;
-            apiError.message = data?.message || 'Server error';
-            apiError.errors = data?.errors;
+            const apiError = {
+                message: data?.message || 'Server error',
+                errors: data?.errors,
+            };
             
             if (error.response.status === 401) {
                 localStorage.removeItem('authToken');
                 window.location.href = '/login';
             }
-        } else if (error.request) {
-            apiError.message = 'Network error. Please check your connection.';
-        } else {
-            apiError.message = error.message || 'An unexpected error occurred';
+            
+            return Promise.reject(apiError);
         }
-
-        return Promise.reject(apiError);
+        
+        if (error.request) {
+            return Promise.reject({
+                message: 'Network error. Please check your connection.'
+            });
+        }
+        
+        return Promise.reject({
+            message: error.message || 'An unexpected error occurred'
+        });
     }
 );
 
