@@ -13,9 +13,7 @@ export const Home = () => {
     const [stats, setStats] = useState(null);
     const [searchQuery, setSearchQuery] = useState('');
 
-    useEffect(() => {
-        fetchHomeData();
-    }, []);
+    useEffect(() => { fetchHomeData(); }, []);
 
     const fetchHomeData = async () => {
         try {
@@ -44,54 +42,29 @@ export const Home = () => {
 
     if (loading) {
         return (
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', background: '#f8fafc' }}>
-                <div style={{ textAlign: 'center' }}>
-                    <div style={{
-                        width: 48, height: 48, border: '3px solid #e2e8f0',
-                        borderTop: '3px solid #16a34a', borderRadius: '50%',
-                        animation: 'spin 0.8s linear infinite', margin: '0 auto 16px'
-                    }} />
-                    <p style={{ color: '#64748b', fontSize: 14 }}>Loading fresh produce...</p>
+            <div className="flex items-center justify-center min-h-screen bg-slate-50">
+                <div className="text-center">
+                    <div className="w-12 h-12 border-4 border-slate-200 border-t-green-600 rounded-full animate-spin mx-auto mb-4" />
+                    <p className="text-slate-500 text-sm">Loading fresh produce...</p>
                 </div>
-                <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
             </div>
         );
     }
 
     return (
-        <div style={{ fontFamily: "'Inter', -apple-system, sans-serif", background: '#f8fafc', minHeight: '100vh' }}>
-            <style>{`
-                @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-                * { box-sizing: border-box; margin: 0; padding: 0; }
-                @keyframes spin { to { transform: rotate(360deg); } }
-                @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
-                .product-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.10) !important; }
-                .product-card { transition: transform 0.18s ease, box-shadow 0.18s ease; }
-                .cat-pill:hover { background: #dcfce7 !important; border-color: #16a34a !important; color: #15803d !important; }
-                .cat-pill { transition: all 0.15s ease; }
-                .order-btn:hover { background: #15803d !important; }
-                .order-btn { transition: background 0.15s ease; }
-                .search-btn:hover { background: #15803d !important; }
-                .nav-link:hover { color: #16a34a !important; }
-                ::-webkit-scrollbar { height: 4px; } 
-                ::-webkit-scrollbar-track { background: transparent; }
-                ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-            `}</style>
-
-            {/* Topbar */}
-            <div style={{ background: '#fff', borderBottom: '1px solid #e2e8f0', position: 'sticky', top: 0, zIndex: 100 }}>
-                <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 24px', height: 60, display: 'flex', alignItems: 'center', gap: 24 }}>
-                    {/* Logo */}
-                    <Link to="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
-                        <span style={{ fontSize: 22 }}>🌾</span>
-                        <span style={{ fontWeight: 800, fontSize: 18, color: '#15803d', letterSpacing: '-0.5px' }}>Kambeng</span>
-                        <span style={{ fontWeight: 400, fontSize: 18, color: '#64748b' }}>Market</span>
+        <div className="bg-slate-50 min-h-screen">
+            {/* Navbar */}
+            <nav className="bg-white border-b border-slate-200 sticky top-0 z-50">
+                <div className="max-w-6xl mx-auto px-6 flex items-center gap-6" style={{ height: 60 }}>
+                    <Link to="/" className="flex items-center gap-2 no-underline flex-shrink-0">
+                        <span className="text-xl">🌾</span>
+                        <span className="font-extrabold text-green-700 tracking-tight">Kambeng</span>
+                        <span className="font-normal text-slate-400">Market</span>
                     </Link>
 
-                    {/* Search bar inline */}
-                    <form onSubmit={handleSearch} style={{ flex: 1, maxWidth: 480 }}>
-                        <div style={{ position: 'relative' }}>
-                            <svg style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <form onSubmit={handleSearch} className="flex-1 max-w-md">
+                        <div className="relative">
+                            <svg className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                             </svg>
                             <input
@@ -99,109 +72,78 @@ export const Home = () => {
                                 placeholder="Search produce, farmers..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                style={{
-                                    width: '100%', padding: '8px 12px 8px 36px',
-                                    border: '1.5px solid #e2e8f0', borderRadius: 8,
-                                    fontSize: 14, outline: 'none', background: '#f8fafc',
-                                    color: '#1e293b'
-                                }}
+                                className="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-lg text-sm bg-slate-50 text-slate-900 outline-none focus:border-green-400 focus:bg-white transition"
                             />
                         </div>
                     </form>
 
-                    {/* Nav */}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginLeft: 'auto', flexShrink: 0 }}>
+                    <div className="ml-auto flex items-center gap-3 flex-shrink-0">
                         {!isAuthenticated ? (
                             <>
-                                <Link to="/login" className="nav-link" style={{ textDecoration: 'none', color: '#475569', fontSize: 14, fontWeight: 500 }}>Sign in</Link>
-                                <Link to="/register" style={{
-                                    textDecoration: 'none', background: '#16a34a', color: '#fff',
-                                    padding: '7px 18px', borderRadius: 8, fontSize: 14, fontWeight: 600
-                                }}>Get started</Link>
+                                <Link to="/login" className="text-sm font-medium text-slate-600 no-underline hover:text-green-700 transition">Sign in</Link>
+                                <Link to="/register" className="bg-green-600 text-white text-sm font-semibold px-4 py-2 rounded-lg no-underline hover:bg-green-700 transition">
+                                    Get started
+                                </Link>
                             </>
                         ) : (
-                            <Link to="/dashboard" style={{
-                                textDecoration: 'none', background: '#f0fdf4', color: '#16a34a',
-                                padding: '7px 18px', borderRadius: 8, fontSize: 14, fontWeight: 600,
-                                border: '1.5px solid #bbf7d0'
-                            }}>Dashboard</Link>
+                            <Link to="/dashboard" className="bg-green-50 text-green-700 border border-green-200 text-sm font-semibold px-4 py-2 rounded-lg no-underline hover:bg-green-100 transition">
+                                Dashboard
+                            </Link>
                         )}
                     </div>
                 </div>
-            </div>
+            </nav>
 
             {/* Hero */}
-            <section style={{ background: '#fff', borderBottom: '1px solid #f1f5f9' }}>
-                <div style={{ maxWidth: 1200, margin: '0 auto', padding: '56px 24px 48px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 64, alignItems: 'center' }}>
-                    <div style={{ animation: 'fadeUp 0.5s ease both' }}>
-                        <div style={{
-                            display: 'inline-flex', alignItems: 'center', gap: 6,
-                            background: '#f0fdf4', color: '#16a34a', padding: '4px 12px',
-                            borderRadius: 20, fontSize: 12, fontWeight: 600,
-                            marginBottom: 20, border: '1px solid #bbf7d0'
-                        }}>
-                            <span style={{ width: 6, height: 6, background: '#16a34a', borderRadius: '50%', display: 'inline-block' }} />
+            <section className="bg-white border-b border-slate-100">
+                <div className="max-w-6xl mx-auto px-6 py-16 grid grid-cols-2 gap-16 items-center">
+                    <div>
+                        <div className="inline-flex items-center gap-1.5 bg-green-50 text-green-700 border border-green-200 text-xs font-semibold px-3 py-1 rounded-full mb-5">
+                            <span className="w-1.5 h-1.5 bg-green-600 rounded-full" />
                             Fresh from Gambian farms
                         </div>
-                        <h1 style={{ fontSize: 44, fontWeight: 800, color: '#0f172a', lineHeight: 1.15, letterSpacing: '-1.5px', marginBottom: 16 }}>
+                        <h1 className="text-5xl font-extrabold text-slate-900 leading-tight tracking-tight mb-4">
                             Farm-fresh produce,<br />
-                            <span style={{ color: '#16a34a' }}>no middlemen.</span>
+                            <span className="text-green-600">no middlemen.</span>
                         </h1>
-                        <p style={{ fontSize: 17, color: '#64748b', lineHeight: 1.65, marginBottom: 32, maxWidth: 420 }}>
+                        <p className="text-lg text-slate-500 leading-relaxed mb-8 max-w-md">
                             Order directly from verified Gambian farmers. Fair prices for buyers, fair pay for farmers.
                         </p>
 
-                        <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+                        <div className="flex gap-3 flex-wrap">
                             {!isAuthenticated ? (
                                 <>
-                                    <button onClick={() => navigate('/register')} style={{
-                                        background: '#16a34a', color: '#fff', border: 'none',
-                                        padding: '12px 28px', borderRadius: 8, fontSize: 15,
-                                        fontWeight: 700, cursor: 'pointer'
-                                    }}>
+                                    <button onClick={() => navigate('/register')} className="bg-green-600 text-white font-bold px-7 py-3 rounded-lg hover:bg-green-700 transition cursor-pointer border-none text-sm">
                                         Start buying
                                     </button>
-                                    <button onClick={() => navigate('/login')} style={{
-                                        background: '#f8fafc', color: '#374151', border: '1.5px solid #e2e8f0',
-                                        padding: '12px 28px', borderRadius: 8, fontSize: 15,
-                                        fontWeight: 600, cursor: 'pointer'
-                                    }}>
+                                    <button onClick={() => navigate('/login')} className="bg-slate-50 text-slate-700 font-semibold px-7 py-3 rounded-lg border border-slate-200 hover:bg-slate-100 transition cursor-pointer text-sm">
                                         Sign in
                                     </button>
                                 </>
                             ) : (
-                                <button onClick={() => navigate('/dashboard')} style={{
-                                    background: '#16a34a', color: '#fff', border: 'none',
-                                    padding: '12px 28px', borderRadius: 8, fontSize: 15,
-                                    fontWeight: 700, cursor: 'pointer'
-                                }}>
+                                <button onClick={() => navigate('/dashboard')} className="bg-green-600 text-white font-bold px-7 py-3 rounded-lg hover:bg-green-700 transition cursor-pointer border-none text-sm">
                                     Go to dashboard
                                 </button>
                             )}
                         </div>
 
-                        {/* Delivery badge */}
-                        <div style={{ marginTop: 28, display: 'flex', alignItems: 'center', gap: 8, color: '#64748b', fontSize: 13 }}>
-                            <span>🚚</span>
-                            <span>Free delivery on orders over <strong style={{ color: '#0f172a' }}>GMD 500</strong></span>
-                        </div>
+                        <p className="mt-6 text-sm text-slate-500 flex items-center gap-2">
+                            🚚 Free delivery on orders over <strong className="text-slate-800">GMD 500</strong>
+                        </p>
                     </div>
 
-                    {/* Stats panel */}
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, animation: 'fadeUp 0.5s 0.1s ease both', opacity: 0, animationFillMode: 'forwards' }}>
+                    {/* Stats grid */}
+                    <div className="grid grid-cols-2 gap-4">
                         {[
                             { emoji: '🥬', label: 'Fresh products', value: stats?.products?.active ?? '50+' },
                             { emoji: '👨‍🌾', label: 'Verified farmers', value: stats?.users?.farmers ?? '20+' },
                             { emoji: '📦', label: 'Orders placed', value: stats?.orders?.total ?? '100+' },
-                            { emoji: '⭐', label: 'Avg. rating', value: stats?.reviews?.average_rating ? `${Number(stats.reviews.average_rating).toFixed(1)}` : '4.8' },
+                            { emoji: '⭐', label: 'Avg. rating', value: stats?.reviews?.average_rating ? Number(stats.reviews.average_rating).toFixed(1) : '4.8' },
                         ].map((s, i) => (
-                            <div key={i} style={{
-                                background: '#f8fafc', border: '1.5px solid #e2e8f0',
-                                borderRadius: 12, padding: '20px 20px',
-                            }}>
-                                <div style={{ fontSize: 28, marginBottom: 8 }}>{s.emoji}</div>
-                                <div style={{ fontSize: 26, fontWeight: 800, color: '#0f172a', letterSpacing: '-1px' }}>{s.value}</div>
-                                <div style={{ fontSize: 13, color: '#64748b', marginTop: 2 }}>{s.label}</div>
+                            <div key={i} className="bg-slate-50 border border-slate-200 rounded-xl p-5">
+                                <div className="text-3xl mb-2">{s.emoji}</div>
+                                <div className="text-2xl font-extrabold text-slate-900 tracking-tight">{s.value}</div>
+                                <div className="text-xs text-slate-500 mt-0.5">{s.label}</div>
                             </div>
                         ))}
                     </div>
@@ -210,27 +152,20 @@ export const Home = () => {
 
             {/* Categories */}
             {categories.length > 0 && (
-                <section style={{ background: '#fff', borderBottom: '1px solid #f1f5f9', padding: '28px 0' }}>
-                    <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 24px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-                            <h2 style={{ fontSize: 16, fontWeight: 700, color: '#0f172a' }}>Shop by category</h2>
-                            <Link to={isAuthenticated ? '/browse' : '/login'} style={{ fontSize: 13, color: '#16a34a', textDecoration: 'none', fontWeight: 600 }}>
+                <section className="bg-white border-b border-slate-100 py-6">
+                    <div className="max-w-6xl mx-auto px-6">
+                        <div className="flex items-center justify-between mb-4">
+                            <h2 className="text-sm font-bold text-slate-900">Shop by category</h2>
+                            <Link to={isAuthenticated ? '/browse' : '/login'} className="text-xs font-semibold text-green-600 no-underline hover:text-green-700">
                                 All categories →
                             </Link>
                         </div>
-                        <div style={{ display: 'flex', gap: 10, overflowX: 'auto', paddingBottom: 4 }}>
+                        <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
                             {categories.slice(0, 14).map((cat, i) => (
                                 <Link
                                     key={i}
                                     to={isAuthenticated ? `/browse?category=${cat}` : '/login'}
-                                    className="cat-pill"
-                                    style={{
-                                        textDecoration: 'none', flexShrink: 0,
-                                        display: 'flex', alignItems: 'center', gap: 6,
-                                        padding: '7px 14px', borderRadius: 20,
-                                        border: '1.5px solid #e2e8f0', background: '#f8fafc',
-                                        fontSize: 13, fontWeight: 500, color: '#374151'
-                                    }}
+                                    className="flex-shrink-0 flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-slate-200 bg-slate-50 text-slate-700 text-xs font-medium no-underline hover:bg-green-50 hover:border-green-400 hover:text-green-700 transition"
                                 >
                                     <span>{getCategoryIcon(cat)}</span>
                                     <span>{cat}</span>
@@ -242,30 +177,30 @@ export const Home = () => {
             )}
 
             {/* Featured Products */}
-            <section style={{ padding: '40px 0' }}>
-                <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 24px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+            <section className="py-10">
+                <div className="max-w-6xl mx-auto px-6">
+                    <div className="flex items-center justify-between mb-5">
                         <div>
-                            <h2 style={{ fontSize: 20, fontWeight: 800, color: '#0f172a', letterSpacing: '-0.5px' }}>Featured products</h2>
-                            <p style={{ fontSize: 13, color: '#64748b', marginTop: 2 }}>Freshly listed by farmers near you</p>
+                            <h2 className="text-lg font-extrabold text-slate-900 tracking-tight">Featured products</h2>
+                            <p className="text-xs text-slate-500 mt-0.5">Freshly listed by farmers near you</p>
                         </div>
-                        <Link to={isAuthenticated ? '/browse' : '/login'} style={{ fontSize: 13, color: '#16a34a', textDecoration: 'none', fontWeight: 600 }}>
+                        <Link to={isAuthenticated ? '/browse' : '/login'} className="text-xs font-semibold text-green-600 no-underline hover:text-green-700">
                             View all →
                         </Link>
                     </div>
 
                     {featuredProducts.length > 0 ? (
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 16 }}>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
                             {featuredProducts.map((product) => (
                                 <ProductCard key={product.id} product={product} />
                             ))}
                         </div>
                     ) : (
-                        <div style={{ textAlign: 'center', padding: '64px 24px', background: '#fff', borderRadius: 12, border: '1.5px dashed #e2e8f0' }}>
-                            <div style={{ fontSize: 48, marginBottom: 12 }}>🌾</div>
-                            <p style={{ color: '#64748b', fontSize: 15 }}>No products listed yet.</p>
+                        <div className="text-center py-16 bg-white rounded-xl border border-dashed border-slate-200">
+                            <div className="text-5xl mb-3">🌾</div>
+                            <p className="text-slate-500 text-sm">No products listed yet.</p>
                             {isAuthenticated && user?.role === 'farmer' && (
-                                <Link to="/products/create" style={{ color: '#16a34a', textDecoration: 'none', fontWeight: 600, fontSize: 14, marginTop: 8, display: 'inline-block' }}>
+                                <Link to="/products/create" className="text-green-600 text-sm font-semibold no-underline hover:text-green-700 mt-2 inline-block">
                                     List your first product →
                                 </Link>
                             )}
@@ -275,21 +210,19 @@ export const Home = () => {
             </section>
 
             {/* Why Kambeng */}
-            <section style={{ background: '#fff', padding: '56px 0', borderTop: '1px solid #f1f5f9' }}>
-                <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 24px' }}>
-                    <h2 style={{ fontSize: 20, fontWeight: 800, color: '#0f172a', marginBottom: 36, letterSpacing: '-0.5px' }}>
-                        Why Kambeng Market?
-                    </h2>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 24 }}>
+            <section className="bg-white border-t border-slate-100 py-14">
+                <div className="max-w-6xl mx-auto px-6">
+                    <h2 className="text-lg font-extrabold text-slate-900 tracking-tight mb-8">Why Kambeng Market?</h2>
+                    <div className="grid grid-cols-3 gap-6">
                         {[
                             { icon: '🌱', title: 'Straight from the farm', desc: 'No cold storage, no middlemen. Produce moves from farm to you within 24 hours.' },
                             { icon: '💰', title: 'Farmers earn more', desc: 'Farmers set their own prices and keep the majority of every sale.' },
                             { icon: '✅', title: 'Verified listings', desc: 'Every farmer is verified. Every product listing is reviewed before going live.' },
                         ].map((item, i) => (
-                            <div key={i} style={{ padding: '24px', background: '#f8fafc', borderRadius: 12, border: '1.5px solid #e2e8f0' }}>
-                                <div style={{ fontSize: 32, marginBottom: 12 }}>{item.icon}</div>
-                                <h3 style={{ fontSize: 15, fontWeight: 700, color: '#0f172a', marginBottom: 8 }}>{item.title}</h3>
-                                <p style={{ fontSize: 13, color: '#64748b', lineHeight: 1.6 }}>{item.desc}</p>
+                            <div key={i} className="bg-slate-50 border border-slate-200 rounded-xl p-6">
+                                <div className="text-3xl mb-3">{item.icon}</div>
+                                <h3 className="text-sm font-bold text-slate-900 mb-2">{item.title}</h3>
+                                <p className="text-xs text-slate-500 leading-relaxed">{item.desc}</p>
                             </div>
                         ))}
                     </div>
@@ -297,64 +230,53 @@ export const Home = () => {
             </section>
 
             {/* CTA Banner */}
-            <section style={{ background: '#16a34a', padding: '56px 24px' }}>
-                <div style={{ maxWidth: 640, margin: '0 auto', textAlign: 'center' }}>
+            <section className="bg-green-600 py-14 px-6">
+                <div className="max-w-xl mx-auto text-center">
                     {!isAuthenticated ? (
                         <>
-                            <h2 style={{ fontSize: 28, fontWeight: 800, color: '#fff', letterSpacing: '-0.5px', marginBottom: 12 }}>
-                                Ready to buy fresh?
-                            </h2>
-                            <p style={{ color: '#bbf7d0', fontSize: 15, marginBottom: 28, lineHeight: 1.6 }}>
+                            <h2 className="text-3xl font-extrabold text-white tracking-tight mb-3">Ready to buy fresh?</h2>
+                            <p className="text-green-100 text-sm mb-7 leading-relaxed">
                                 Create a free account and start ordering directly from Gambian farmers today.
                             </p>
-                            <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
-                                <button onClick={() => navigate('/register')} style={{
-                                    background: '#fff', color: '#16a34a', border: 'none',
-                                    padding: '12px 28px', borderRadius: 8, fontSize: 15,
-                                    fontWeight: 700, cursor: 'pointer'
-                                }}>Create account</button>
-                                <button onClick={() => navigate('/login')} style={{
-                                    background: 'transparent', color: '#fff',
-                                    border: '1.5px solid rgba(255,255,255,0.4)',
-                                    padding: '12px 28px', borderRadius: 8, fontSize: 15,
-                                    fontWeight: 600, cursor: 'pointer'
-                                }}>Sign in</button>
+                            <div className="flex gap-3 justify-center flex-wrap">
+                                <button onClick={() => navigate('/register')} className="bg-white text-green-700 font-bold px-7 py-3 rounded-lg text-sm hover:bg-green-50 transition cursor-pointer border-none">
+                                    Create account
+                                </button>
+                                <button onClick={() => navigate('/login')} className="bg-transparent text-white font-semibold px-7 py-3 rounded-lg text-sm border border-white/40 hover:bg-white/10 transition cursor-pointer">
+                                    Sign in
+                                </button>
                             </div>
                         </>
                     ) : user?.role === 'farmer' ? (
                         <>
-                            <h2 style={{ fontSize: 28, fontWeight: 800, color: '#fff', letterSpacing: '-0.5px', marginBottom: 12 }}>List your produce</h2>
-                            <p style={{ color: '#bbf7d0', fontSize: 15, marginBottom: 28 }}>Reach hotels, restaurants and caterers across The Gambia.</p>
-                            <button onClick={() => navigate('/products/create')} style={{
-                                background: '#fff', color: '#16a34a', border: 'none',
-                                padding: '12px 28px', borderRadius: 8, fontSize: 15,
-                                fontWeight: 700, cursor: 'pointer'
-                            }}>Add a product</button>
+                            <h2 className="text-3xl font-extrabold text-white tracking-tight mb-3">List your produce</h2>
+                            <p className="text-green-100 text-sm mb-7">Reach hotels, restaurants and caterers across The Gambia.</p>
+                            <button onClick={() => navigate('/products/create')} className="bg-white text-green-700 font-bold px-7 py-3 rounded-lg text-sm hover:bg-green-50 transition cursor-pointer border-none">
+                                Add a product
+                            </button>
                         </>
                     ) : (
                         <>
-                            <h2 style={{ fontSize: 28, fontWeight: 800, color: '#fff', letterSpacing: '-0.5px', marginBottom: 12 }}>Browse today's listings</h2>
-                            <p style={{ color: '#bbf7d0', fontSize: 15, marginBottom: 28 }}>Fresh produce added daily by farmers across The Gambia.</p>
-                            <button onClick={() => navigate('/browse')} style={{
-                                background: '#fff', color: '#16a34a', border: 'none',
-                                padding: '12px 28px', borderRadius: 8, fontSize: 15,
-                                fontWeight: 700, cursor: 'pointer'
-                            }}>Browse products</button>
+                            <h2 className="text-3xl font-extrabold text-white tracking-tight mb-3">Browse today's listings</h2>
+                            <p className="text-green-100 text-sm mb-7">Fresh produce added daily by farmers across The Gambia.</p>
+                            <button onClick={() => navigate('/browse')} className="bg-white text-green-700 font-bold px-7 py-3 rounded-lg text-sm hover:bg-green-50 transition cursor-pointer border-none">
+                                Browse products
+                            </button>
                         </>
                     )}
                 </div>
             </section>
 
             {/* Footer */}
-            <footer style={{ background: '#0f172a', padding: '48px 24px 32px' }}>
-                <div style={{ maxWidth: 1200, margin: '0 auto' }}>
-                    <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr', gap: 40, marginBottom: 40 }}>
+            <footer className="bg-slate-900 px-6 pt-12 pb-8">
+                <div className="max-w-6xl mx-auto">
+                    <div className="grid grid-cols-4 gap-10 mb-10">
                         <div>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-                                <span style={{ fontSize: 20 }}>🌾</span>
-                                <span style={{ fontWeight: 800, color: '#fff', fontSize: 16 }}>Kambeng Market</span>
+                            <div className="flex items-center gap-2 mb-3">
+                                <span className="text-lg">🌾</span>
+                                <span className="font-extrabold text-white">Kambeng Market</span>
                             </div>
-                            <p style={{ color: '#64748b', fontSize: 13, lineHeight: 1.7, maxWidth: 240 }}>
+                            <p className="text-slate-500 text-xs leading-relaxed max-w-[200px]">
                                 Connecting Gambian farmers directly with hotels, restaurants, and caterers.
                             </p>
                         </div>
@@ -363,28 +285,28 @@ export const Home = () => {
                             { title: 'Farmers', links: [{ label: 'Join as farmer', to: '/register' }, { label: 'Farmer guide', to: '/help/farmer' }, { label: 'Pricing', to: '/help/pricing' }] },
                         ].map((col, i) => (
                             <div key={i}>
-                                <h4 style={{ color: '#fff', fontWeight: 600, fontSize: 13, marginBottom: 14, textTransform: 'uppercase', letterSpacing: '0.5px' }}>{col.title}</h4>
-                                <ul style={{ listStyle: 'none' }}>
+                                <h4 className="text-white font-semibold text-xs uppercase tracking-wider mb-4">{col.title}</h4>
+                                <ul className="space-y-2.5 list-none p-0 m-0">
                                     {col.links.map((l, j) => (
-                                        <li key={j} style={{ marginBottom: 10 }}>
-                                            <Link to={l.to} style={{ color: '#64748b', textDecoration: 'none', fontSize: 13 }}>{l.label}</Link>
+                                        <li key={j}>
+                                            <Link to={l.to} className="text-slate-500 text-xs no-underline hover:text-slate-300 transition">{l.label}</Link>
                                         </li>
                                     ))}
                                 </ul>
                             </div>
                         ))}
                         <div>
-                            <h4 style={{ color: '#fff', fontWeight: 600, fontSize: 13, marginBottom: 14, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Contact</h4>
-                            <ul style={{ listStyle: 'none' }}>
+                            <h4 className="text-white font-semibold text-xs uppercase tracking-wider mb-4">Contact</h4>
+                            <ul className="space-y-2.5 list-none p-0 m-0">
                                 {['📧 info@kambeng.com', '📞 +220 700 0000', '📍 Banjul, The Gambia'].map((item, i) => (
-                                    <li key={i} style={{ color: '#64748b', fontSize: 13, marginBottom: 10 }}>{item}</li>
+                                    <li key={i} className="text-slate-500 text-xs">{item}</li>
                                 ))}
                             </ul>
                         </div>
                     </div>
-                    <div style={{ borderTop: '1px solid #1e293b', paddingTop: 24, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <p style={{ color: '#475569', fontSize: 12 }}>© {new Date().getFullYear()} Kambeng Market. All rights reserved.</p>
-                        <p style={{ color: '#475569', fontSize: 12 }}>Made in 🇬🇲 The Gambia</p>
+                    <div className="border-t border-slate-800 pt-6 flex items-center justify-between">
+                        <p className="text-slate-600 text-xs">© {new Date().getFullYear()} Kambeng Market. All rights reserved.</p>
+                        <p className="text-slate-600 text-xs">Made in 🇬🇲 The Gambia</p>
                     </div>
                 </div>
             </footer>
@@ -392,7 +314,6 @@ export const Home = () => {
     );
 };
 
-// Product Card
 const ProductCard = ({ product }) => {
     const navigate = useNavigate();
     const { isAuthenticated } = useAuth();
@@ -404,54 +325,39 @@ const ProductCard = ({ product }) => {
     };
 
     return (
-        <div className="product-card" onClick={handleClick} style={{
-            background: '#fff', borderRadius: 12, border: '1.5px solid #e2e8f0',
-            overflow: 'hidden', cursor: 'pointer', boxShadow: '0 1px 4px rgba(0,0,0,0.05)'
-        }}>
-            {/* Image */}
-            <div style={{ position: 'relative', height: 148, background: '#f1f5f9' }}>
+        <div
+            onClick={handleClick}
+            className="bg-white rounded-xl border border-slate-200 overflow-hidden cursor-pointer hover:-translate-y-0.5 hover:shadow-lg transition-all"
+        >
+            <div className="relative h-36 bg-slate-100">
                 {product.photos?.length > 0 ? (
                     <img
                         src={product.photos[0]}
                         alt={product.name}
-                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                        className="w-full h-full object-cover"
                         onError={(e) => { e.target.style.display = 'none'; }}
                     />
                 ) : (
-                    <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 44 }}>
+                    <div className="w-full h-full flex items-center justify-center text-4xl">
                         {getCategoryIcon(product.category)}
                     </div>
                 )}
                 {product.is_available && (
-                    <span style={{
-                        position: 'absolute', top: 8, left: 8,
-                        background: '#16a34a', color: '#fff',
-                        fontSize: 10, fontWeight: 700, padding: '2px 8px',
-                        borderRadius: 20, textTransform: 'uppercase', letterSpacing: '0.5px'
-                    }}>Fresh</span>
+                    <span className="absolute top-2 left-2 bg-green-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide">
+                        Fresh
+                    </span>
                 )}
             </div>
-
-            {/* Info */}
-            <div style={{ padding: '12px' }}>
-                <p style={{ fontSize: 11, color: '#94a3b8', fontWeight: 500, marginBottom: 2 }}>
-                    {product.farmer?.name || 'Unknown Farmer'}
-                </p>
-                <h3 style={{ fontSize: 14, fontWeight: 700, color: '#0f172a', marginBottom: 6, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                    {product.name}
-                </h3>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-                    <span style={{ fontSize: 16, fontWeight: 800, color: '#16a34a' }}>{product.price_formatted}</span>
-                    <span style={{ fontSize: 11, color: '#94a3b8' }}>{product.quantity} {product.unit}</span>
+            <div className="p-3">
+                <p className="text-[11px] text-slate-400 font-medium mb-0.5">{product.farmer?.name || 'Unknown Farmer'}</p>
+                <h3 className="text-sm font-bold text-slate-900 truncate mb-1.5">{product.name}</h3>
+                <div className="flex items-center justify-between mb-2.5">
+                    <span className="text-base font-extrabold text-green-600">{product.price_formatted}</span>
+                    <span className="text-[11px] text-slate-400">{product.quantity} {product.unit}</span>
                 </div>
                 <button
-                    className="order-btn"
                     onClick={handleOrder}
-                    style={{
-                        width: '100%', background: '#16a34a', color: '#fff',
-                        border: 'none', padding: '8px', borderRadius: 8,
-                        fontSize: 13, fontWeight: 600, cursor: 'pointer'
-                    }}
+                    className="w-full bg-green-600 text-white text-xs font-semibold py-2 rounded-lg hover:bg-green-700 transition border-none cursor-pointer"
                 >
                     Place order
                 </button>

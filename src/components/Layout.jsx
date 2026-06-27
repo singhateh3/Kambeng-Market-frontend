@@ -23,49 +23,30 @@ export const Layout = () => {
     const navLink = (to, label) => (
         <Link
             to={to}
-            style={{
-                textDecoration: 'none',
-                padding: '6px 12px',
-                borderRadius: 8,
-                fontSize: 14,
-                fontWeight: 500,
-                color: isActive(to) ? '#16a34a' : '#475569',
-                background: isActive(to) ? '#f0fdf4' : 'transparent',
-                transition: 'all 0.15s ease',
-            }}
+            className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                isActive(to)
+                    ? 'bg-green-50 text-green-700'
+                    : 'text-slate-500 hover:text-green-700 hover:bg-green-50'
+            }`}
         >
             {label}
         </Link>
     );
 
     return (
-        <div style={{ fontFamily: "'Inter', -apple-system, sans-serif", minHeight: '100vh', background: '#f8fafc' }}>
-            <style>{`
-                @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-                * { box-sizing: border-box; }
-                .nav-link:hover { color: #16a34a !important; background: #f0fdf4 !important; }
-                .profile-menu-item:hover { background: #f0fdf4; color: #16a34a !important; }
-                .logout-item:hover { background: #fef2f2; }
-                @keyframes spin { to { transform: rotate(360deg); } }
-            `}</style>
-
+        <div className="min-h-screen bg-slate-50">
             {/* Navbar */}
-            <nav style={{
-                background: '#fff',
-                borderBottom: '1px solid #e2e8f0',
-                position: 'sticky', top: 0, zIndex: 100,
-            }}>
-                <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 24px', height: 60, display: 'flex', alignItems: 'center', gap: 24 }}>
-
+            <nav className="bg-white border-b border-slate-200 sticky top-0 z-50">
+                <div className="max-w-6xl mx-auto px-6 flex items-center gap-6" style={{ height: 60 }}>
                     {/* Logo */}
-                    <Link to="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
-                        <span style={{ fontSize: 20 }}>🌾</span>
-                        <span style={{ fontWeight: 800, fontSize: 17, color: '#15803d', letterSpacing: '-0.5px' }}>Kambeng</span>
-                        <span style={{ fontWeight: 400, fontSize: 17, color: '#94a3b8' }}>Market</span>
+                    <Link to="/" className="flex items-center gap-2 no-underline flex-shrink-0">
+                        <span className="text-xl">🌾</span>
+                        <span className="font-extrabold text-green-700 tracking-tight">Kambeng</span>
+                        <span className="font-normal text-slate-400">Market</span>
                     </Link>
 
                     {/* Nav links */}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                    <div className="flex items-center gap-1">
                         {navLink('/app/dashboard', 'Dashboard')}
                         {isFarmer && navLink('/app/products', 'My Products')}
                         {isBuyer && navLink('/app/browse', 'Browse')}
@@ -74,60 +55,36 @@ export const Layout = () => {
                     </div>
 
                     {/* Right side */}
-                    <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 12 }}>
-                        {/* Delivery badge */}
-                        <span style={{
-                            display: 'none',
-                            fontSize: 12, color: '#64748b',
-                            background: '#f8fafc', border: '1px solid #e2e8f0',
-                            padding: '4px 10px', borderRadius: 20
-                        }}>
-                            🚚 Free delivery over GMD 500
-                        </span>
-
+                    <div className="ml-auto flex items-center gap-3">
                         <NotificationBell />
 
                         {/* Profile dropdown */}
-                        <div style={{ position: 'relative' }}>
+                        <div className="relative">
                             <button
                                 onClick={() => setMenuOpen(!menuOpen)}
-                                style={{
-                                    display: 'flex', alignItems: 'center', gap: 8,
-                                    background: 'none', border: 'none', cursor: 'pointer', padding: '4px 8px',
-                                    borderRadius: 8,
-                                }}
+                                className="flex items-center gap-2 bg-transparent border-none cursor-pointer px-2 py-1 rounded-lg hover:bg-slate-50 transition"
                             >
-                                <div style={{
-                                    width: 32, height: 32, borderRadius: '50%',
-                                    background: '#dcfce7', color: '#16a34a',
-                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                    fontSize: 13, fontWeight: 700, flexShrink: 0
-                                }}>
+                                <div className="w-8 h-8 rounded-full bg-green-100 text-green-700 flex items-center justify-center text-sm font-bold flex-shrink-0">
                                     {user?.name?.charAt(0)?.toUpperCase() || 'U'}
                                 </div>
-                                <span style={{ fontSize: 14, fontWeight: 500, color: '#374151' }}>
+                                <span className="text-sm font-medium text-slate-700">
                                     {user?.name?.split(' ')[0] || 'Account'}
                                 </span>
-                                <svg style={{ width: 14, height: 14, color: '#94a3b8', transform: menuOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.15s' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg
+                                    className={`w-3.5 h-3.5 text-slate-400 transition-transform ${menuOpen ? 'rotate-180' : ''}`}
+                                    fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                                >
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                                 </svg>
                             </button>
 
                             {menuOpen && (
-                                <div style={{
-                                    position: 'absolute', right: 0, top: 'calc(100% + 8px)',
-                                    width: 220, background: '#fff',
-                                    border: '1.5px solid #e2e8f0', borderRadius: 12,
-                                    boxShadow: '0 8px 24px rgba(0,0,0,0.10)', zIndex: 200,
-                                    overflow: 'hidden'
-                                }}>
-                                    {/* User info */}
-                                    <div style={{ padding: '14px 16px', borderBottom: '1px solid #f1f5f9' }}>
-                                        <p style={{ fontSize: 14, fontWeight: 700, color: '#0f172a', marginBottom: 2 }}>{user?.name}</p>
-                                        <p style={{ fontSize: 12, color: '#94a3b8' }}>{user?.email}</p>
+                                <div className="absolute right-0 mt-2 w-56 bg-white border border-slate-200 rounded-xl shadow-lg z-50 overflow-hidden">
+                                    <div className="px-4 py-3 border-b border-slate-100">
+                                        <p className="text-sm font-bold text-slate-900">{user?.name}</p>
+                                        <p className="text-xs text-slate-400">{user?.email}</p>
                                     </div>
 
-                                    {/* Menu items */}
                                     {[
                                         { icon: '👤', label: 'My Profile', to: '/app/profile' },
                                         isFarmer && { icon: '🌾', label: 'My Products', to: '/app/products' },
@@ -137,31 +94,18 @@ export const Layout = () => {
                                         <Link
                                             key={i}
                                             to={item.to}
-                                            className="profile-menu-item"
                                             onClick={() => setMenuOpen(false)}
-                                            style={{
-                                                display: 'flex', alignItems: 'center', gap: 10,
-                                                padding: '10px 16px', textDecoration: 'none',
-                                                color: '#374151', fontSize: 13, fontWeight: 500,
-                                                transition: 'background 0.1s'
-                                            }}
+                                            className="flex items-center gap-2.5 px-4 py-2.5 no-underline text-slate-700 text-sm font-medium hover:bg-green-50 hover:text-green-700 transition"
                                         >
                                             <span>{item.icon}</span>
                                             <span>{item.label}</span>
                                         </Link>
                                     ))}
 
-                                    <div style={{ borderTop: '1px solid #f1f5f9' }}>
+                                    <div className="border-t border-slate-100">
                                         <button
-                                            className="logout-item"
                                             onClick={() => { setMenuOpen(false); handleLogout(); }}
-                                            style={{
-                                                display: 'flex', alignItems: 'center', gap: 10,
-                                                width: '100%', padding: '10px 16px', background: 'none',
-                                                border: 'none', cursor: 'pointer', color: '#dc2626',
-                                                fontSize: 13, fontWeight: 500, textAlign: 'left',
-                                                transition: 'background 0.1s'
-                                            }}
+                                            className="flex items-center gap-2.5 w-full px-4 py-2.5 bg-transparent border-none cursor-pointer text-red-600 text-sm font-medium text-left hover:bg-red-50 transition"
                                         >
                                             <span>🚪</span>
                                             <span>Log out</span>
@@ -174,8 +118,7 @@ export const Layout = () => {
                 </div>
             </nav>
 
-            {/* Page content */}
-            <main style={{ maxWidth: 1100, margin: '0 auto', padding: '0' }}>
+            <main className="max-w-6xl mx-auto">
                 <Outlet />
             </main>
         </div>
