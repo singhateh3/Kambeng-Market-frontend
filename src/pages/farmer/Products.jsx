@@ -158,7 +158,7 @@ export const Products = () => {
                                 {pagination.total} product{pagination.total !== 1 ? 's' : ''} listed
                             </p>
                         </div>
-                        <Link to="/products/create">
+                        <Link to="/app/products/create">
                             <Button className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-full">
                                 + Add New Product
                             </Button>
