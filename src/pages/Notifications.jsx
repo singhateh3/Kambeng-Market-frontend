@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Alert } from '../components/common/Alert';
 import { Button } from '../components/common/Button';
+import { Skeleton } from '../components/common/Skeleton';
 import { useNotifications } from '../context/NotificationContext';
 
 export const Notifications = () => {
@@ -23,9 +24,12 @@ export const Notifications = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const [success, setSuccess] = useState(null);
     const [error, setError] = useState(null);
+    const [isInitialLoad, setIsInitialLoad] = useState(true);
 
     useEffect(() => {
-        fetchNotifications(currentPage, 20, filter);
+        fetchNotifications(currentPage, 20, filter).finally(() => {
+            setIsInitialLoad(false);
+        });
     }, [fetchNotifications, currentPage, filter]);
 
     const handlePageChange = (newPage) => {
@@ -36,7 +40,7 @@ export const Notifications = () => {
 
     const handleFilterChange = (newFilter) => {
         setFilter(newFilter);
-        setCurrentPage(1); // Reset to first page when filter changes
+        setCurrentPage(1);
     };
 
     const handleMarkAsRead = async (id) => {
@@ -86,53 +90,111 @@ export const Notifications = () => {
     };
 
     const handleNotificationClick = async (notification) => {
-        // Mark as read if unread
         if (!notification.is_read) {
             await markAsRead(notification.id);
         }
         
-        // Navigate to the link if it exists
         if (notification.link) {
             navigate(notification.link);
         }
     };
 
-    const getNotificationColor = (type) => {
-        const colors = {
-            order_placed: 'bg-blue-50 border-blue-200',
-            order_confirmed: 'bg-green-50 border-green-200',
-            order_shipped: 'bg-purple-50 border-purple-200',
-            order_delivered: 'bg-green-50 border-green-200',
-            order_cancelled: 'bg-red-50 border-red-200',
-            farmer_verified: 'bg-green-50 border-green-200',
-            farmer_rejected: 'bg-red-50 border-red-200',
-            farmer_verification_request: 'bg-yellow-50 border-yellow-200',
-            new_product: 'bg-yellow-50 border-yellow-200',
-            low_stock: 'bg-orange-50 border-orange-200',
-        };
-        return colors[type] || 'bg-gray-50 border-gray-200';
-    };
+    // Loading skeleton component
+    const NotificationSkeleton = () => (
+        <div className="divide-y divide-gray-200">
+            {Array.from({ length: 5 }).map((_, i) => (
+                <div key={i} className="p-6">
+                    <div className="flex items-start space-x-4">
+                        <Skeleton className="w-10 h-10 rounded-full" />
+                        <div className="flex-1 space-y-3">
+                            <div className="flex items-center justify-between">
+                                <Skeleton className="h-5 w-48" />
+                                <Skeleton className="h-4 w-16" />
+                            </div>
+                            <Skeleton className="h-4 w-full" />
+                            <Skeleton className="h-4 w-3/4" />
+                            <div className="flex items-center space-x-4">
+                                <Skeleton className="h-3 w-24" />
+                                <Skeleton className="h-3 w-16" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            ))}
+        </div>
+    );
 
-    const getNotificationIcon = (type) => {
-        const icons = {
-            order_placed: '🛒',
-            order_confirmed: '✅',
-            order_shipped: '🚚',
-            order_delivered: '📦',
-            order_cancelled: '❌',
-            farmer_verified: '🎉',
-            farmer_rejected: '❌',
-            farmer_verification_request: '👨‍🌾',
-            new_product: '🌾',
-            low_stock: '⚠️',
-        };
-        return icons[type] || '🔔';
-    };
-
-    if (loading && notifications.length === 0) {
+    // If loading and it's the initial load, show full skeleton
+    if (isInitialLoad && loading) {
         return (
-            <div className="flex items-center justify-center h-64">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+            <div className="max-w-4xl mx-auto">
+                <div className="bg-white shadow rounded-lg overflow-hidden">
+                    {/* Header Skeleton */}
+                    <div className="p-6 border-b">
+                        <div className="flex justify-between items-center">
+                            <div>
+                                <Skeleton className="h-8 w-48" />
+                                <Skeleton className="h-4 w-32 mt-2" />
+                            </div>
+                            <div className="flex space-x-2">
+                                <Skeleton className="h-10 w-32" />
+                                <Skeleton className="h-10 w-32" />
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {/* Filter Skeleton */}
+                    <div className="p-4 border-b bg-gray-50">
+                        <div className="flex space-x-2">
+                            <Skeleton className="h-10 w-20" />
+                            <Skeleton className="h-10 w-24" />
+                            <Skeleton className="h-10 w-20" />
+                        </div>
+                    </div>
+                    
+                    {/* Notifications Skeleton */}
+                    <NotificationSkeleton />
+                </div>
+            </div>
+        );
+    }
+
+    // Show spinner while loading more data (pagination)
+    if (loading && !isInitialLoad) {
+        return (
+            <div className="max-w-4xl mx-auto">
+                <div className="bg-white shadow rounded-lg overflow-hidden">
+                    {/* Header - keep visible */}
+                    <div className="p-6 border-b">
+                        <div className="flex flex-wrap justify-between items-center gap-4">
+                            <div>
+                                <h1 className="text-2xl font-bold text-gray-900">Notifications</h1>
+                                {unreadCount > 0 && (
+                                    <p className="text-sm text-gray-500">
+                                        {unreadCount} unread notification{unreadCount > 1 ? 's' : ''}
+                                    </p>
+                                )}
+                            </div>
+                            <div className="flex gap-2 flex-wrap">
+                                {unreadCount > 0 && (
+                                    <Button size="sm" onClick={handleMarkAllAsRead}>
+                                        Mark All Read
+                                    </Button>
+                                )}
+                                <Button size="sm" variant="danger" onClick={handleDeleteRead}>
+                                    Delete Read
+                                </Button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="flex items-center justify-center py-12">
+                        <div className="flex flex-col items-center space-y-4">
+                            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+                            <p className="text-gray-500">Loading notifications...</p>
+                        </div>
+                    </div>
+                </div>
             </div>
         );
     }
@@ -223,20 +285,22 @@ export const Notifications = () => {
                             {notifications.map((notification) => (
                                 <div
                                     key={notification.id}
-                                    className={`p-6 border-l-4 ${getNotificationColor(notification.type)} ${
-                                        notification.is_read ? 'opacity-75' : ''
-                                    } cursor-pointer hover:shadow-md transition-all duration-200`}
+                                    className={`p-6 border-l-4 ${
+                                        notification.is_read 
+                                            ? 'bg-white border-gray-300' 
+                                            : 'bg-blue-50 border-blue-500'
+                                    } cursor-pointer hover:bg-gray-50 transition-all duration-200`}
                                     onClick={() => handleNotificationClick(notification)}
                                 >
                                     <div className="flex items-start justify-between gap-4">
                                         <div className="flex-1 min-w-0">
                                             <div className="flex items-center space-x-3">
                                                 <span className="text-2xl">
-                                                    {notification.icon || getNotificationIcon(notification.type)}
+                                                    {notification.icon || '🔔'}
                                                 </span>
                                                 <div className="flex-1">
                                                     <div className="flex items-center gap-2">
-                                                        <p className="font-semibold text-gray-900">
+                                                        <p className={`font-semibold ${notification.is_read ? 'text-gray-700' : 'text-gray-900'}`}>
                                                             {notification.title}
                                                         </p>
                                                         {!notification.is_read && (
@@ -253,11 +317,6 @@ export const Notifications = () => {
                                                             {notification.time_ago || 
                                                                 new Date(notification.created_at).toLocaleString()}
                                                         </span>
-                                                        {notification.type && (
-                                                            <span className="text-xs text-gray-400 capitalize">
-                                                                {notification.type.replace('_', ' ')}
-                                                            </span>
-                                                        )}
                                                     </div>
                                                 </div>
                                             </div>
