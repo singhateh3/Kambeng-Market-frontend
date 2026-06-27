@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { Alert } from '../components/common/Alert';
 import { Button } from '../components/common/Button';
 import { Skeleton } from '../components/common/Skeleton';
-import { useNotifications } from '../context/NotificationContext';
+import { useNotifications } from '../context/NotificationContext'; // ✅ Correct import
 
 export const Notifications = () => {
     const navigate = useNavigate();
