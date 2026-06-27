@@ -6,6 +6,7 @@ import { Button } from '../../components/common/Button';
 import { Spinner } from '../../components/common/Spinner';
 import { useAuth } from '../../hooks/useAuth';
 import api from '../../services/api';
+import { getImageUrl } from '../../utils/imageUtils';
 
 export const Products = () => {
     const navigate = useNavigate();
@@ -64,6 +65,14 @@ export const Products = () => {
                 per_page: 20,
                 total: 0,
             });
+            
+            // Debug: Log product photos
+            console.log('Products with photos:', response.data.data.map(p => ({ 
+                id: p.id, 
+                name: p.name, 
+                photos: p.photos,
+                firstPhoto: p.photos?.[0]
+            })));
         } catch (err) {
             console.error('Error fetching products:', err);
             setError('Failed to load products');
@@ -398,9 +407,12 @@ export const Products = () => {
                                                 {selectedProduct.photos.map((photo, index) => (
                                                     <img 
                                                         key={index} 
-                                                        src={photo} 
+                                                        src={getImageUrl(photo)} 
                                                         alt={`${selectedProduct.name} ${index + 1}`} 
                                                         className="w-20 h-20 object-cover rounded-lg border"
+                                                        onError={(e) => {
+                                                            e.target.style.display = 'none';
+                                                        }}
                                                     />
                                                 ))}
                                             </div>
@@ -470,12 +482,17 @@ const ProductCard = ({ product, onView, onDelete, onStatusUpdate, loadingAction 
             <div className="relative h-48 bg-gray-100">
                 {product.photos && product.photos.length > 0 ? (
                     <img
-                        src={product.photos[0]}
+                        src={getImageUrl(product.photos[0])}
                         alt={product.name}
                         className="w-full h-full object-cover"
+                        onError={(e) => {
+                            console.error('Image failed to load:', e.target.src);
+                            e.target.style.display = 'none';
+                            e.target.parentElement.innerHTML = '<div class="w-full h-full flex items-center justify-center text-6xl bg-gray-100">🌾</div>';
+                        }}
                     />
                 ) : (
-                    <div className="w-full h-full flex items-center justify-center text-6xl">
+                    <div className="w-full h-full flex items-center justify-center text-6xl bg-gray-100">
                         🌾
                     </div>
                 )}
