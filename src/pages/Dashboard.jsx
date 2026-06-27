@@ -168,7 +168,7 @@ const RegularDashboard = () => {
                             <p className="text-sm text-yellow-800">
                                 ⚠️ Your account is not yet verified. Please submit your verification documents to start selling.
                             </p>
-                            <Link to="/profile">
+                            <Link to="/app/profile">
                                 <Button variant="outline" size="sm" className="mt-2">
                                     Verify Account
                                 </Button>
@@ -187,21 +187,21 @@ const RegularDashboard = () => {
                             value={stats.total_products}
                             icon="🌾"
                             color="green"
-                            link="/products"
+                            link="/app/products"
                         />
                         <StatCard
                             title="Active Products"
                             value={stats.active_products}
                             icon="✅"
                             color="green"
-                            link="/products"
+                            link="/app/products"
                         />
                         <StatCard
                             title="Total Orders"
                             value={stats.total_orders}
                             icon="📦"
                             color="blue"
-                            link="/orders"
+                            link="/app/orders"
                         />
                         <StatCard
                             title="Revenue"
@@ -219,21 +219,21 @@ const RegularDashboard = () => {
                             value={stats.orders_placed}
                             icon="🛒"
                             color="green"
-                            link="/orders"
+                            link="/app/orders"
                         />
                         <StatCard
                             title="Pending Orders"
                             value={stats.pending_orders}
                             icon="⏳"
                             color="yellow"
-                            link="/orders"
+                            link="/app/orders"
                         />
                         <StatCard
                             title="Active Farmers"
                             value="0"
                             icon="👨‍🌾"
                             color="blue"
-                            link="/browse"
+                            link="/app/browse"
                         />
                     </div>
                 )}
@@ -254,7 +254,7 @@ const RegularDashboard = () => {
                             title="Browse Products"
                             description="Discover fresh produce"
                             icon="🔍"
-                            link="/browse"
+                            link="/app/browse"
                             color="green"
                         />
                     )}
@@ -262,14 +262,14 @@ const RegularDashboard = () => {
                         title="View Orders"
                         description="Check your orders"
                         icon="📋"
-                        link="/orders"
+                        link="/app/orders"
                         color="blue"
                     />
                     <QuickActionCard
                         title="Edit Profile"
                         description="Update your information"
                         icon="👤"
-                        link="/profile"
+                        link="/app/profile"
                         color="gray"
                     />
                 </div>
@@ -280,7 +280,7 @@ const RegularDashboard = () => {
                     <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
                         <div className="flex justify-between items-center mb-4">
                             <h3 className="font-semibold text-gray-900">Recent Orders</h3>
-                            <Link to="/orders" className="text-sm text-green-600 hover:text-green-700 font-medium">
+                            <Link to="/app/orders" className="text-sm text-green-600 hover:text-green-700 font-medium">
                                 View All →
                             </Link>
                         </div>
@@ -324,14 +324,14 @@ const RegularDashboard = () => {
                         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
                             <div className="flex justify-between items-center mb-4">
                                 <h3 className="font-semibold text-gray-900">Recent Products</h3>
-                                <Link to="/products" className="text-sm text-green-600 hover:text-green-700 font-medium">
+                                <Link to="/app/products" className="text-sm text-green-600 hover:text-green-700 font-medium">
                                     View All →
                                 </Link>
                             </div>
                             {recentProducts.length === 0 ? (
                                 <div className="text-center py-8">
                                     <p className="text-gray-500">No products listed yet</p>
-                                    <Link to="/products/create">
+                                    <Link to="/app/products/create">
                                         <Button variant="outline" size="sm" className="mt-2">
                                             List Your First Product
                                         </Button>
@@ -383,13 +383,13 @@ const RegularDashboard = () => {
                         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
                             <div className="flex justify-between items-center mb-4">
                                 <h3 className="font-semibold text-gray-900">Favorite Farmers</h3>
-                                <Link to="/browse" className="text-sm text-green-600 hover:text-green-700 font-medium">
+                                <Link to="/app/browse" className="text-sm text-green-600 hover:text-green-700 font-medium">
                                     Browse All →
                                 </Link>
                             </div>
                             <div className="text-center py-8">
                                 <p className="text-gray-500">Save your favorite farmers for quick ordering</p>
-                                <Link to="/browse">
+                                <Link to="/app/browse">
                                     <Button variant="outline" size="sm" className="mt-2">
                                         Browse Farmers
                                     </Button>
