@@ -148,18 +148,18 @@ export const OrderDetailsPage = () => {
     if (loading) {
         return (
             <div className="flex items-center justify-center h-64">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
             </div>
         );
     }
 
     if (!canViewOrder()) {
         return (
-            <div className="bg-white shadow rounded-lg p-12 text-center">
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-12 text-center">
                 <div className="text-6xl mb-4">🔒</div>
                 <h3 className="text-xl font-semibold text-gray-900 mb-2">Access Denied</h3>
                 <p className="text-gray-500">You don't have permission to view this order.</p>
-                <Button className="mt-4" onClick={() => navigate('/orders')}>
+                <Button className="mt-4" onClick={() => navigate('/app/orders')}>
                     Back to Orders
                 </Button>
             </div>
@@ -168,11 +168,11 @@ export const OrderDetailsPage = () => {
 
     if (!order) {
         return (
-            <div className="bg-white shadow rounded-lg p-12 text-center">
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-12 text-center">
                 <div className="text-6xl mb-4">❌</div>
                 <h3 className="text-xl font-semibold text-gray-900 mb-2">Order Not Found</h3>
                 <p className="text-gray-500">The order you're looking for doesn't exist.</p>
-                <Button className="mt-4" onClick={() => navigate('/orders')}>
+                <Button className="mt-4" onClick={() => navigate('/app/orders')}>
                     Back to Orders
                 </Button>
             </div>
@@ -181,16 +181,19 @@ export const OrderDetailsPage = () => {
 
     return (
         <div className="max-w-4xl mx-auto">
-            <div className="bg-white shadow rounded-lg overflow-hidden">
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
                 {/* Header */}
-                <div className="p-6 border-b">
+                <div className="p-6 border-b border-gray-100">
                     <div className="flex flex-wrap justify-between items-center gap-4">
                         <div>
                             <button
                                 onClick={() => navigate(-1)}
-                                className="text-gray-600 hover:text-gray-900 flex items-center mb-2"
+                                className="text-gray-600 hover:text-gray-900 flex items-center mb-2 transition"
                             >
-                                ← Back
+                                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                                </svg>
+                                Back
                             </button>
                             <h1 className="text-2xl font-bold text-gray-900">
                                 Order #{order.id}
@@ -223,7 +226,7 @@ export const OrderDetailsPage = () => {
                             </div>
                             <div className="px-4 py-3 grid grid-cols-12 gap-2 items-center hover:bg-gray-50">
                                 <div className="col-span-5">
-                                    <Link to={`/products/${order.product_id}`} className="flex items-center hover:text-primary-600">
+                                    <Link to={`/app/products/${order.product_id}`} className="flex items-center hover:text-green-600 transition">
                                         <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center mr-3">
                                             {order.product?.photos && order.product.photos.length > 0 ? (
                                                 <img 
@@ -360,7 +363,7 @@ export const OrderDetailsPage = () => {
 
                     {/* Actions */}
                     <div className="flex flex-wrap gap-2 pt-4 border-t">
-                        <Button variant="secondary" onClick={() => navigate('/orders')}>
+                        <Button variant="secondary" onClick={() => navigate('/app/orders')}>
                             Back to Orders
                         </Button>
                         {isFarmer && order.status === 'pending' && (
@@ -400,9 +403,9 @@ export const OrderDetailsPage = () => {
                             </Button>
                         )}
                         {isBuyer && order.status === 'delivered' && !order.review && (
-                            <Link to={`/orders/${order.id}/review`}>
-                                <Button variant="outline">
-                                    Write Review
+                            <Link to={`/app/orders/${order.id}/review`}>
+                                <Button variant="outline" className="bg-green-50 text-green-600 hover:bg-green-100 border-green-200">
+                                    ⭐ Write Review
                                 </Button>
                             </Link>
                         )}
@@ -413,12 +416,12 @@ export const OrderDetailsPage = () => {
             {/* Confirmation Modal */}
             {showConfirmModal && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-white rounded-lg max-w-md w-full">
-                        <div className="flex justify-between items-center p-6 border-b">
+                    <div className="bg-white rounded-xl max-w-md w-full shadow-xl">
+                        <div className="flex justify-between items-center p-6 border-b border-gray-100">
                             <h2 className="text-xl font-bold text-gray-900">Confirm Action</h2>
                             <button
                                 onClick={closeConfirmModal}
-                                className="text-gray-400 hover:text-gray-600"
+                                className="text-gray-400 hover:text-gray-600 transition"
                             >
                                 <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
