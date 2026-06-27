@@ -300,7 +300,7 @@ export const Home = () => {
                             </p>
                             <Button
                                 size="lg"
-                                className="bg-white text-green-600 hover:bg-green-50 px-8 py-3 text-lg rounded-full"
+                                className="bg-green text-green-600 hover:bg-green-50 px-8 py-3 text-lg rounded-full"
                                 onClick={() => navigate('/products/create')}
                             >
                                 List Your Products
