@@ -1,3 +1,5 @@
+// src/utils/imageUtils.js
+
 export const getImageUrl = (photo) => {
     if (!photo) return null;
     
@@ -6,19 +8,26 @@ export const getImageUrl = (photo) => {
         return photo;
     }
     
-    // Base URL for your backend
     const baseUrl = 'https://kambeng-market.onrender.com';
     
-    // If it starts with /storage/, add the base URL
-    if (photo.startsWith('/storage/')) {
-        return `${baseUrl}${photo}`;
+    // Clean the photo path
+    let cleanPhoto = photo;
+    
+    // Remove any leading slashes
+    if (cleanPhoto.startsWith('/')) {
+        cleanPhoto = cleanPhoto.substring(1);
     }
     
-    // If it starts with storage/, add the base URL
-    if (photo.startsWith('storage/')) {
-        return `${baseUrl}/${photo}`;
+    // If it already contains storage/, use it directly
+    if (cleanPhoto.includes('storage/')) {
+        return `${baseUrl}/${cleanPhoto}`;
     }
     
-    // If it's a relative path, add storage prefix and base URL
-    return `${baseUrl}/storage/${photo}`;
+    // If it starts with products/, add storage prefix
+    if (cleanPhoto.startsWith('products/')) {
+        return `${baseUrl}/storage/${cleanPhoto}`;
+    }
+    
+    // Default: add storage prefix
+    return `${baseUrl}/storage/${cleanPhoto}`;
 };
