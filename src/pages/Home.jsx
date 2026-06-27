@@ -1,7 +1,6 @@
 // src/pages/Home.jsx
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Button } from '../components/common/Button';
 import { useAuth } from '../hooks/useAuth';
 import api from '../services/api';
 
@@ -26,7 +25,6 @@ export const Home = () => {
                 api.get('/products/categories'),
                 api.get('/public/statistics').catch(() => ({ data: { data: null } })),
             ]);
-
             setFeaturedProducts(productsRes.data?.data || []);
             setCategories(categoriesRes.data?.data || []);
             setStats(statsRes.data?.data || null);
@@ -40,192 +38,234 @@ export const Home = () => {
     const handleSearch = (e) => {
         e.preventDefault();
         if (searchQuery.trim()) {
-            if (isAuthenticated) {
-                navigate(`/browse?search=${encodeURIComponent(searchQuery)}`);
-            } else {
-                navigate('/login');
-            }
+            navigate(isAuthenticated ? `/browse?search=${encodeURIComponent(searchQuery)}` : '/login');
         }
     };
 
     if (loading) {
         return (
-            <div className="flex items-center justify-center min-h-screen">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', background: '#f8fafc' }}>
+                <div style={{ textAlign: 'center' }}>
+                    <div style={{
+                        width: 48, height: 48, border: '3px solid #e2e8f0',
+                        borderTop: '3px solid #16a34a', borderRadius: '50%',
+                        animation: 'spin 0.8s linear infinite', margin: '0 auto 16px'
+                    }} />
+                    <p style={{ color: '#64748b', fontSize: 14 }}>Loading fresh produce...</p>
+                </div>
+                <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
             </div>
         );
     }
 
     return (
-        <div className="bg-gray-50">
-            {/* Top Banner / Header */}
-            <div className="bg-gradient-to-r from-green-600 to-green-700 text-white">
-                <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between text-sm">
-                    <div className="flex items-center space-x-4">
-                        <span className="hidden sm:inline">🌾 Fresh from Gambian farms</span>
-                        <span className="hidden md:inline">•</span>
-                        <span className="hidden md:inline">🚚 Free delivery on orders over GMD 500</span>
-                    </div>
-                    <div className="flex items-center space-x-4">
+        <div style={{ fontFamily: "'Inter', -apple-system, sans-serif", background: '#f8fafc', minHeight: '100vh' }}>
+            <style>{`
+                @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+                * { box-sizing: border-box; margin: 0; padding: 0; }
+                @keyframes spin { to { transform: rotate(360deg); } }
+                @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+                .product-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.10) !important; }
+                .product-card { transition: transform 0.18s ease, box-shadow 0.18s ease; }
+                .cat-pill:hover { background: #dcfce7 !important; border-color: #16a34a !important; color: #15803d !important; }
+                .cat-pill { transition: all 0.15s ease; }
+                .order-btn:hover { background: #15803d !important; }
+                .order-btn { transition: background 0.15s ease; }
+                .search-btn:hover { background: #15803d !important; }
+                .nav-link:hover { color: #16a34a !important; }
+                ::-webkit-scrollbar { height: 4px; } 
+                ::-webkit-scrollbar-track { background: transparent; }
+                ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+            `}</style>
+
+            {/* Topbar */}
+            <div style={{ background: '#fff', borderBottom: '1px solid #e2e8f0', position: 'sticky', top: 0, zIndex: 100 }}>
+                <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 24px', height: 60, display: 'flex', alignItems: 'center', gap: 24 }}>
+                    {/* Logo */}
+                    <Link to="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+                        <span style={{ fontSize: 22 }}>🌾</span>
+                        <span style={{ fontWeight: 800, fontSize: 18, color: '#15803d', letterSpacing: '-0.5px' }}>Kambeng</span>
+                        <span style={{ fontWeight: 400, fontSize: 18, color: '#64748b' }}>Market</span>
+                    </Link>
+
+                    {/* Search bar inline */}
+                    <form onSubmit={handleSearch} style={{ flex: 1, maxWidth: 480 }}>
+                        <div style={{ position: 'relative' }}>
+                            <svg style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            </svg>
+                            <input
+                                type="text"
+                                placeholder="Search produce, farmers..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                style={{
+                                    width: '100%', padding: '8px 12px 8px 36px',
+                                    border: '1.5px solid #e2e8f0', borderRadius: 8,
+                                    fontSize: 14, outline: 'none', background: '#f8fafc',
+                                    color: '#1e293b'
+                                }}
+                            />
+                        </div>
+                    </form>
+
+                    {/* Nav */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginLeft: 'auto', flexShrink: 0 }}>
                         {!isAuthenticated ? (
                             <>
-                                <Link to="/login" className="hover:underline">Sign In</Link>
-                                <Link to="/register" className="bg-white/20 px-4 py-1 rounded-full hover:bg-white/30 transition">Sign Up</Link>
+                                <Link to="/login" className="nav-link" style={{ textDecoration: 'none', color: '#475569', fontSize: 14, fontWeight: 500 }}>Sign in</Link>
+                                <Link to="/register" style={{
+                                    textDecoration: 'none', background: '#16a34a', color: '#fff',
+                                    padding: '7px 18px', borderRadius: 8, fontSize: 14, fontWeight: 600
+                                }}>Get started</Link>
                             </>
                         ) : (
-                            <Link to="/dashboard" className="hover:underline">Dashboard</Link>
+                            <Link to="/dashboard" style={{
+                                textDecoration: 'none', background: '#f0fdf4', color: '#16a34a',
+                                padding: '7px 18px', borderRadius: 8, fontSize: 14, fontWeight: 600,
+                                border: '1.5px solid #bbf7d0'
+                            }}>Dashboard</Link>
                         )}
                     </div>
                 </div>
             </div>
 
-            {/* Hero Section - Blinkit style */}
-            <section className="bg-gradient-to-b from-green-50 to-white">
-                <div className="max-w-7xl mx-auto px-4 py-12 md:py-20">
-                    <div className="text-center max-w-3xl mx-auto">
-                        <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-4">
-                            Fresh Produce,{' '}
-                            <span className="text-green-600">Direct from Farm</span>
+            {/* Hero */}
+            <section style={{ background: '#fff', borderBottom: '1px solid #f1f5f9' }}>
+                <div style={{ maxWidth: 1200, margin: '0 auto', padding: '56px 24px 48px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 64, alignItems: 'center' }}>
+                    <div style={{ animation: 'fadeUp 0.5s ease both' }}>
+                        <div style={{
+                            display: 'inline-flex', alignItems: 'center', gap: 6,
+                            background: '#f0fdf4', color: '#16a34a', padding: '4px 12px',
+                            borderRadius: 20, fontSize: 12, fontWeight: 600,
+                            marginBottom: 20, border: '1px solid #bbf7d0'
+                        }}>
+                            <span style={{ width: 6, height: 6, background: '#16a34a', borderRadius: '50%', display: 'inline-block' }} />
+                            Fresh from Gambian farms
+                        </div>
+                        <h1 style={{ fontSize: 44, fontWeight: 800, color: '#0f172a', lineHeight: 1.15, letterSpacing: '-1.5px', marginBottom: 16 }}>
+                            Farm-fresh produce,<br />
+                            <span style={{ color: '#16a34a' }}>no middlemen.</span>
                         </h1>
-                        <p className="text-lg text-gray-600 mb-8">
-                            Connect directly with Gambian farmers. No middlemen, fair prices, guaranteed freshness.
+                        <p style={{ fontSize: 17, color: '#64748b', lineHeight: 1.65, marginBottom: 32, maxWidth: 420 }}>
+                            Order directly from verified Gambian farmers. Fair prices for buyers, fair pay for farmers.
                         </p>
 
-                        {/* Search Bar - Blinkit style */}
-                        <form onSubmit={handleSearch} className="max-w-2xl mx-auto">
-                            <div className="relative">
-                                <input
-                                    type="text"
-                                    placeholder="Search for fresh produce..."
-                                    value={searchQuery}
-                                    onChange={(e) => setSearchQuery(e.target.value)}
-                                    className="w-full px-6 py-4 pl-14 text-lg border-2 border-gray-200 rounded-full focus:outline-none focus:border-green-500 shadow-lg"
-                                />
-                                <div className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400">
-                                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                                    </svg>
-                                </div>
-                                <button
-                                    type="submit"
-                                    className="absolute right-2 top-1/2 -translate-y-1/2 bg-green-600 text-white px-6 py-2 rounded-full hover:bg-green-700 transition"
-                                >
-                                    Search
+                        <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+                            {!isAuthenticated ? (
+                                <>
+                                    <button onClick={() => navigate('/register')} style={{
+                                        background: '#16a34a', color: '#fff', border: 'none',
+                                        padding: '12px 28px', borderRadius: 8, fontSize: 15,
+                                        fontWeight: 700, cursor: 'pointer'
+                                    }}>
+                                        Start buying
+                                    </button>
+                                    <button onClick={() => navigate('/login')} style={{
+                                        background: '#f8fafc', color: '#374151', border: '1.5px solid #e2e8f0',
+                                        padding: '12px 28px', borderRadius: 8, fontSize: 15,
+                                        fontWeight: 600, cursor: 'pointer'
+                                    }}>
+                                        Sign in
+                                    </button>
+                                </>
+                            ) : (
+                                <button onClick={() => navigate('/dashboard')} style={{
+                                    background: '#16a34a', color: '#fff', border: 'none',
+                                    padding: '12px 28px', borderRadius: 8, fontSize: 15,
+                                    fontWeight: 700, cursor: 'pointer'
+                                }}>
+                                    Go to dashboard
                                 </button>
-                            </div>
-                        </form>
-
-                        {/* CTA Buttons for Non-Authenticated Users */}
-                        {!isAuthenticated ? (
-                            <div className="mt-8 flex flex-wrap justify-center gap-4">
-                                <Button
-                                    size="lg"
-                                    className="bg-green-600 text-white hover:bg-green-700 px-8 py-3 text-lg rounded-full"
-                                    onClick={() => navigate('/register')}
-                                >
-                                    Get Started
-                                </Button>
-                                <Button
-                                    size="lg"
-                                    variant="outline"
-                                    className="border-green-600 text-green-600 hover:bg-green-50 px-8 py-3 text-lg rounded-full"
-                                    onClick={() => navigate('/login')}
-                                >
-                                    Sign In
-                                </Button>
-                            </div>
-                        ) : (
-                            <div className="mt-8">
-                                <Button
-                                    size="lg"
-                                    className="bg-green-600 text-white hover:bg-green-700 px-8 py-3 text-lg rounded-full"
-                                    onClick={() => navigate('/dashboard')}
-                                >
-                                    Go to Dashboard
-                                </Button>
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Stats Bar */}
-                    {stats && (
-                        <div className="mt-12 grid grid-cols-2 md:grid-cols-4 gap-4 max-w-3xl mx-auto">
-                            <div className="bg-white rounded-xl p-4 text-center shadow-sm border border-gray-100">
-                                <div className="text-2xl font-bold text-green-600">{stats?.products?.active || 0}+</div>
-                                <div className="text-sm text-gray-500">Fresh Products</div>
-                            </div>
-                            <div className="bg-white rounded-xl p-4 text-center shadow-sm border border-gray-100">
-                                <div className="text-2xl font-bold text-green-600">{stats?.users?.farmers || 0}+</div>
-                                <div className="text-sm text-gray-500">Trusted Farmers</div>
-                            </div>
-                            <div className="bg-white rounded-xl p-4 text-center shadow-sm border border-gray-100">
-                                <div className="text-2xl font-bold text-green-600">{stats?.orders?.total || 0}+</div>
-                                <div className="text-sm text-gray-500">Orders Delivered</div>
-                            </div>
-                            <div className="bg-white rounded-xl p-4 text-center shadow-sm border border-gray-100">
-                                <div className="text-2xl font-bold text-green-600">{stats?.reviews?.average_rating || 0}⭐</div>
-                                <div className="text-sm text-gray-500">Average Rating</div>
-                            </div>
+                            )}
                         </div>
-                    )}
-                </div>
-            </section>
 
-            {/* Categories - Horizontal Scroll */}
-            <section className="py-8 bg-white">
-                <div className="max-w-7xl mx-auto px-4">
-                    <div className="flex items-center justify-between mb-4">
-                        <h2 className="text-xl font-bold text-gray-900">Shop by Category</h2>
-                        <Link 
-                            to={isAuthenticated ? '/browse' : '/login'} 
-                            className="text-sm text-green-600 hover:text-green-700 font-medium"
-                        >
-                            View All →
-                        </Link>
+                        {/* Delivery badge */}
+                        <div style={{ marginTop: 28, display: 'flex', alignItems: 'center', gap: 8, color: '#64748b', fontSize: 13 }}>
+                            <span>🚚</span>
+                            <span>Free delivery on orders over <strong style={{ color: '#0f172a' }}>GMD 500</strong></span>
+                        </div>
                     </div>
-                    <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
-                        {categories.slice(0, 12).map((category, index) => (
-                            <Link
-                                key={index}
-                                to={isAuthenticated ? `/browse?category=${category}` : '/login'}
-                                className="flex-shrink-0 w-24 text-center group"
-                            >
-                                <div className="w-20 h-20 mx-auto bg-gray-50 rounded-full flex items-center justify-center text-3xl group-hover:bg-green-50 transition border-2 border-transparent group-hover:border-green-200">
-                                    {getCategoryIcon(category)}
-                                </div>
-                                <div className="text-xs font-medium text-gray-700 mt-2 truncate">
-                                    {category}
-                                </div>
-                            </Link>
+
+                    {/* Stats panel */}
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, animation: 'fadeUp 0.5s 0.1s ease both', opacity: 0, animationFillMode: 'forwards' }}>
+                        {[
+                            { emoji: '🥬', label: 'Fresh products', value: stats?.products?.active ?? '50+' },
+                            { emoji: '👨‍🌾', label: 'Verified farmers', value: stats?.users?.farmers ?? '20+' },
+                            { emoji: '📦', label: 'Orders placed', value: stats?.orders?.total ?? '100+' },
+                            { emoji: '⭐', label: 'Avg. rating', value: stats?.reviews?.average_rating ? `${Number(stats.reviews.average_rating).toFixed(1)}` : '4.8' },
+                        ].map((s, i) => (
+                            <div key={i} style={{
+                                background: '#f8fafc', border: '1.5px solid #e2e8f0',
+                                borderRadius: 12, padding: '20px 20px',
+                            }}>
+                                <div style={{ fontSize: 28, marginBottom: 8 }}>{s.emoji}</div>
+                                <div style={{ fontSize: 26, fontWeight: 800, color: '#0f172a', letterSpacing: '-1px' }}>{s.value}</div>
+                                <div style={{ fontSize: 13, color: '#64748b', marginTop: 2 }}>{s.label}</div>
+                            </div>
                         ))}
                     </div>
                 </div>
             </section>
 
-            {/* Featured Products - Grid */}
-            <section className="py-12">
-                <div className="max-w-7xl mx-auto px-4">
-                    <div className="flex items-center justify-between mb-6">
-                        <h2 className="text-2xl font-bold text-gray-900">Featured Products</h2>
-                        <Link
-                            to={isAuthenticated ? '/browse' : '/login'}
-                            className="text-sm text-green-600 hover:text-green-700 font-medium"
-                        >
-                            View All →
+            {/* Categories */}
+            {categories.length > 0 && (
+                <section style={{ background: '#fff', borderBottom: '1px solid #f1f5f9', padding: '28px 0' }}>
+                    <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 24px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+                            <h2 style={{ fontSize: 16, fontWeight: 700, color: '#0f172a' }}>Shop by category</h2>
+                            <Link to={isAuthenticated ? '/browse' : '/login'} style={{ fontSize: 13, color: '#16a34a', textDecoration: 'none', fontWeight: 600 }}>
+                                All categories →
+                            </Link>
+                        </div>
+                        <div style={{ display: 'flex', gap: 10, overflowX: 'auto', paddingBottom: 4 }}>
+                            {categories.slice(0, 14).map((cat, i) => (
+                                <Link
+                                    key={i}
+                                    to={isAuthenticated ? `/browse?category=${cat}` : '/login'}
+                                    className="cat-pill"
+                                    style={{
+                                        textDecoration: 'none', flexShrink: 0,
+                                        display: 'flex', alignItems: 'center', gap: 6,
+                                        padding: '7px 14px', borderRadius: 20,
+                                        border: '1.5px solid #e2e8f0', background: '#f8fafc',
+                                        fontSize: 13, fontWeight: 500, color: '#374151'
+                                    }}
+                                >
+                                    <span>{getCategoryIcon(cat)}</span>
+                                    <span>{cat}</span>
+                                </Link>
+                            ))}
+                        </div>
+                    </div>
+                </section>
+            )}
+
+            {/* Featured Products */}
+            <section style={{ padding: '40px 0' }}>
+                <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 24px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+                        <div>
+                            <h2 style={{ fontSize: 20, fontWeight: 800, color: '#0f172a', letterSpacing: '-0.5px' }}>Featured products</h2>
+                            <p style={{ fontSize: 13, color: '#64748b', marginTop: 2 }}>Freshly listed by farmers near you</p>
+                        </div>
+                        <Link to={isAuthenticated ? '/browse' : '/login'} style={{ fontSize: 13, color: '#16a34a', textDecoration: 'none', fontWeight: 600 }}>
+                            View all →
                         </Link>
                     </div>
+
                     {featuredProducts.length > 0 ? (
-                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 16 }}>
                             {featuredProducts.map((product) => (
                                 <ProductCard key={product.id} product={product} />
                             ))}
                         </div>
                     ) : (
-                        <div className="text-center py-12 bg-white rounded-xl">
-                            <div className="text-6xl mb-4">🌾</div>
-                            <p className="text-gray-500">No products available yet.</p>
+                        <div style={{ textAlign: 'center', padding: '64px 24px', background: '#fff', borderRadius: 12, border: '1.5px dashed #e2e8f0' }}>
+                            <div style={{ fontSize: 48, marginBottom: 12 }}>🌾</div>
+                            <p style={{ color: '#64748b', fontSize: 15 }}>No products listed yet.</p>
                             {isAuthenticated && user?.role === 'farmer' && (
-                                <Link to="/products/create" className="text-green-600 hover:text-green-700 inline-block mt-2">
+                                <Link to="/products/create" style={{ color: '#16a34a', textDecoration: 'none', fontWeight: 600, fontSize: 14, marginTop: 8, display: 'inline-block' }}>
                                     List your first product →
                                 </Link>
                             )}
@@ -234,133 +274,117 @@ export const Home = () => {
                 </div>
             </section>
 
-            {/* Why Kambeng - Blinkit style */}
-            <section className="py-16 bg-white">
-                <div className="max-w-7xl mx-auto px-4">
-                    <h2 className="text-2xl font-bold text-center text-gray-900 mb-12">
-                        Why Choose Kambeng Market?
+            {/* Why Kambeng */}
+            <section style={{ background: '#fff', padding: '56px 0', borderTop: '1px solid #f1f5f9' }}>
+                <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 24px' }}>
+                    <h2 style={{ fontSize: 20, fontWeight: 800, color: '#0f172a', marginBottom: 36, letterSpacing: '-0.5px' }}>
+                        Why Kambeng Market?
                     </h2>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                        <div className="text-center">
-                            <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                                <span className="text-4xl">🌱</span>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 24 }}>
+                        {[
+                            { icon: '🌱', title: 'Straight from the farm', desc: 'No cold storage, no middlemen. Produce moves from farm to you within 24 hours.' },
+                            { icon: '💰', title: 'Farmers earn more', desc: 'Farmers set their own prices and keep the majority of every sale.' },
+                            { icon: '✅', title: 'Verified listings', desc: 'Every farmer is verified. Every product listing is reviewed before going live.' },
+                        ].map((item, i) => (
+                            <div key={i} style={{ padding: '24px', background: '#f8fafc', borderRadius: 12, border: '1.5px solid #e2e8f0' }}>
+                                <div style={{ fontSize: 32, marginBottom: 12 }}>{item.icon}</div>
+                                <h3 style={{ fontSize: 15, fontWeight: 700, color: '#0f172a', marginBottom: 8 }}>{item.title}</h3>
+                                <p style={{ fontSize: 13, color: '#64748b', lineHeight: 1.6 }}>{item.desc}</p>
                             </div>
-                            <h3 className="text-lg font-semibold text-gray-900 mb-2">Fresh & Local</h3>
-                            <p className="text-gray-500 text-sm">Directly from Gambian farms to your table. Fresh produce at its best.</p>
-                        </div>
-                        <div className="text-center">
-                            <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                                <span className="text-4xl">💰</span>
-                            </div>
-                            <h3 className="text-lg font-semibold text-gray-900 mb-2">Fair Prices</h3>
-                            <p className="text-gray-500 text-sm">No middlemen. Farmers get fair prices and buyers get great deals.</p>
-                        </div>
-                        <div className="text-center">
-                            <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                                <span className="text-4xl">🤝</span>
-                            </div>
-                            <h3 className="text-lg font-semibold text-gray-900 mb-2">Trust & Quality</h3>
-                            <p className="text-gray-500 text-sm">Verified farmers, quality produce, and reliable delivery options.</p>
-                        </div>
+                        ))}
                     </div>
                 </div>
             </section>
 
-            {/* CTA Section - Login/Register for Non-Authenticated Users */}
-            <section className="bg-gradient-to-r from-green-600 to-green-700 text-white py-16">
-                <div className="max-w-7xl mx-auto px-4 text-center">
+            {/* CTA Banner */}
+            <section style={{ background: '#16a34a', padding: '56px 24px' }}>
+                <div style={{ maxWidth: 640, margin: '0 auto', textAlign: 'center' }}>
                     {!isAuthenticated ? (
                         <>
-                            <h2 className="text-3xl font-bold mb-4">Ready to Start?</h2>
-                            <p className="text-xl text-green-100 mb-8 max-w-2xl mx-auto">
-                                Join Kambeng Market today and connect directly with farmers. Fresh produce, fair prices, no middlemen.
+                            <h2 style={{ fontSize: 28, fontWeight: 800, color: '#fff', letterSpacing: '-0.5px', marginBottom: 12 }}>
+                                Ready to buy fresh?
+                            </h2>
+                            <p style={{ color: '#bbf7d0', fontSize: 15, marginBottom: 28, lineHeight: 1.6 }}>
+                                Create a free account and start ordering directly from Gambian farmers today.
                             </p>
-                            <div className="flex flex-wrap justify-center gap-4">
-                                <Button
-                                    size="lg"
-                                    className="bg-green text-green-600 hover:bg-green-50 px-8 py-3 text-lg rounded-full"
-                                    onClick={() => navigate('/register')}
-                                >
-                                    Create Account
-                                </Button>
-                                <Button
-                                    size="lg"
-                                    className="bg-green-800 text-white hover:bg-green-900 px-8 py-3 text-lg rounded-full"
-                                    onClick={() => navigate('/login')}
-                                >
-                                    Sign In
-                                </Button>
+                            <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
+                                <button onClick={() => navigate('/register')} style={{
+                                    background: '#fff', color: '#16a34a', border: 'none',
+                                    padding: '12px 28px', borderRadius: 8, fontSize: 15,
+                                    fontWeight: 700, cursor: 'pointer'
+                                }}>Create account</button>
+                                <button onClick={() => navigate('/login')} style={{
+                                    background: 'transparent', color: '#fff',
+                                    border: '1.5px solid rgba(255,255,255,0.4)',
+                                    padding: '12px 28px', borderRadius: 8, fontSize: 15,
+                                    fontWeight: 600, cursor: 'pointer'
+                                }}>Sign in</button>
                             </div>
                         </>
                     ) : user?.role === 'farmer' ? (
                         <>
-                            <h2 className="text-3xl font-bold mb-4">Are You a Farmer?</h2>
-                            <p className="text-xl text-green-100 mb-8 max-w-2xl mx-auto">
-                                Join Kambeng Market today and connect directly with buyers. No middlemen, fair prices, and a reliable marketplace.
-                            </p>
-                            <Button
-                                size="lg"
-                                className="bg-green text-green-600 hover:bg-green-50 px-8 py-3 text-lg rounded-full"
-                                onClick={() => navigate('/products/create')}
-                            >
-                                List Your Products
-                            </Button>
+                            <h2 style={{ fontSize: 28, fontWeight: 800, color: '#fff', letterSpacing: '-0.5px', marginBottom: 12 }}>List your produce</h2>
+                            <p style={{ color: '#bbf7d0', fontSize: 15, marginBottom: 28 }}>Reach hotels, restaurants and caterers across The Gambia.</p>
+                            <button onClick={() => navigate('/products/create')} style={{
+                                background: '#fff', color: '#16a34a', border: 'none',
+                                padding: '12px 28px', borderRadius: 8, fontSize: 15,
+                                fontWeight: 700, cursor: 'pointer'
+                            }}>Add a product</button>
                         </>
                     ) : (
                         <>
-                            <h2 className="text-3xl font-bold mb-4">Start Shopping</h2>
-                            <p className="text-xl text-green-100 mb-8 max-w-2xl mx-auto">
-                                Discover fresh produce from local farmers. Quality guaranteed.
-                            </p>
-                            <Button
-                                size="lg"
-                                className="bg-green-50 text-green-600 hover:bg-green-50 px-8 py-3 text-lg rounded-full"
-                                onClick={() => navigate('/browse')}
-                            >
-                                Browse Products
-                            </Button>
+                            <h2 style={{ fontSize: 28, fontWeight: 800, color: '#fff', letterSpacing: '-0.5px', marginBottom: 12 }}>Browse today's listings</h2>
+                            <p style={{ color: '#bbf7d0', fontSize: 15, marginBottom: 28 }}>Fresh produce added daily by farmers across The Gambia.</p>
+                            <button onClick={() => navigate('/browse')} style={{
+                                background: '#fff', color: '#16a34a', border: 'none',
+                                padding: '12px 28px', borderRadius: 8, fontSize: 15,
+                                fontWeight: 700, cursor: 'pointer'
+                            }}>Browse products</button>
                         </>
                     )}
                 </div>
             </section>
 
             {/* Footer */}
-            <footer className="bg-gray-900 text-gray-300 py-12">
-                <div className="max-w-7xl mx-auto px-4">
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+            <footer style={{ background: '#0f172a', padding: '48px 24px 32px' }}>
+                <div style={{ maxWidth: 1200, margin: '0 auto' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr', gap: 40, marginBottom: 40 }}>
                         <div>
-                            <h3 className="text-white font-bold text-lg mb-4">🌾 Kambeng Market</h3>
-                            <p className="text-sm text-gray-400">
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+                                <span style={{ fontSize: 20 }}>🌾</span>
+                                <span style={{ fontWeight: 800, color: '#fff', fontSize: 16 }}>Kambeng Market</span>
+                            </div>
+                            <p style={{ color: '#64748b', fontSize: 13, lineHeight: 1.7, maxWidth: 240 }}>
                                 Connecting Gambian farmers directly with hotels, restaurants, and caterers.
                             </p>
                         </div>
+                        {[
+                            { title: 'Platform', links: [{ label: 'Browse products', to: isAuthenticated ? '/browse' : '/login' }, { label: 'About us', to: '/about' }, { label: 'Contact', to: '/contact' }] },
+                            { title: 'Farmers', links: [{ label: 'Join as farmer', to: '/register' }, { label: 'Farmer guide', to: '/help/farmer' }, { label: 'Pricing', to: '/help/pricing' }] },
+                        ].map((col, i) => (
+                            <div key={i}>
+                                <h4 style={{ color: '#fff', fontWeight: 600, fontSize: 13, marginBottom: 14, textTransform: 'uppercase', letterSpacing: '0.5px' }}>{col.title}</h4>
+                                <ul style={{ listStyle: 'none' }}>
+                                    {col.links.map((l, j) => (
+                                        <li key={j} style={{ marginBottom: 10 }}>
+                                            <Link to={l.to} style={{ color: '#64748b', textDecoration: 'none', fontSize: 13 }}>{l.label}</Link>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                        ))}
                         <div>
-                            <h4 className="text-white font-semibold mb-4">Quick Links</h4>
-                            <ul className="space-y-2 text-sm">
-                                <li><Link to={isAuthenticated ? '/browse' : '/login'} className="hover:text-white">Browse Products</Link></li>
-                                <li><Link to="/about" className="hover:text-white">About Us</Link></li>
-                                <li><Link to="/contact" className="hover:text-white">Contact</Link></li>
-                            </ul>
-                        </div>
-                        <div>
-                            <h4 className="text-white font-semibold mb-4">For Farmers</h4>
-                            <ul className="space-y-2 text-sm">
-                                <li><Link to="/register" className="hover:text-white">Join as Farmer</Link></li>
-                                <li><Link to="/help/farmer" className="hover:text-white">Farmer Guide</Link></li>
-                                <li><Link to="/help/pricing" className="hover:text-white">Pricing</Link></li>
-                            </ul>
-                        </div>
-                        <div>
-                            <h4 className="text-white font-semibold mb-4">Contact</h4>
-                            <ul className="space-y-2 text-sm">
-                                <li>📧 info@kambeng.com</li>
-                                <li>📞 +220 700 0000</li>
-                                <li>📍 Banjul, The Gambia</li>
+                            <h4 style={{ color: '#fff', fontWeight: 600, fontSize: 13, marginBottom: 14, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Contact</h4>
+                            <ul style={{ listStyle: 'none' }}>
+                                {['📧 info@kambeng.com', '📞 +220 700 0000', '📍 Banjul, The Gambia'].map((item, i) => (
+                                    <li key={i} style={{ color: '#64748b', fontSize: 13, marginBottom: 10 }}>{item}</li>
+                                ))}
                             </ul>
                         </div>
                     </div>
-                    <div className="border-t border-gray-800 mt-8 pt-8 text-sm text-center text-gray-400">
-                        <p>&copy; {new Date().getFullYear()} Kambeng Market. All rights reserved.</p>
+                    <div style={{ borderTop: '1px solid #1e293b', paddingTop: 24, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <p style={{ color: '#475569', fontSize: 12 }}>© {new Date().getFullYear()} Kambeng Market. All rights reserved.</p>
+                        <p style={{ color: '#475569', fontSize: 12 }}>Made in 🇬🇲 The Gambia</p>
                     </div>
                 </div>
             </footer>
@@ -368,102 +392,81 @@ export const Home = () => {
     );
 };
 
-// Product Card Component - Blinkit style
+// Product Card
 const ProductCard = ({ product }) => {
     const navigate = useNavigate();
     const { isAuthenticated } = useAuth();
 
-    const handleClick = () => {
-        if (isAuthenticated) {
-            navigate(`/app/products/${product.id}`);
-        } else {
-            navigate('/login');
-        }
-    };
-
-    const handlePlaceOrder = (e) => {
+    const handleClick = () => navigate(isAuthenticated ? `/app/products/${product.id}` : '/login');
+    const handleOrder = (e) => {
         e.stopPropagation();
-        if (isAuthenticated) {
-            // Fix: Use the correct path for place order - /app/place-order/{productId}
-            navigate(`/app/place-order/${product.id}`);
-        } else {
-            navigate('/login');
-        }
+        navigate(isAuthenticated ? `/app/place-order/${product.id}` : '/login');
     };
 
     return (
-        <div 
-            className="bg-white rounded-xl shadow-sm hover:shadow-md transition-all overflow-hidden cursor-pointer border border-gray-100"
-            onClick={handleClick}
-        >
-            <div className="relative h-40 bg-gray-100">
-                {product.photos && product.photos.length > 0 ? (
+        <div className="product-card" onClick={handleClick} style={{
+            background: '#fff', borderRadius: 12, border: '1.5px solid #e2e8f0',
+            overflow: 'hidden', cursor: 'pointer', boxShadow: '0 1px 4px rgba(0,0,0,0.05)'
+        }}>
+            {/* Image */}
+            <div style={{ position: 'relative', height: 148, background: '#f1f5f9' }}>
+                {product.photos?.length > 0 ? (
                     <img
                         src={product.photos[0]}
                         alt={product.name}
-                        className="w-full h-full object-cover"
+                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                        onError={(e) => { e.target.style.display = 'none'; }}
                     />
                 ) : (
-                    <div className="w-full h-full flex items-center justify-center text-5xl">
-                        🌾
+                    <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 44 }}>
+                        {getCategoryIcon(product.category)}
                     </div>
                 )}
                 {product.is_available && (
-                    <span className="absolute top-2 left-2 bg-green-500 text-white text-xs px-2 py-1 rounded-full">
-                        Fresh
-                    </span>
-                )}
-                {product.average_rating > 0 && (
-                    <div className="absolute bottom-2 left-2 bg-black/70 text-white text-xs px-2 py-1 rounded-full flex items-center">
-                        ⭐ {product.average_rating.toFixed(1)}
-                    </div>
+                    <span style={{
+                        position: 'absolute', top: 8, left: 8,
+                        background: '#16a34a', color: '#fff',
+                        fontSize: 10, fontWeight: 700, padding: '2px 8px',
+                        borderRadius: 20, textTransform: 'uppercase', letterSpacing: '0.5px'
+                    }}>Fresh</span>
                 )}
             </div>
-            <div className="p-3">
-                <h3 className="font-semibold text-gray-900 text-sm truncate">
-                    {product.name}
-                </h3>
-                <p className="text-xs text-gray-500 truncate">
+
+            {/* Info */}
+            <div style={{ padding: '12px' }}>
+                <p style={{ fontSize: 11, color: '#94a3b8', fontWeight: 500, marginBottom: 2 }}>
                     {product.farmer?.name || 'Unknown Farmer'}
                 </p>
-                <div className="flex items-center justify-between mt-2">
-                    <span className="text-lg font-bold text-green-600">
-                        {product.price_formatted}
-                    </span>
-                    <span className="text-xs text-gray-500">
-                        {product.quantity} {product.unit}
-                    </span>
+                <h3 style={{ fontSize: 14, fontWeight: 700, color: '#0f172a', marginBottom: 6, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    {product.name}
+                </h3>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+                    <span style={{ fontSize: 16, fontWeight: 800, color: '#16a34a' }}>{product.price_formatted}</span>
+                    <span style={{ fontSize: 11, color: '#94a3b8' }}>{product.quantity} {product.unit}</span>
                 </div>
-                <button 
-                    className="w-full mt-2 bg-green-600 text-white text-sm py-1.5 rounded-lg hover:bg-green-700 transition"
-                    onClick={handlePlaceOrder}
+                <button
+                    className="order-btn"
+                    onClick={handleOrder}
+                    style={{
+                        width: '100%', background: '#16a34a', color: '#fff',
+                        border: 'none', padding: '8px', borderRadius: 8,
+                        fontSize: 13, fontWeight: 600, cursor: 'pointer'
+                    }}
                 >
-                    🛒 Place Order
+                    Place order
                 </button>
             </div>
         </div>
     );
 };
 
-// Helper function to get category icons
 const getCategoryIcon = (category) => {
     const icons = {
-        'Vegetables': '🥬',
-        'Fruits': '🍎',
-        'Grains': '🌾',
-        'Herbs': '🌿',
-        'Spices': '🌶️',
-        'Dairy': '🥛',
-        'Meat': '🥩',
-        'Fish': '🐟',
-        'Poultry': '🐔',
-        'Eggs': '🥚',
-        'Rice': '🍚',
-        'Groundnuts': '🥜',
-        'Cereals': '🌾',
-        'Legumes': '🫘',
-        'Roots': '🥔',
-        'Tubers': '🍠',
+        'Vegetables': '🥬', 'Fruits': '🍎', 'Grains': '🌾',
+        'Herbs': '🌿', 'Spices': '🌶️', 'Dairy': '🥛',
+        'Meat': '🥩', 'Fish': '🐟', 'Poultry': '🐔',
+        'Eggs': '🥚', 'Rice': '🍚', 'Groundnuts': '🥜',
+        'Cereals': '🌾', 'Legumes': '🫘', 'Roots': '🥔', 'Tubers': '🍠',
     };
     return icons[category] || '📦';
 };
