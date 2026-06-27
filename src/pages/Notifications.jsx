@@ -20,15 +20,23 @@ export const Notifications = () => {
     } = useNotifications();
 
     const [filter, setFilter] = useState('all');
+    const [currentPage, setCurrentPage] = useState(1);
     const [success, setSuccess] = useState(null);
     const [error, setError] = useState(null);
 
     useEffect(() => {
-        fetchNotifications();
-    }, []);
+        fetchNotifications(currentPage, 20, filter);
+    }, [fetchNotifications, currentPage, filter]);
 
     const handlePageChange = (newPage) => {
-        fetchNotifications(newPage);
+        if (newPage >= 1 && newPage <= pagination.last_page) {
+            setCurrentPage(newPage);
+        }
+    };
+
+    const handleFilterChange = (newFilter) => {
+        setFilter(newFilter);
+        setCurrentPage(1); // Reset to first page when filter changes
     };
 
     const handleMarkAsRead = async (id) => {
@@ -89,26 +97,36 @@ export const Notifications = () => {
         }
     };
 
-    const filteredNotifications = notifications.filter(n => {
-        if (filter === 'unread') return !n.is_read;
-        if (filter === 'read') return n.is_read;
-        return true;
-    });
-
     const getNotificationColor = (type) => {
         const colors = {
-            order_placed: 'bg-blue-50',
-            order_confirmed: 'bg-green-50',
-            order_shipped: 'bg-purple-50',
-            order_delivered: 'bg-green-50',
-            order_cancelled: 'bg-red-50',
-            farmer_verified: 'bg-green-50',
-            farmer_rejected: 'bg-red-50',
-            farmer_verification_request: 'bg-yellow-50',
-            new_product: 'bg-yellow-50',
-            low_stock: 'bg-orange-50',
+            order_placed: 'bg-blue-50 border-blue-200',
+            order_confirmed: 'bg-green-50 border-green-200',
+            order_shipped: 'bg-purple-50 border-purple-200',
+            order_delivered: 'bg-green-50 border-green-200',
+            order_cancelled: 'bg-red-50 border-red-200',
+            farmer_verified: 'bg-green-50 border-green-200',
+            farmer_rejected: 'bg-red-50 border-red-200',
+            farmer_verification_request: 'bg-yellow-50 border-yellow-200',
+            new_product: 'bg-yellow-50 border-yellow-200',
+            low_stock: 'bg-orange-50 border-orange-200',
         };
-        return colors[type] || 'bg-gray-50';
+        return colors[type] || 'bg-gray-50 border-gray-200';
+    };
+
+    const getNotificationIcon = (type) => {
+        const icons = {
+            order_placed: '🛒',
+            order_confirmed: '✅',
+            order_shipped: '🚚',
+            order_delivered: '📦',
+            order_cancelled: '❌',
+            farmer_verified: '🎉',
+            farmer_rejected: '❌',
+            farmer_verification_request: '👨‍🌾',
+            new_product: '🌾',
+            low_stock: '⚠️',
+        };
+        return icons[type] || '🔔';
     };
 
     if (loading && notifications.length === 0) {
@@ -133,7 +151,7 @@ export const Notifications = () => {
                                 </p>
                             )}
                         </div>
-                        <div className="flex gap-2">
+                        <div className="flex gap-2 flex-wrap">
                             {unreadCount > 0 && (
                                 <Button size="sm" onClick={handleMarkAllAsRead}>
                                     Mark All Read
@@ -157,69 +175,76 @@ export const Notifications = () => {
                             className={`px-4 py-2 text-sm rounded-lg transition-colors ${
                                 filter === 'all'
                                     ? 'bg-primary-600 text-white'
-                                    : 'bg-white text-gray-600 hover:bg-gray-100'
+                                    : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-300'
                             }`}
-                            onClick={() => setFilter('all')}
+                            onClick={() => handleFilterChange('all')}
                         >
-                            All
+                            All ({pagination.total || 0})
                         </button>
                         <button
                             className={`px-4 py-2 text-sm rounded-lg transition-colors ${
                                 filter === 'unread'
                                     ? 'bg-primary-600 text-white'
-                                    : 'bg-white text-gray-600 hover:bg-gray-100'
+                                    : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-300'
                             }`}
-                            onClick={() => setFilter('unread')}
+                            onClick={() => handleFilterChange('unread')}
                         >
-                            Unread
+                            Unread ({unreadCount})
                         </button>
                         <button
                             className={`px-4 py-2 text-sm rounded-lg transition-colors ${
                                 filter === 'read'
                                     ? 'bg-primary-600 text-white'
-                                    : 'bg-white text-gray-600 hover:bg-gray-100'
+                                    : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-300'
                             }`}
-                            onClick={() => setFilter('read')}
+                            onClick={() => handleFilterChange('read')}
                         >
-                            Read
+                            Read ({pagination.total - unreadCount})
                         </button>
                     </div>
                 </div>
 
                 {/* Notifications List */}
-                {filteredNotifications.length === 0 ? (
+                {notifications.length === 0 ? (
                     <div className="text-center py-12">
                         <div className="text-6xl mb-4">🔔</div>
                         <h3 className="text-xl font-semibold text-gray-900 mb-2">No Notifications</h3>
                         <p className="text-gray-500">
                             {filter === 'all'
-                                ? 'You don\'t have any notifications yet.'
+                                ? "You don't have any notifications yet."
                                 : filter === 'unread'
-                                ? 'You have no unread notifications.'
-                                : 'You have no read notifications.'}
+                                ? "You have no unread notifications."
+                                : "You have no read notifications."}
                         </p>
                     </div>
                 ) : (
                     <>
                         <div className="divide-y divide-gray-200">
-                            {filteredNotifications.map((notification) => (
+                            {notifications.map((notification) => (
                                 <div
                                     key={notification.id}
-                                    className={`p-6 ${getNotificationColor(notification.type)} ${
+                                    className={`p-6 border-l-4 ${getNotificationColor(notification.type)} ${
                                         notification.is_read ? 'opacity-75' : ''
-                                    } cursor-pointer hover:bg-opacity-75 transition-colors`}
+                                    } cursor-pointer hover:shadow-md transition-all duration-200`}
                                     onClick={() => handleNotificationClick(notification)}
                                 >
                                     <div className="flex items-start justify-between gap-4">
                                         <div className="flex-1 min-w-0">
                                             <div className="flex items-center space-x-3">
-                                                {notification.icon && (
-                                                    <span className="text-2xl">{notification.icon}</span>
-                                                )}
-                                                <div>
-                                                    <p className="font-semibold text-gray-900">
-                                                        {notification.title}
-                                                    </p>
+                                                <span className="text-2xl">
+                                                    {notification.icon || getNotificationIcon(notification.type)}
+                                                </span>
+                                                <div className="flex-1">
+                                                    <div className="flex items-center gap-2">
+                                                        <p className="font-semibold text-gray-900">
+                                                            {notification.title}
+                                                        </p>
+                                                        {!notification.is_read && (
+                                                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                                                New
+                                                            </span>
+                                                        )}
+                                                    </div>
                                                     <p className="text-sm text-gray-600 mt-1">
                                                         {notification.message}
                                                     </p>
@@ -228,9 +253,9 @@ export const Notifications = () => {
                                                             {notification.time_ago || 
                                                                 new Date(notification.created_at).toLocaleString()}
                                                         </span>
-                                                        {!notification.is_read && (
-                                                            <span className="text-xs text-blue-600 font-medium">
-                                                                ● Unread
+                                                        {notification.type && (
+                                                            <span className="text-xs text-gray-400 capitalize">
+                                                                {notification.type.replace('_', ' ')}
                                                             </span>
                                                         )}
                                                     </div>
@@ -244,7 +269,7 @@ export const Notifications = () => {
                                                         e.stopPropagation();
                                                         handleMarkAsRead(notification.id);
                                                     }}
-                                                    className="text-xs text-primary-600 hover:text-primary-700"
+                                                    className="text-xs text-primary-600 hover:text-primary-700 font-medium"
                                                     title="Mark as read"
                                                 >
                                                     Mark read
@@ -255,7 +280,7 @@ export const Notifications = () => {
                                                     e.stopPropagation();
                                                     handleDelete(notification.id);
                                                 }}
-                                                className="text-gray-400 hover:text-red-600"
+                                                className="text-gray-400 hover:text-red-600 transition-colors"
                                                 title="Delete"
                                             >
                                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -269,28 +294,28 @@ export const Notifications = () => {
                         </div>
 
                         {/* Pagination */}
-                        {pagination.total > 20 && (
+                        {pagination.total > pagination.per_page && (
                             <div className="px-6 py-4 border-t flex flex-wrap items-center justify-between gap-2">
                                 <div className="text-sm text-gray-700">
-                                    Showing {filteredNotifications.length} of {pagination.total} notifications
+                                    Showing {notifications.length} of {pagination.total} notifications
                                 </div>
                                 <div className="flex space-x-2">
                                     <Button
                                         variant="secondary"
                                         size="sm"
-                                        disabled={pagination.current_page <= 1}
-                                        onClick={() => handlePageChange(pagination.current_page - 1)}
+                                        disabled={currentPage <= 1}
+                                        onClick={() => handlePageChange(currentPage - 1)}
                                     >
                                         Previous
                                     </Button>
                                     <span className="px-3 py-1 text-sm text-gray-600">
-                                        Page {pagination.current_page} of {pagination.last_page}
+                                        Page {currentPage} of {pagination.last_page}
                                     </span>
                                     <Button
                                         variant="secondary"
                                         size="sm"
-                                        disabled={pagination.current_page >= pagination.last_page}
-                                        onClick={() => handlePageChange(pagination.current_page + 1)}
+                                        disabled={currentPage >= pagination.last_page}
+                                        onClick={() => handlePageChange(currentPage + 1)}
                                     >
                                         Next
                                     </Button>
