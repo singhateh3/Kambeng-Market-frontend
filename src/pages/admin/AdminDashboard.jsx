@@ -123,7 +123,7 @@ export const AdminDashboard = () => {
                             title="Users"
                             description="Manage users"
                             icon="👥"
-                            link="/admin/users"
+                            link="/app/admin/users"
                             color="blue"
                         />
                         <QuickActionCard
