@@ -8,7 +8,7 @@ export const Layout = () => {
     const { user, logout } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
-    const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+    const [menuOpen, setMenuOpen] = useState(false);
 
     const handleLogout = async () => {
         await logout();
@@ -20,214 +20,162 @@ export const Layout = () => {
     const isAdmin = user?.role === 'admin';
     const isActive = (path) => location.pathname === path || location.pathname.startsWith(path + '/');
 
+    const navLink = (to, label) => (
+        <Link
+            to={to}
+            style={{
+                textDecoration: 'none',
+                padding: '6px 12px',
+                borderRadius: 8,
+                fontSize: 14,
+                fontWeight: 500,
+                color: isActive(to) ? '#16a34a' : '#475569',
+                background: isActive(to) ? '#f0fdf4' : 'transparent',
+                transition: 'all 0.15s ease',
+            }}
+        >
+            {label}
+        </Link>
+    );
+
     return (
-        <div className="min-h-screen bg-gray-50">
-            {/* Top Bar - Blinkit style */}
-            <div className="bg-green-600 text-white text-sm">
-                <div className="max-w-7xl mx-auto px-4 py-2 flex items-center justify-between">
-                    <div className="flex items-center space-x-4">
-                        <span className="hidden sm:inline">🌾 Fresh from Gambian farms</span>
-                        <span className="hidden md:inline">•</span>
-                        <span className="hidden md:inline">🚚 Free delivery on orders over GMD 500</span>
-                    </div>
-                    <div className="flex items-center space-x-4">
-                        {!user ? (
-                            <>
-                                <Link to="/login" className="hover:text-green-200 transition">Sign In</Link>
-                                <Link to="/register" className="bg-white/20 px-4 py-1 rounded-full hover:bg-white/30 transition">Sign Up</Link>
-                            </>
-                        ) : (
-                            <span className="text-sm">Welcome, {user?.name?.split(' ')[0]}</span>
-                        )}
-                    </div>
-                </div>
-            </div>
+        <div style={{ fontFamily: "'Inter', -apple-system, sans-serif", minHeight: '100vh', background: '#f8fafc' }}>
+            <style>{`
+                @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+                * { box-sizing: border-box; }
+                .nav-link:hover { color: #16a34a !important; background: #f0fdf4 !important; }
+                .profile-menu-item:hover { background: #f0fdf4; color: #16a34a !important; }
+                .logout-item:hover { background: #fef2f2; }
+                @keyframes spin { to { transform: rotate(360deg); } }
+            `}</style>
 
-            {/* Main Navigation - Blinkit style */}
-            <nav className="bg-white border-b border-gray-200 sticky top-0 z-40">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex justify-between h-16">
-                        <div className="flex items-center">
-                            <Link to="/" className="flex items-center space-x-2">
-                                <span className="text-2xl">🌾</span>
-                                <span className="text-xl font-bold text-green-600">Kambeng Market</span>
-                            </Link>
-                            <div className="hidden md:ml-8 md:flex md:space-x-1">
-                                <Link
-                                    to="/"
-                                    className={`px-3 py-2 rounded-lg text-sm font-medium transition ${
-                                        location.pathname === '/'
-                                            ? 'bg-green-50 text-green-700'
-                                            : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                                    }`}
-                                >
-                                    Home
-                                </Link>
-                                
-                                <Link
-                                    to="/app/dashboard"
-                                    className={`px-3 py-2 rounded-lg text-sm font-medium transition ${
-                                        isActive('/app/dashboard')
-                                            ? 'bg-green-50 text-green-700'
-                                            : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                                    }`}
-                                >
-                                    Dashboard
-                                </Link>
-                                
-                                {isFarmer && (
-                                    <Link
-                                        to="/app/products"
-                                        className={`px-3 py-2 rounded-lg text-sm font-medium transition ${
-                                            isActive('/app/products')
-                                                ? 'bg-green-50 text-green-700'
-                                                : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                                        }`}
-                                    >
-                                        My Products
-                                    </Link>
-                                )}
-                                
-                                {isBuyer && (
-                                    <Link
-                                        to="/app/browse"
-                                        className={`px-3 py-2 rounded-lg text-sm font-medium transition ${
-                                            isActive('/app/browse')
-                                                ? 'bg-green-50 text-green-700'
-                                                : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                                        }`}
-                                    >
-                                        Browse
-                                    </Link>
-                                )}
-                                
-                                {/* <Link
-                                    to="/app/orders"
-                                    className={`px-3 py-2 rounded-lg text-sm font-medium transition ${
-                                        isActive('/app/orders')
-                                            ? 'bg-green-50 text-green-700'
-                                            : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                                    }`}
-                                >
-                                    Orders
-                                </Link> */}
+            {/* Navbar */}
+            <nav style={{
+                background: '#fff',
+                borderBottom: '1px solid #e2e8f0',
+                position: 'sticky', top: 0, zIndex: 100,
+            }}>
+                <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 24px', height: 60, display: 'flex', alignItems: 'center', gap: 24 }}>
 
-                                {/* {isAdmin && (
-                                    <div className="relative group">
-                                        <button className="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition">
-                                            Admin
-                                            <svg className="inline-block ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                                            </svg>
-                                        </button>
-                                        <div className="absolute left-0 mt-1 w-48 bg-white rounded-xl shadow-lg border border-gray-100 py-1 hidden group-hover:block">
-                                            <Link
-                                                to="/app/admin/users"
-                                                className="block px-4 py-2 text-sm text-gray-700 hover:bg-green-50 hover:text-green-700 transition"
-                                            >
-                                                👥 Users
-                                            </Link>
-                                            <Link
-                                                to="/app/admin/farmers/verification"
-                                                className="block px-4 py-2 text-sm text-gray-700 hover:bg-green-50 hover:text-green-700 transition"
-                                            >
-                                                ✅ Verify
-                                            </Link>
-                                            <Link
-                                                to="/app/admin/products"
-                                                className="block px-4 py-2 text-sm text-gray-700 hover:bg-green-50 hover:text-green-700 transition"
-                                            >
-                                                📦 Products
-                                            </Link>
-                                        </div>
+                    {/* Logo */}
+                    <Link to="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+                        <span style={{ fontSize: 20 }}>🌾</span>
+                        <span style={{ fontWeight: 800, fontSize: 17, color: '#15803d', letterSpacing: '-0.5px' }}>Kambeng</span>
+                        <span style={{ fontWeight: 400, fontSize: 17, color: '#94a3b8' }}>Market</span>
+                    </Link>
+
+                    {/* Nav links */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                        {navLink('/app/dashboard', 'Dashboard')}
+                        {isFarmer && navLink('/app/products', 'My Products')}
+                        {isBuyer && navLink('/app/browse', 'Browse')}
+                        {navLink('/app/orders', 'Orders')}
+                        {isAdmin && navLink('/app/admin/dashboard', 'Admin')}
+                    </div>
+
+                    {/* Right side */}
+                    <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 12 }}>
+                        {/* Delivery badge */}
+                        <span style={{
+                            display: 'none',
+                            fontSize: 12, color: '#64748b',
+                            background: '#f8fafc', border: '1px solid #e2e8f0',
+                            padding: '4px 10px', borderRadius: 20
+                        }}>
+                            🚚 Free delivery over GMD 500
+                        </span>
+
+                        <NotificationBell />
+
+                        {/* Profile dropdown */}
+                        <div style={{ position: 'relative' }}>
+                            <button
+                                onClick={() => setMenuOpen(!menuOpen)}
+                                style={{
+                                    display: 'flex', alignItems: 'center', gap: 8,
+                                    background: 'none', border: 'none', cursor: 'pointer', padding: '4px 8px',
+                                    borderRadius: 8,
+                                }}
+                            >
+                                <div style={{
+                                    width: 32, height: 32, borderRadius: '50%',
+                                    background: '#dcfce7', color: '#16a34a',
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                    fontSize: 13, fontWeight: 700, flexShrink: 0
+                                }}>
+                                    {user?.name?.charAt(0)?.toUpperCase() || 'U'}
+                                </div>
+                                <span style={{ fontSize: 14, fontWeight: 500, color: '#374151' }}>
+                                    {user?.name?.split(' ')[0] || 'Account'}
+                                </span>
+                                <svg style={{ width: 14, height: 14, color: '#94a3b8', transform: menuOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.15s' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </button>
+
+                            {menuOpen && (
+                                <div style={{
+                                    position: 'absolute', right: 0, top: 'calc(100% + 8px)',
+                                    width: 220, background: '#fff',
+                                    border: '1.5px solid #e2e8f0', borderRadius: 12,
+                                    boxShadow: '0 8px 24px rgba(0,0,0,0.10)', zIndex: 200,
+                                    overflow: 'hidden'
+                                }}>
+                                    {/* User info */}
+                                    <div style={{ padding: '14px 16px', borderBottom: '1px solid #f1f5f9' }}>
+                                        <p style={{ fontSize: 14, fontWeight: 700, color: '#0f172a', marginBottom: 2 }}>{user?.name}</p>
+                                        <p style={{ fontSize: 12, color: '#94a3b8' }}>{user?.email}</p>
                                     </div>
-                                )} */}
-                            </div>
-                        </div>
-                        
-                        <div className="flex items-center space-x-3">
-                            {/* Notification Bell */}
-                            <NotificationBell />
-                            
-                            {/* Profile */}
-                            <div className="relative">
-                                <button
-                                    onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
-                                    className="flex items-center space-x-2 focus:outline-none group"
-                                >
-                                    <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center text-green-700 font-medium text-sm group-hover:bg-green-200 transition">
-                                        {user?.name?.charAt(0)?.toUpperCase() || 'U'}
-                                    </div>
-                                    <span className="hidden sm:inline text-sm text-gray-700 group-hover:text-gray-900">
-                                        {user?.display_name?.split(' ')[0] || user?.name?.split(' ')[0] || 'User'}
-                                    </span>
-                                    <svg className={`h-4 w-4 text-gray-400 transition-transform ${isProfileMenuOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                                    </svg>
-                                </button>
-                                
-                                {isProfileMenuOpen && (
-                                    <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-lg border border-gray-100 py-1 z-50">
-                                        <div className="px-4 py-3 border-b border-gray-100">
-                                            <p className="text-sm font-medium text-gray-900">{user?.name}</p>
-                                            <p className="text-xs text-gray-500">{user?.email}</p>
-                                        </div>
+
+                                    {/* Menu items */}
+                                    {[
+                                        { icon: '👤', label: 'My Profile', to: '/app/profile' },
+                                        isFarmer && { icon: '🌾', label: 'My Products', to: '/app/products' },
+                                        isBuyer && { icon: '🛒', label: 'My Orders', to: '/app/orders' },
+                                        isAdmin && { icon: '📊', label: 'Admin Dashboard', to: '/app/admin/dashboard' },
+                                    ].filter(Boolean).map((item, i) => (
                                         <Link
-                                            to="/app/profile"
-                                            className="block px-4 py-2 text-sm text-gray-700 hover:bg-green-50 hover:text-green-700 transition"
-                                            onClick={() => setIsProfileMenuOpen(false)}
-                                        >
-                                            👤 My Profile
-                                        </Link>
-                                        {user?.role === 'farmer' && (
-                                            <Link
-                                                to="/app/products"
-                                                className="block px-4 py-2 text-sm text-gray-700 hover:bg-green-50 hover:text-green-700 transition"
-                                                onClick={() => setIsProfileMenuOpen(false)}
-                                            >
-                                                🌾 My Products
-                                            </Link>
-                                        )}
-                                        {user?.role === 'buyer' && (
-                                            <Link
-                                                to="/app/orders"
-                                                className="block px-4 py-2 text-sm text-gray-700 hover:bg-green-50 hover:text-green-700 transition"
-                                                onClick={() => setIsProfileMenuOpen(false)}
-                                            >
-                                                🛒 My Orders
-                                            </Link>
-                                        )}
-                                        {user?.role === 'admin' && (
-                                            <>
-                                                <div className="border-t border-gray-100 my-1"></div>
-                                                <Link
-                                                    to="/app/admin/dashboard"
-                                                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-green-50 hover:text-green-700 transition"
-                                                    onClick={() => setIsProfileMenuOpen(false)}
-                                                >
-                                                    📊 Admin Dashboard
-                                                </Link>
-                                            </>
-                                        )}
-                                        <div className="border-t border-gray-100 my-1"></div>
-                                        <button
-                                            onClick={() => {
-                                                setIsProfileMenuOpen(false);
-                                                handleLogout();
+                                            key={i}
+                                            to={item.to}
+                                            className="profile-menu-item"
+                                            onClick={() => setMenuOpen(false)}
+                                            style={{
+                                                display: 'flex', alignItems: 'center', gap: 10,
+                                                padding: '10px 16px', textDecoration: 'none',
+                                                color: '#374151', fontSize: 13, fontWeight: 500,
+                                                transition: 'background 0.1s'
                                             }}
-                                            className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition"
                                         >
-                                            🚪 Logout
+                                            <span>{item.icon}</span>
+                                            <span>{item.label}</span>
+                                        </Link>
+                                    ))}
+
+                                    <div style={{ borderTop: '1px solid #f1f5f9' }}>
+                                        <button
+                                            className="logout-item"
+                                            onClick={() => { setMenuOpen(false); handleLogout(); }}
+                                            style={{
+                                                display: 'flex', alignItems: 'center', gap: 10,
+                                                width: '100%', padding: '10px 16px', background: 'none',
+                                                border: 'none', cursor: 'pointer', color: '#dc2626',
+                                                fontSize: 13, fontWeight: 500, textAlign: 'left',
+                                                transition: 'background 0.1s'
+                                            }}
+                                        >
+                                            <span>🚪</span>
+                                            <span>Log out</span>
                                         </button>
                                     </div>
-                                )}
-                            </div>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>
             </nav>
 
-            <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+            {/* Page content */}
+            <main style={{ maxWidth: 1100, margin: '0 auto', padding: '0' }}>
                 <Outlet />
             </main>
         </div>
