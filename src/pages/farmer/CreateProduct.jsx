@@ -7,6 +7,26 @@ import { Input } from '../../components/common/Input';
 import { LoadingOverlay, Spinner } from '../../components/common/Spinner';
 import api from '../../services/api';
 
+// Define category options with emojis
+const CATEGORIES = {
+    'Vegetables': '🥬',
+    'Fruits': '🍎',
+    'Grains': '🌾',
+    'Herbs': '🌿',
+    'Spices': '🌶️',
+    'Dairy': '🥛',
+    'Meat': '🥩',
+    'Fish': '🐟',
+    'Poultry': '🐔',
+    'Eggs': '🥚',
+    'Rice': '🍚',
+    'Groundnuts': '🥜',
+    'Cereals': '🌾',
+    'Legumes': '🫘',
+    'Roots': '🥔',
+    'Tubers': '🍠'
+};
+
 export const CreateProduct = () => {
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
@@ -128,17 +148,29 @@ export const CreateProduct = () => {
                                 error={errors.variety}
                             />
 
-                            {/* Category */}
-                            <Input
-                                label="Category *"
-                                name="category"
-                                type="text"
-                                placeholder="e.g., Vegetables"
-                                value={formData.category}
-                                onChange={handleChange}
-                                error={errors.category}
-                                required
-                            />
+                            {/* Category Dropdown */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    Category *
+                                </label>
+                                <select
+                                    name="category"
+                                    value={formData.category}
+                                    onChange={handleChange}
+                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                                    required
+                                >
+                                    <option value="">Select a category</option>
+                                    {Object.entries(CATEGORIES).map(([category, emoji]) => (
+                                        <option key={category} value={category}>
+                                            {emoji} {category}
+                                        </option>
+                                    ))}
+                                </select>
+                                {errors.category && (
+                                    <p className="mt-1 text-sm text-red-600">{errors.category}</p>
+                                )}
+                            </div>
 
                             {/* Quantity and Unit */}
                             <div className="grid grid-cols-2 gap-4">
