@@ -1,23 +1,27 @@
 // src/pages/Dashboard.jsx
-import { useEffect, useState } from 'react';
+import { lazy, Suspense, useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { DashboardSkeleton } from '../components/common/skeletons/DashboardSkeleton';
 import { useAuth } from '../hooks/useAuth';
 import api from '../services/api';
-import { AdminDashboard } from './admin/AdminDashboard';
 
-export const Dashboard = () => {
+// Lazy load AdminDashboard to avoid loading it for non-admin users
+const AdminDashboard = lazy(() => import('./admin/AdminDashboard'));
+
+const Dashboard = () => {
     const { user, isLoading } = useAuth();
-    if (isLoading) return <Spinner />;
-    if (user?.role === 'admin') return <AdminDashboard />;
+    if (isLoading) return <DashboardSkeleton />;
+    if (user?.role === 'admin') {
+        return (
+            <Suspense fallback={<DashboardSkeleton />}>
+                <AdminDashboard />
+            </Suspense>
+        );
+    }
     return <RegularDashboard />;
 };
 
-const Spinner = () => (
-    <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="w-10 h-10 border-4 border-slate-200 border-t-green-600 rounded-full animate-spin" />
-    </div>
-);
-
+// Rest of your RegularDashboard component remains the same...
 const RegularDashboard = () => {
     const { user, refreshUser } = useAuth();
     const location = useLocation();
@@ -83,7 +87,7 @@ const RegularDashboard = () => {
         setRefreshing(false);
     };
 
-    if (loading) return <Spinner />;
+    if (loading) return <DashboardSkeleton />;
 
     const isFarmer = user?.role === 'farmer';
     const isBuyer = user?.role === 'buyer';
@@ -102,7 +106,6 @@ const RegularDashboard = () => {
 
     return (
         <div className="bg-slate-50 min-h-screen">
-            {/* Header */}
             <div className="bg-white border-b border-slate-200">
                 <div className="max-w-6xl mx-auto px-6 py-5 flex items-start justify-between flex-wrap gap-3">
                     <div>
@@ -132,10 +135,7 @@ const RegularDashboard = () => {
                     <div className="max-w-6xl mx-auto px-6 pb-5">
                         <div className="flex items-center justify-between flex-wrap gap-3 bg-yellow-50 border border-yellow-200 rounded-xl px-4 py-3">
                             <span className="text-sm text-yellow-800">⚠️ Your account isn't verified yet. Submit your ID to start selling.</span>
-                            <Link
-                                to="/app/profile"
-                                className="text-xs font-semibold text-yellow-800 bg-yellow-100 border border-yellow-300 px-3 py-1.5 rounded-lg no-underline hover:bg-yellow-200 transition"
-                            >
+                            <Link to="/app/profile" className="text-xs font-semibold text-yellow-800 bg-yellow-100 border border-yellow-300 px-3 py-1.5 rounded-lg no-underline hover:bg-yellow-200 transition">
                                 Verify now
                             </Link>
                         </div>
@@ -144,7 +144,6 @@ const RegularDashboard = () => {
             </div>
 
             <div className="max-w-6xl mx-auto px-6 py-6">
-                {/* Stat Cards */}
                 {isFarmer && (
                     <div className="grid grid-cols-4 gap-4 mb-6">
                         {[
@@ -166,7 +165,6 @@ const RegularDashboard = () => {
                     </div>
                 )}
 
-                {/* Quick Actions */}
                 <div className="grid grid-cols-3 gap-3 mb-6">
                     {isFarmer && <ActionCard icon="➕" title="Add product" desc="List a new product for sale" to="/app/products/create" />}
                     {isBuyer && <ActionCard icon="🔍" title="Browse products" desc="Discover fresh produce" to="/app/browse" />}
@@ -174,9 +172,7 @@ const RegularDashboard = () => {
                     <ActionCard icon="👤" title="Edit profile" desc="Update your information" to="/app/profile" />
                 </div>
 
-                {/* Recent Activity */}
                 <div className="grid grid-cols-2 gap-4">
-                    {/* Recent Orders */}
                     <div className="bg-white border border-slate-200 rounded-xl p-5">
                         <div className="flex items-center justify-between mb-4">
                             <span className="text-sm font-bold text-slate-900">Recent orders</span>
@@ -202,7 +198,6 @@ const RegularDashboard = () => {
                         ))}
                     </div>
 
-                    {/* Recent Products / Saved Farmers */}
                     <div className="bg-white border border-slate-200 rounded-xl p-5">
                         {isFarmer ? (
                             <>
@@ -269,16 +264,13 @@ const StatCard = ({ label, value, icon, to }) => {
 };
 
 const ActionCard = ({ icon, title, desc, to }) => (
-    <Link
-        to={to}
-        className="bg-white border border-slate-200 rounded-xl px-5 py-4 flex items-center gap-3.5 no-underline hover:border-green-400 hover:shadow-sm transition-all group"
-    >
-        <div className="w-10 h-10 rounded-xl bg-green-50 flex items-center justify-center text-xl flex-shrink-0">
-            {icon}
-        </div>
+    <Link to={to} className="bg-white border border-slate-200 rounded-xl px-5 py-4 flex items-center gap-3.5 no-underline hover:border-green-400 hover:shadow-sm transition-all group">
+        <div className="w-10 h-10 rounded-xl bg-green-50 flex items-center justify-center text-xl flex-shrink-0">{icon}</div>
         <div>
             <p className="text-sm font-bold text-slate-900 group-hover:text-green-700 transition-colors">{title}</p>
             <p className="text-xs text-slate-500">{desc}</p>
         </div>
     </Link>
 );
+
+export default Dashboard;

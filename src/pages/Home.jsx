@@ -1,7 +1,7 @@
 // src/pages/Home.jsx
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Skeleton } from '../components/common/Skeleton';
+import { Skeleton } from "../components/common/skeletons/Skeleton";
 import { useAuth } from '../hooks/useAuth';
 import api from '../services/api';
 

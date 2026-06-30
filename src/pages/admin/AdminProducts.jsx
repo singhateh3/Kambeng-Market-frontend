@@ -3,11 +3,137 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Alert } from '../../components/common/Alert';
 import { Button } from '../../components/common/Button';
+import { Skeleton } from '../../components/common/skeletons/Skeleton';
 import api from '../../services/api';
 
-export const AdminProducts = () => {
+// Admin Products Skeleton Component
+const AdminProductsSkeleton = () => (
+    <div>
+        {/* Header Skeleton */}
+        <div className="flex flex-wrap justify-between items-center gap-4 mb-6">
+            <div>
+                <Skeleton className="h-8 w-32" />
+                <Skeleton className="h-4 w-48 mt-1" />
+            </div>
+            <div className="flex gap-2">
+                <Skeleton className="h-10 w-40" />
+                <Skeleton className="h-10 w-32" />
+            </div>
+        </div>
+
+        {/* Filters Skeleton */}
+        <div className="bg-white shadow rounded-lg p-4 mb-6">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                <Skeleton className="h-10 w-full" />
+                <Skeleton className="h-10 w-full" />
+                <Skeleton className="h-10 w-full" />
+                <Skeleton className="h-10 w-full" />
+            </div>
+        </div>
+
+        {/* Table Skeleton */}
+        <div className="bg-white shadow rounded-lg overflow-hidden">
+            <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                        <tr>
+                            {[1, 2, 3, 4, 5, 6, 7, 8].map(i => (
+                                <th key={i} className="px-4 py-3">
+                                    <Skeleton className="h-4 w-16" />
+                                </th>
+                            ))}
+                        </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                        {[1, 2, 3, 4, 5].map(i => (
+                            <tr key={i}>
+                                <td className="px-4 py-3">
+                                    <Skeleton className="h-4 w-4" />
+                                </td>
+                                <td className="px-4 py-3">
+                                    <div className="flex items-center">
+                                        <Skeleton className="w-12 h-12 rounded-lg" />
+                                        <div className="ml-3">
+                                            <Skeleton className="h-4 w-32" />
+                                            <Skeleton className="h-3 w-20 mt-1" />
+                                        </div>
+                                    </div>
+                                </td>
+                                <td className="px-4 py-3">
+                                    <Skeleton className="h-4 w-24" />
+                                    <Skeleton className="h-3 w-16 mt-1" />
+                                </td>
+                                <td className="px-4 py-3">
+                                    <Skeleton className="h-4 w-20" />
+                                </td>
+                                <td className="px-4 py-3">
+                                    <Skeleton className="h-4 w-16" />
+                                </td>
+                                <td className="px-4 py-3">
+                                    <Skeleton className="h-6 w-16 rounded-full" />
+                                </td>
+                                <td className="px-4 py-3">
+                                    <Skeleton className="h-4 w-24" />
+                                </td>
+                                <td className="px-4 py-3">
+                                    <div className="flex items-center space-x-2">
+                                        <Skeleton className="h-8 w-8 rounded" />
+                                        <Skeleton className="h-8 w-8 rounded" />
+                                    </div>
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+);
+
+// Product Row Skeleton for loading more
+const ProductRowSkeleton = () => (
+    <tr>
+        <td className="px-4 py-3">
+            <Skeleton className="h-4 w-4" />
+        </td>
+        <td className="px-4 py-3">
+            <div className="flex items-center">
+                <Skeleton className="w-12 h-12 rounded-lg" />
+                <div className="ml-3">
+                    <Skeleton className="h-4 w-32" />
+                    <Skeleton className="h-3 w-20 mt-1" />
+                </div>
+            </div>
+        </td>
+        <td className="px-4 py-3">
+            <Skeleton className="h-4 w-24" />
+            <Skeleton className="h-3 w-16 mt-1" />
+        </td>
+        <td className="px-4 py-3">
+            <Skeleton className="h-4 w-20" />
+        </td>
+        <td className="px-4 py-3">
+            <Skeleton className="h-4 w-16" />
+        </td>
+        <td className="px-4 py-3">
+            <Skeleton className="h-6 w-16 rounded-full" />
+        </td>
+        <td className="px-4 py-3">
+            <Skeleton className="h-4 w-24" />
+        </td>
+        <td className="px-4 py-3">
+            <div className="flex items-center space-x-2">
+                <Skeleton className="h-8 w-8 rounded" />
+                <Skeleton className="h-8 w-8 rounded" />
+            </div>
+        </td>
+    </tr>
+);
+
+const AdminProducts = () => {
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [loadingMore, setLoadingMore] = useState(false);
     const [filters, setFilters] = useState({
         status: '',
         category: '',
@@ -144,12 +270,9 @@ export const AdminProducts = () => {
         setFilters({ ...filters, page: newPage });
     };
 
+    // If loading, show skeleton
     if (loading) {
-        return (
-            <div className="flex items-center justify-center h-64">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
-            </div>
-        );
+        return <AdminProductsSkeleton />;
     }
 
     return (
@@ -335,14 +458,14 @@ export const AdminProducts = () => {
                                                 <div className="flex items-center space-x-2">
                                                     <button
                                                         onClick={() => openModal(product, 'view')}
-                                                        className="text-blue-600 hover:text-blue-900"
+                                                        className="text-blue-600 hover:text-blue-900 transition"
                                                         title="View"
                                                     >
                                                         👁️
                                                     </button>
                                                     <button
                                                         onClick={() => openModal(product, 'delete')}
-                                                        className="text-red-600 hover:text-red-900"
+                                                        className="text-red-600 hover:text-red-900 transition"
                                                         title="Delete"
                                                         disabled={loadingAction}
                                                     >
@@ -389,15 +512,15 @@ export const AdminProducts = () => {
 
             {/* Modal */}
             {showModal && selectedProduct && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
+                    <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto animate-in zoom-in-95 duration-200">
                         <div className="flex justify-between items-center p-6 border-b">
                             <h2 className="text-xl font-bold text-gray-900">
                                 {modalAction === 'delete' ? 'Delete Product' : 'Product Details'}
                             </h2>
                             <button
                                 onClick={closeModal}
-                                className="text-gray-400 hover:text-gray-600"
+                                className="text-gray-400 hover:text-gray-600 transition"
                             >
                                 <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -538,3 +661,5 @@ export const AdminProducts = () => {
         </div>
     );
 };
+
+export default AdminProducts;

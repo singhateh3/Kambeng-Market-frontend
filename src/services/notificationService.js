@@ -14,15 +14,15 @@ export const notificationService = {
         return response.data;
     },
 
-    // Mark a notification as read
+    // Mark a notification as read - Changed from POST to PUT
     async markAsRead(notificationId) {
-        const response = await api.post(`/notifications/${notificationId}/read`);
+        const response = await api.put(`/notifications/${notificationId}/read`);
         return response.data;
     },
 
-    // Mark all notifications as read
+    // Mark all notifications as read - Changed from POST to PUT
     async markAllAsRead() {
-        const response = await api.post('/notifications/mark-all-read');
+        const response = await api.put('/notifications/read-all');
         return response.data;
     },
 
@@ -34,7 +34,7 @@ export const notificationService = {
 
     // Delete all read notifications
     async deleteRead() {
-        const response = await api.delete('/notifications/delete-read');
+        const response = await api.delete('/notifications/read');
         return response.data;
     },
 };

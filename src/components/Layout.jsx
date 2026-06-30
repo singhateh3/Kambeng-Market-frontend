@@ -1,5 +1,5 @@
 // src/components/Layout.jsx
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { NotificationBell } from './NotificationBell';
@@ -9,6 +9,40 @@ export const Layout = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const [menuOpen, setMenuOpen] = useState(false);
+    const dropdownRef = useRef(null);
+
+    // Close dropdown when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+                setMenuOpen(false);
+            }
+        };
+
+        // Add event listener when dropdown is open
+        if (menuOpen) {
+            document.addEventListener('mousedown', handleClickOutside);
+        }
+
+        // Cleanup event listener
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [menuOpen]);
+
+    // Close dropdown on escape key
+    useEffect(() => {
+        const handleEscapeKey = (event) => {
+            if (event.key === 'Escape' && menuOpen) {
+                setMenuOpen(false);
+            }
+        };
+
+        document.addEventListener('keydown', handleEscapeKey);
+        return () => {
+            document.removeEventListener('keydown', handleEscapeKey);
+        };
+    }, [menuOpen]);
 
     const handleLogout = async () => {
         await logout();
@@ -33,6 +67,13 @@ export const Layout = () => {
         </Link>
     );
 
+    // Profile dropdown menu items — no duplicate dashboard link for admin
+    const menuItems = [
+        { icon: '👤', label: 'My Profile', to: '/app/profile' },
+        isFarmer && { icon: '🌾', label: 'My Products', to: '/app/products' },
+        isBuyer  && { icon: '🛒', label: 'My Orders',   to: '/app/orders' },
+    ].filter(Boolean);
+
     return (
         <div className="min-h-screen bg-slate-50">
             {/* Navbar */}
@@ -49,9 +90,11 @@ export const Layout = () => {
                     <div className="flex items-center gap-1">
                         {navLink('/app/dashboard', 'Dashboard')}
                         {isFarmer && navLink('/app/products', 'My Products')}
-                        {isBuyer && navLink('/app/browse', 'Browse')}
+                        {isBuyer  && navLink('/app/browse', 'Browse')}
                         {navLink('/app/orders', 'Orders')}
-                        {isAdmin && navLink('/app/admin/dashboard', 'Admin')}
+                        {isAdmin  && navLink('/app/admin/users', 'Users')}
+                        {isAdmin  && navLink('/app/admin/farmers/verification', 'Verify')}
+                        {isAdmin  && navLink('/app/admin/products', 'Products')}
                     </div>
 
                     {/* Right side */}
@@ -59,7 +102,7 @@ export const Layout = () => {
                         <NotificationBell />
 
                         {/* Profile dropdown */}
-                        <div className="relative">
+                        <div className="relative" ref={dropdownRef}>
                             <button
                                 onClick={() => setMenuOpen(!menuOpen)}
                                 className="flex items-center gap-2 bg-transparent border-none cursor-pointer px-2 py-1 rounded-lg hover:bg-slate-50 transition"
@@ -83,14 +126,12 @@ export const Layout = () => {
                                     <div className="px-4 py-3 border-b border-slate-100">
                                         <p className="text-sm font-bold text-slate-900">{user?.name}</p>
                                         <p className="text-xs text-slate-400">{user?.email}</p>
+                                        <span className="inline-block mt-1 text-xs font-semibold px-2 py-0.5 rounded-full bg-green-50 text-green-700 border border-green-200 capitalize">
+                                            {user?.role}
+                                        </span>
                                     </div>
 
-                                    {[
-                                        { icon: '👤', label: 'My Profile', to: '/app/profile' },
-                                        isFarmer && { icon: '🌾', label: 'My Products', to: '/app/products' },
-                                        isBuyer && { icon: '🛒', label: 'My Orders', to: '/app/orders' },
-                                        isAdmin && { icon: '📊', label: 'Admin Dashboard', to: '/app/admin/dashboard' },
-                                    ].filter(Boolean).map((item, i) => (
+                                    {menuItems.map((item, i) => (
                                         <Link
                                             key={i}
                                             to={item.to}

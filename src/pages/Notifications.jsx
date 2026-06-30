@@ -3,10 +3,10 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Alert } from '../components/common/Alert';
 import { Button } from '../components/common/Button';
-import { Skeleton } from '../components/common/Skeleton';
+import { Skeleton } from '../components/common/skeletons/Skeleton';
 import { useNotifications } from '../context/NotificationContext'; // ✅ Correct import
 
-export const Notifications = () => {
+ const Notifications = () => {
     const navigate = useNavigate();
     const {
         notifications,
@@ -387,3 +387,5 @@ export const Notifications = () => {
         </div>
     );
 };
+
+export default Notifications

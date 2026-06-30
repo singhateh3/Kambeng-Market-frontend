@@ -13,6 +13,45 @@ export const OrderDetails = ({
     onCancelOrder,
     loadingAction 
 }) => {
+    if (!order) return null;
+
+    // Safely access all properties with fallbacks
+    const orderId = order?.id || 0;
+    const status = order?.status || 'pending';
+    const quantity = order?.quantity || 0;
+    const totalPrice = order?.total_price || 0;
+    const totalPriceFormatted = order?.total_price_formatted || `GMD ${totalPrice}`;
+    const orderDate = order?.order_date || order?.created_at || new Date().toISOString();
+    const deliveryMethod = order?.delivery_method || 'delivery';
+    const pickupDate = order?.pickup_date || null;
+    const deliveryDeadline = order?.delivery_deadline || null;
+    const specialInstructions = order?.special_instructions || '';
+    
+    // Safely access product properties
+    const product = order?.product || {};
+    const productName = product?.name || 'Unknown Product';
+    const productCategory = product?.category || '';
+    const productUnit = product?.unit || '';
+    const productPrice = product?.price || 0;
+    const productPriceFormatted = product?.price_formatted || `GMD ${productPrice}`;
+    const productPhotos = product?.photos || [];
+    const productFarmer = product?.farmer || {};
+    
+    // Safely access farmer properties
+    const farmerName = productFarmer?.name || 'Unknown Farmer';
+    const farmerLocation = productFarmer?.location || '';
+    const farmerPhone = productFarmer?.phone || '';
+    
+    // Safely access buyer properties
+    const buyer = order?.buyer || {};
+    const buyerName = buyer?.name || 'Unknown Buyer';
+    const buyerEmail = buyer?.email || '';
+    const buyerLocation = buyer?.location || '';
+    const buyerPhone = buyer?.phone || '';
+    
+    // Safely access review
+    const review = order?.review || null;
+
     const getStatusIcon = (status) => {
         const icons = {
             pending: '⏳',
@@ -25,12 +64,18 @@ export const OrderDetails = ({
     };
 
     const formatDate = (date) => {
-        if (!date) return '-';
-        return new Date(date).toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric',
-        });
+        try {
+            if (!date) return '-';
+            const d = new Date(date);
+            if (isNaN(d.getTime())) return '-';
+            return d.toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+            });
+        } catch (e) {
+            return '-';
+        }
     };
 
     return (
@@ -38,7 +83,7 @@ export const OrderDetails = ({
             <div className="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-xl">
                 <div className="flex justify-between items-center p-6 border-b border-gray-100">
                     <h2 className="text-xl font-bold text-gray-900">
-                        Order Details #{order.id}
+                        Order Details #{orderId}
                     </h2>
                     <button
                         onClick={onClose}
@@ -55,21 +100,19 @@ export const OrderDetails = ({
                     <div className="flex items-center justify-between bg-gray-50 rounded-xl p-4 border border-gray-100">
                         <div className="flex items-center">
                             <span className="text-2xl mr-3">
-                                {getStatusIcon(order.status)}
+                                {getStatusIcon(status)}
                             </span>
                             <div>
                                 <p className="text-sm text-gray-500">Order Status</p>
                                 <div className="mt-1">
-                                    <OrderStatusBadge status={order.status} />
+                                    <OrderStatusBadge status={status} />
                                 </div>
                             </div>
                         </div>
                         <div className="text-right">
                             <p className="text-sm text-gray-500">Order Date</p>
                             <p className="text-sm font-medium text-gray-900">
-                                {order.order_date 
-                                    ? new Date(order.order_date).toLocaleString() 
-                                    : '-'}
+                                {formatDate(orderDate)}
                             </p>
                         </div>
                     </div>
@@ -88,10 +131,10 @@ export const OrderDetails = ({
                                 <div className="col-span-5">
                                     <div className="flex items-center">
                                         <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center mr-3">
-                                            {order.product?.photos && order.product.photos.length > 0 ? (
+                                            {productPhotos.length > 0 ? (
                                                 <img 
-                                                    src={order.product.photos[0]} 
-                                                    alt={order.product.name} 
+                                                    src={productPhotos[0]} 
+                                                    alt={productName} 
                                                     className="w-12 h-12 object-cover rounded-lg"
                                                 />
                                             ) : (
@@ -100,29 +143,33 @@ export const OrderDetails = ({
                                         </div>
                                         <div>
                                             <p className="font-medium text-gray-900">
-                                                {order.product?.name || 'Unknown Product'}
+                                                {productName}
                                             </p>
-                                            <p className="text-xs text-gray-500">
-                                                {order.product?.category || ''}
-                                            </p>
+                                            {productCategory && (
+                                                <p className="text-xs text-gray-500">
+                                                    {productCategory}
+                                                </p>
+                                            )}
                                         </div>
                                     </div>
                                 </div>
                                 <div className="col-span-2">
                                     <span className="font-medium text-gray-900">
-                                        {order.quantity}
+                                        {quantity}
                                     </span>
-                                    <span className="text-xs text-gray-500 ml-1">
-                                        {order.product?.unit || ''}
-                                    </span>
+                                    {productUnit && (
+                                        <span className="text-xs text-gray-500 ml-1">
+                                            {productUnit}
+                                        </span>
+                                    )}
                                 </div>
                                 <div className="col-span-2">
                                     <span className="text-gray-900">
-                                        {order.product?.price_formatted || `GMD ${order.product?.price}`}
+                                        {productPriceFormatted}
                                     </span>
                                 </div>
                                 <div className="col-span-3 text-right font-bold text-gray-900">
-                                    {order.total_price_formatted || `GMD ${order.total_price}`}
+                                    {totalPriceFormatted}
                                 </div>
                             </div>
                         </div>
@@ -135,33 +182,29 @@ export const OrderDetails = ({
                             <div>
                                 <p className="text-sm text-gray-500">Delivery Method</p>
                                 <p className="font-medium text-gray-900 capitalize">
-                                    {order.delivery_method === 'pickup' ? '📍 Pickup' : '🚚 Farmer Delivery'}
+                                    {deliveryMethod === 'pickup' ? '📍 Pickup from Farm' : '🚚 Farmer Delivery'}
                                 </p>
                             </div>
-                            {order.delivery_method === 'pickup' ? (
+                            {deliveryMethod === 'pickup' ? (
                                 <div>
                                     <p className="text-sm text-gray-500">Pickup Date</p>
                                     <p className="font-medium text-gray-900">
-                                        {order.pickup_date 
-                                            ? new Date(order.pickup_date).toLocaleDateString() 
-                                            : 'Not set'}
+                                        {pickupDate ? formatDate(pickupDate) : 'Not set'}
                                     </p>
                                 </div>
                             ) : (
                                 <div>
                                     <p className="text-sm text-gray-500">Delivery Deadline</p>
                                     <p className="font-medium text-gray-900">
-                                        {order.delivery_deadline 
-                                            ? new Date(order.delivery_deadline).toLocaleDateString() 
-                                            : 'Not set'}
+                                        {deliveryDeadline ? formatDate(deliveryDeadline) : 'Not set'}
                                     </p>
                                 </div>
                             )}
-                            {order.special_instructions && (
+                            {specialInstructions && (
                                 <div className="col-span-2">
                                     <p className="text-sm text-gray-500">Special Instructions</p>
                                     <p className="font-medium text-gray-900">
-                                        {order.special_instructions}
+                                        {specialInstructions}
                                     </p>
                                 </div>
                             )}
@@ -177,64 +220,74 @@ export const OrderDetails = ({
                             {isFarmer ? (
                                 <div className="flex items-center">
                                     <div className="w-12 h-12 rounded-full bg-gray-300 flex items-center justify-center text-lg font-medium text-gray-600">
-                                        {order.buyer?.name?.[0]?.toUpperCase() || 'U'}
+                                        {buyerName?.[0]?.toUpperCase() || 'U'}
                                     </div>
                                     <div className="ml-3">
                                         <p className="font-medium text-gray-900">
-                                            {order.buyer?.name || 'Unknown'}
+                                            {buyerName}
                                         </p>
-                                        <p className="text-sm text-gray-500">
-                                            {order.buyer?.email || ''}
-                                        </p>
-                                        <p className="text-sm text-gray-500">
-                                            📍 {order.buyer?.location || 'Location not provided'}
-                                        </p>
-                                        <p className="text-sm text-gray-500">
-                                            📞 {order.buyer?.phone || 'Phone not provided'}
-                                        </p>
+                                        {buyerEmail && (
+                                            <p className="text-sm text-gray-500">
+                                                📧 {buyerEmail}
+                                            </p>
+                                        )}
+                                        {buyerLocation && (
+                                            <p className="text-sm text-gray-500">
+                                                📍 {buyerLocation}
+                                            </p>
+                                        )}
+                                        {buyerPhone && (
+                                            <p className="text-sm text-gray-500">
+                                                📞 {buyerPhone}
+                                            </p>
+                                        )}
                                     </div>
                                 </div>
                             ) : (
                                 <div className="flex items-center">
                                     <div className="w-12 h-12 rounded-full bg-gray-300 flex items-center justify-center text-lg font-medium text-gray-600">
-                                        {order.product?.farmer?.name?.[0]?.toUpperCase() || 'F'}
+                                        {farmerName?.[0]?.toUpperCase() || 'F'}
                                     </div>
                                     <div className="ml-3">
                                         <p className="font-medium text-gray-900">
-                                            {order.product?.farmer?.name || 'Unknown Farmer'}
+                                            {farmerName}
                                         </p>
-                                        <p className="text-sm text-gray-500">
-                                            📍 {order.product?.farmer?.location || 'Location not provided'}
-                                        </p>
-                                        <p className="text-sm text-gray-500">
-                                            📞 {order.product?.farmer?.phone || 'Phone not provided'}
-                                        </p>
+                                        {farmerLocation && (
+                                            <p className="text-sm text-gray-500">
+                                                📍 {farmerLocation}
+                                            </p>
+                                        )}
+                                        {farmerPhone && (
+                                            <p className="text-sm text-gray-500">
+                                                📞 {farmerPhone}
+                                            </p>
+                                        )}
                                     </div>
                                 </div>
                             )}
                         </div>
                     </div>
 
-                    {/* Review Section - Show if review exists */}
-                    {order.review && (
+                    {/* Review Section */}
+                    {review && (
                         <div>
                             <h3 className="font-semibold text-gray-900 mb-3">Your Review</h3>
                             <div className="bg-purple-50 rounded-xl p-4 border border-purple-200">
                                 <div className="flex items-start justify-between">
                                     <div>
                                         <div className="flex items-center space-x-2">
-                                            <ReviewStars rating={order.review.rating} size="md" />
+                                            <ReviewStars rating={review.rating} size="md" />
                                             <span className="text-sm font-medium text-gray-900">
-                                                {order.review.rating}.0
+                                                {review.rating}.0
                                             </span>
                                         </div>
-                                        {order.review.comment && (
+                                        {review.comment && (
                                             <p className="mt-2 text-gray-700 text-sm">
-                                                "{order.review.comment}"
+                                                "{review.comment}"
                                             </p>
                                         )}
                                         <p className="mt-1 text-xs text-gray-400">
-                                            Reviewed on {formatDate(order.review.created_at)}
+                                            Reviewed on {formatDate(review.created_at)}
                                         </p>
                                     </div>
                                     <span className="text-2xl">⭐</span>
@@ -248,11 +301,11 @@ export const OrderDetails = ({
                         <Button variant="secondary" onClick={onClose}>
                             Close
                         </Button>
-                        {isFarmer && order.status === 'pending' && (
+                        {isFarmer && status === 'pending' && (
                             <Button 
                                 variant="primary"
                                 onClick={() => {
-                                    onStatusUpdate(order.id, 'confirmed');
+                                    onStatusUpdate(orderId, 'confirmed');
                                     onClose();
                                 }}
                                 isLoading={loadingAction}
@@ -260,11 +313,11 @@ export const OrderDetails = ({
                                 Confirm Order
                             </Button>
                         )}
-                        {isFarmer && order.status === 'confirmed' && (
+                        {isFarmer && status === 'confirmed' && (
                             <Button 
                                 variant="primary"
                                 onClick={() => {
-                                    onStatusUpdate(order.id, 'shipped');
+                                    onStatusUpdate(orderId, 'shipped');
                                     onClose();
                                 }}
                                 isLoading={loadingAction}
@@ -272,11 +325,11 @@ export const OrderDetails = ({
                                 Mark as Shipped
                             </Button>
                         )}
-                        {isFarmer && order.status === 'shipped' && (
+                        {isFarmer && status === 'shipped' && (
                             <Button 
                                 variant="primary"
                                 onClick={() => {
-                                    onStatusUpdate(order.id, 'delivered');
+                                    onStatusUpdate(orderId, 'delivered');
                                     onClose();
                                 }}
                                 isLoading={loadingAction}
@@ -284,11 +337,11 @@ export const OrderDetails = ({
                                 Mark as Delivered
                             </Button>
                         )}
-                        {isBuyer && order.status === 'pending' && (
+                        {isBuyer && status === 'pending' && (
                             <Button 
                                 variant="danger"
                                 onClick={() => {
-                                    onCancelOrder(order.id);
+                                    onCancelOrder(orderId);
                                     onClose();
                                 }}
                                 isLoading={loadingAction}
@@ -296,14 +349,14 @@ export const OrderDetails = ({
                                 Cancel Order
                             </Button>
                         )}
-                        {isBuyer && order.status === 'delivered' && !order.review && (
-                            <Link to={`/app/orders/${order.id}/review`}>
+                        {isBuyer && status === 'delivered' && !review && (
+                            <Link to={`/app/orders/${orderId}/review`}>
                                 <Button variant="outline" className="bg-green-50 text-green-600 hover:bg-green-100 border-green-200">
                                     ⭐ Write Review
                                 </Button>
                             </Link>
                         )}
-                        {isBuyer && order.status === 'delivered' && order.review && (
+                        {isBuyer && status === 'delivered' && review && (
                             <div className="text-sm text-green-600 font-medium flex items-center">
                                 ✅ Review submitted
                             </div>

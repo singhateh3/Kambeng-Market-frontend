@@ -5,7 +5,7 @@ import { Button } from '../../components/common/Button';
 import { useAuth } from '../../hooks/useAuth';
 import api from '../../services/api';
 
-export const FarmerVerification = () => {
+ const FarmerVerification = () => {
     const { refreshUser } = useAuth();
     const [farmers, setFarmers] = useState([]);
     const [stats, setStats] = useState(null);
@@ -807,3 +807,5 @@ export const FarmerVerification = () => {
         </div>
     );
 };
+
+export default FarmerVerification

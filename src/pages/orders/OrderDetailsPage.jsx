@@ -6,7 +6,7 @@ import { Button } from '../../components/common/Button';
 import { useAuth } from '../../hooks/useAuth';
 import api from '../../services/api';
 
-export const OrderDetailsPage = () => {
+ const OrderDetailsPage = () => {
     const { orderId } = useParams();
     const navigate = useNavigate();
     const { user } = useAuth();
@@ -27,7 +27,7 @@ export const OrderDetailsPage = () => {
         try {
             setLoading(true);
             const response = await api.get(`/orders/${orderId}`);
-            setOrder(response.data.data);
+            setOrder(response.data?.data || null);
         } catch (err) {
             console.error('Error fetching order:', err);
             setError('Failed to load order details');
@@ -132,17 +132,33 @@ export const OrderDetailsPage = () => {
         return labels[status] || status;
     };
 
+    // Safely check access
     const isFarmer = user?.role === 'farmer';
     const isBuyer = user?.role === 'buyer';
     const isAdmin = user?.role === 'admin';
 
-    // Check if user can view this order
     const canViewOrder = () => {
         if (!order) return false;
         if (isAdmin) return true;
-        if (isFarmer && order.product?.farmer_id === user?.id) return true;
-        if (isBuyer && order.buyer_id === user?.id) return true;
+        if (isFarmer && order?.product?.farmer_id === user?.id) return true;
+        if (isBuyer && order?.buyer_id === user?.id) return true;
         return false;
+    };
+
+    // Format date helper
+    const formatDate = (date) => {
+        try {
+            if (!date) return '-';
+            const d = new Date(date);
+            if (isNaN(d.getTime())) return '-';
+            return d.toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+            });
+        } catch (e) {
+            return '-';
+        }
     };
 
     if (loading) {
@@ -179,6 +195,12 @@ export const OrderDetailsPage = () => {
         );
     }
 
+    // Safely extract data
+    const orderDate = order?.order_date || order?.created_at || new Date().toISOString();
+    const product = order?.product || {};
+    const buyer = order?.buyer || {};
+    const farmer = product?.farmer || {};
+
     return (
         <div className="max-w-4xl mx-auto">
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
@@ -196,15 +218,15 @@ export const OrderDetailsPage = () => {
                                 Back
                             </button>
                             <h1 className="text-2xl font-bold text-gray-900">
-                                Order #{order.id}
+                                Order #{order?.id || 'N/A'}
                             </h1>
                             <p className="text-sm text-gray-500">
-                                Placed on {new Date(order.order_date).toLocaleString()}
+                                Placed on {formatDate(orderDate)}
                             </p>
                         </div>
                         <div className="flex items-center space-x-2">
-                            <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(order.status)}`}>
-                                {getStatusIcon(order.status)} {getStatusLabel(order.status)}
+                            <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(order?.status)}`}>
+                                {getStatusIcon(order?.status)} {getStatusLabel(order?.status)}
                             </span>
                         </div>
                     </div>
@@ -226,12 +248,12 @@ export const OrderDetailsPage = () => {
                             </div>
                             <div className="px-4 py-3 grid grid-cols-12 gap-2 items-center hover:bg-gray-50">
                                 <div className="col-span-5">
-                                    <Link to={`/app/products/${order.product_id}`} className="flex items-center hover:text-green-600 transition">
+                                    <Link to={`/app/products/${order?.product_id}`} className="flex items-center hover:text-green-600 transition">
                                         <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center mr-3">
-                                            {order.product?.photos && order.product.photos.length > 0 ? (
+                                            {product?.photos && product.photos.length > 0 ? (
                                                 <img 
-                                                    src={order.product.photos[0]} 
-                                                    alt={order.product.name} 
+                                                    src={product.photos[0]} 
+                                                    alt={product?.name || 'Product'} 
                                                     className="w-12 h-12 object-cover rounded-lg"
                                                 />
                                             ) : (
@@ -240,29 +262,33 @@ export const OrderDetailsPage = () => {
                                         </div>
                                         <div>
                                             <p className="font-medium text-gray-900">
-                                                {order.product?.name || 'Unknown Product'}
+                                                {product?.name || 'Unknown Product'}
                                             </p>
-                                            <p className="text-xs text-gray-500">
-                                                {order.product?.category || ''}
-                                            </p>
+                                            {product?.category && (
+                                                <p className="text-xs text-gray-500">
+                                                    {product.category}
+                                                </p>
+                                            )}
                                         </div>
                                     </Link>
                                 </div>
                                 <div className="col-span-2">
                                     <span className="font-medium text-gray-900">
-                                        {order.quantity}
+                                        {order?.quantity || 0}
                                     </span>
-                                    <span className="text-xs text-gray-500 ml-1">
-                                        {order.product?.unit || ''}
-                                    </span>
+                                    {product?.unit && (
+                                        <span className="text-xs text-gray-500 ml-1">
+                                            {product.unit}
+                                        </span>
+                                    )}
                                 </div>
                                 <div className="col-span-2">
                                     <span className="text-gray-900">
-                                        {order.product?.price_formatted || `GMD ${order.product?.price}`}
+                                        {product?.price_formatted || `GMD ${product?.price || 0}`}
                                     </span>
                                 </div>
                                 <div className="col-span-3 text-right font-bold text-gray-900">
-                                    {order.total_price_formatted || `GMD ${order.total_price}`}
+                                    {order?.total_price_formatted || `GMD ${order?.total_price || 0}`}
                                 </div>
                             </div>
                         </div>
@@ -275,29 +301,25 @@ export const OrderDetailsPage = () => {
                             <div>
                                 <p className="text-sm text-gray-500">Delivery Method</p>
                                 <p className="font-medium text-gray-900 capitalize">
-                                    {order.delivery_method === 'pickup' ? '📍 Pickup from Farm' : '🚚 Farmer Delivery'}
+                                    {order?.delivery_method === 'pickup' ? '📍 Pickup from Farm' : '🚚 Farmer Delivery'}
                                 </p>
                             </div>
-                            {order.delivery_method === 'pickup' ? (
+                            {order?.delivery_method === 'pickup' ? (
                                 <div>
                                     <p className="text-sm text-gray-500">Pickup Date</p>
                                     <p className="font-medium text-gray-900">
-                                        {order.pickup_date 
-                                            ? new Date(order.pickup_date).toLocaleDateString() 
-                                            : 'Not set'}
+                                        {order?.pickup_date ? formatDate(order.pickup_date) : 'Not set'}
                                     </p>
                                 </div>
                             ) : (
                                 <div>
                                     <p className="text-sm text-gray-500">Delivery Deadline</p>
                                     <p className="font-medium text-gray-900">
-                                        {order.delivery_deadline 
-                                            ? new Date(order.delivery_deadline).toLocaleDateString() 
-                                            : 'Not set'}
+                                        {order?.delivery_deadline ? formatDate(order.delivery_deadline) : 'Not set'}
                                     </p>
                                 </div>
                             )}
-                            {order.special_instructions && (
+                            {order?.special_instructions && (
                                 <div className="col-span-2">
                                     <p className="text-sm text-gray-500">Special Instructions</p>
                                     <p className="font-medium text-gray-900">
@@ -309,27 +331,33 @@ export const OrderDetailsPage = () => {
                     </div>
 
                     {/* Buyer Information (for farmers) */}
-                    {(isFarmer || isAdmin) && (
+                    {(isFarmer || isAdmin) && buyer && (
                         <div>
                             <h3 className="font-semibold text-gray-900 mb-3">Buyer Information</h3>
                             <div className="bg-gray-50 rounded-lg p-4">
                                 <div className="flex items-start space-x-4">
                                     <div className="w-12 h-12 rounded-full bg-gray-300 flex items-center justify-center text-lg font-medium text-gray-600">
-                                        {order.buyer?.name?.[0]?.toUpperCase() || 'U'}
+                                        {buyer?.name?.[0]?.toUpperCase() || 'U'}
                                     </div>
                                     <div className="flex-1">
                                         <p className="font-medium text-gray-900">
-                                            {order.buyer?.name || 'Unknown Buyer'}
+                                            {buyer?.name || 'Unknown Buyer'}
                                         </p>
-                                        <p className="text-sm text-gray-500">
-                                            📧 {order.buyer?.email || 'Email not provided'}
-                                        </p>
-                                        <p className="text-sm text-gray-500">
-                                            📍 {order.buyer?.location || 'Location not provided'}
-                                        </p>
-                                        <p className="text-sm text-gray-500">
-                                            📞 {order.buyer?.phone || 'Phone not provided'}
-                                        </p>
+                                        {buyer?.email && (
+                                            <p className="text-sm text-gray-500">
+                                                📧 {buyer.email}
+                                            </p>
+                                        )}
+                                        {buyer?.location && (
+                                            <p className="text-sm text-gray-500">
+                                                📍 {buyer.location}
+                                            </p>
+                                        )}
+                                        {buyer?.phone && (
+                                            <p className="text-sm text-gray-500">
+                                                📞 {buyer.phone}
+                                            </p>
+                                        )}
                                     </div>
                                 </div>
                             </div>
@@ -337,24 +365,28 @@ export const OrderDetailsPage = () => {
                     )}
 
                     {/* Farmer Information (for buyers) */}
-                    {(isBuyer || isAdmin) && (
+                    {(isBuyer || isAdmin) && farmer && (
                         <div>
                             <h3 className="font-semibold text-gray-900 mb-3">Farmer Information</h3>
                             <div className="bg-gray-50 rounded-lg p-4">
                                 <div className="flex items-start space-x-4">
                                     <div className="w-12 h-12 rounded-full bg-gray-300 flex items-center justify-center text-lg font-medium text-gray-600">
-                                        {order.product?.farmer?.name?.[0]?.toUpperCase() || 'F'}
+                                        {farmer?.name?.[0]?.toUpperCase() || 'F'}
                                     </div>
                                     <div className="flex-1">
                                         <p className="font-medium text-gray-900">
-                                            {order.product?.farmer?.name || 'Unknown Farmer'}
+                                            {farmer?.name || 'Unknown Farmer'}
                                         </p>
-                                        <p className="text-sm text-gray-500">
-                                            📍 {order.product?.farmer?.location || 'Location not provided'}
-                                        </p>
-                                        <p className="text-sm text-gray-500">
-                                            📞 {order.product?.farmer?.phone || 'Phone not provided'}
-                                        </p>
+                                        {farmer?.location && (
+                                            <p className="text-sm text-gray-500">
+                                                📍 {farmer.location}
+                                            </p>
+                                        )}
+                                        {farmer?.phone && (
+                                            <p className="text-sm text-gray-500">
+                                                📞 {farmer.phone}
+                                            </p>
+                                        )}
                                     </div>
                                 </div>
                             </div>
@@ -366,7 +398,7 @@ export const OrderDetailsPage = () => {
                         <Button variant="secondary" onClick={() => navigate('/app/orders')}>
                             Back to Orders
                         </Button>
-                        {isFarmer && order.status === 'pending' && (
+                        {isFarmer && order?.status === 'pending' && (
                             <Button 
                                 variant="primary"
                                 onClick={() => openConfirmModal('confirm')}
@@ -375,7 +407,7 @@ export const OrderDetailsPage = () => {
                                 Confirm Order
                             </Button>
                         )}
-                        {isFarmer && order.status === 'confirmed' && (
+                        {isFarmer && order?.status === 'confirmed' && (
                             <Button 
                                 variant="primary"
                                 onClick={() => openConfirmModal('ship')}
@@ -384,7 +416,7 @@ export const OrderDetailsPage = () => {
                                 Mark as Shipped
                             </Button>
                         )}
-                        {isFarmer && order.status === 'shipped' && (
+                        {isFarmer && order?.status === 'shipped' && (
                             <Button 
                                 variant="primary"
                                 onClick={() => openConfirmModal('deliver')}
@@ -393,7 +425,7 @@ export const OrderDetailsPage = () => {
                                 Mark as Delivered
                             </Button>
                         )}
-                        {isBuyer && order.status === 'pending' && (
+                        {isBuyer && order?.status === 'pending' && (
                             <Button 
                                 variant="danger"
                                 onClick={() => openConfirmModal('cancel')}
@@ -402,8 +434,8 @@ export const OrderDetailsPage = () => {
                                 Cancel Order
                             </Button>
                         )}
-                        {isBuyer && order.status === 'delivered' && !order.review && (
-                            <Link to={`/app/orders/${order.id}/review`}>
+                        {isBuyer && order?.status === 'delivered' && !order?.review && (
+                            <Link to={`/app/orders/${orderId}/review`}>
                                 <Button variant="outline" className="bg-green-50 text-green-600 hover:bg-green-100 border-green-200">
                                     ⭐ Write Review
                                 </Button>
@@ -516,3 +548,5 @@ export const OrderDetailsPage = () => {
         </div>
     );
 };
+
+export default OrderDetailsPage

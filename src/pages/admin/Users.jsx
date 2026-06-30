@@ -5,7 +5,7 @@ import { Button } from '../../components/common/Button';
 import { useAuth } from '../../hooks/useAuth';
 import api from '../../services/api';
 
-export const AdminUsers = () => {
+ const AdminUsers = () => {
     const { user: currentUser } = useAuth();
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -498,3 +498,5 @@ export const AdminUsers = () => {
         </div>
     );
 };
+
+export default AdminUsers
