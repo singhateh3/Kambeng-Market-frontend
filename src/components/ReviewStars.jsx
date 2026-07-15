@@ -1,7 +1,7 @@
 // src/components/ReviewStars.jsx
 import React from 'react';
 
-export const ReviewStars = ({ rating, size = 'md', interactive = false, onRatingChange }) => {
+ const ReviewStars = ({ rating, size = 'md', interactive = false, onRatingChange }) => {
     const sizes = {
         sm: 'w-4 h-4',
         md: 'w-6 h-6',
@@ -59,3 +59,4 @@ export const ReviewStars = ({ rating, size = 'md', interactive = false, onRating
         </div>
     );
 };
+export default ReviewStars;

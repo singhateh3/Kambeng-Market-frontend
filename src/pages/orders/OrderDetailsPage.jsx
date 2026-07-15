@@ -6,7 +6,7 @@ import { Button } from '../../components/common/Button';
 import { useAuth } from '../../hooks/useAuth';
 import api from '../../services/api';
 
- const OrderDetailsPage = () => {
+const OrderDetailsPage = () => {
     const { orderId } = useParams();
     const navigate = useNavigate();
     const { user } = useAuth();
@@ -17,7 +17,6 @@ import api from '../../services/api';
     const [loadingAction, setLoadingAction] = useState(false);
     const [showConfirmModal, setShowConfirmModal] = useState(false);
     const [confirmAction, setConfirmAction] = useState(null);
-    const [confirmData, setConfirmData] = useState(null);
 
     useEffect(() => {
         fetchOrderDetails();
@@ -44,7 +43,6 @@ import api from '../../services/api';
             setSuccess(`Order status updated to ${status}`);
             setShowConfirmModal(false);
             setConfirmAction(null);
-            setConfirmData(null);
             fetchOrderDetails();
             setTimeout(() => setSuccess(null), 3000);
         } catch (err) {
@@ -63,7 +61,6 @@ import api from '../../services/api';
             setSuccess('Order cancelled successfully');
             setShowConfirmModal(false);
             setConfirmAction(null);
-            setConfirmData(null);
             fetchOrderDetails();
             setTimeout(() => setSuccess(null), 3000);
         } catch (err) {
@@ -75,16 +72,14 @@ import api from '../../services/api';
         }
     };
 
-    const openConfirmModal = (action, data) => {
+    const openConfirmModal = (action) => {
         setConfirmAction(action);
-        setConfirmData(data);
         setShowConfirmModal(true);
     };
 
     const closeConfirmModal = () => {
         setShowConfirmModal(false);
         setConfirmAction(null);
-        setConfirmData(null);
     };
 
     const handleConfirmAction = () => {
@@ -132,18 +127,60 @@ import api from '../../services/api';
         return labels[status] || status;
     };
 
+    const getConfirmationContent = () => {
+        const contents = {
+            confirm: {
+                icon: '✅',
+                iconBg: 'bg-blue-100',
+                title: 'Confirm Order',
+                message: 'Are you sure you want to confirm this order? This will notify the buyer that you have accepted their order.',
+                confirmText: 'Yes, Confirm Order',
+                confirmColor: 'bg-blue-600 hover:bg-blue-700',
+                iconColor: 'text-blue-600',
+            },
+            ship: {
+                icon: '🚚',
+                iconBg: 'bg-purple-100',
+                title: 'Mark as Shipped',
+                message: 'Are you sure you want to mark this order as shipped? The buyer will be notified that their order is on the way.',
+                confirmText: 'Yes, Mark as Shipped',
+                confirmColor: 'bg-purple-600 hover:bg-purple-700',
+                iconColor: 'text-purple-600',
+            },
+            deliver: {
+                icon: '📦',
+                iconBg: 'bg-green-100',
+                title: 'Mark as Delivered',
+                message: 'Are you sure you want to mark this order as delivered? The buyer will be notified that their order has arrived.',
+                confirmText: 'Yes, Mark as Delivered',
+                confirmColor: 'bg-green-600 hover:bg-green-700',
+                iconColor: 'text-green-600',
+            },
+            cancel: {
+                icon: '❌',
+                iconBg: 'bg-red-100',
+                title: 'Cancel Order',
+                message: 'Are you sure you want to cancel this order? This action cannot be undone and will notify both the buyer and farmer.',
+                confirmText: 'Yes, Cancel Order',
+                confirmColor: 'bg-red-600 hover:bg-red-700',
+                iconColor: 'text-red-600',
+            },
+        };
+        return contents[confirmAction] || contents.confirm;
+    };
+
     // Safely check access
     const isFarmer = user?.role === 'farmer';
     const isBuyer = user?.role === 'buyer';
     const isAdmin = user?.role === 'admin';
 
     const canViewOrder = () => {
-        if (!order) return false;
-        if (isAdmin) return true;
-        if (isFarmer && order?.product?.farmer_id === user?.id) return true;
-        if (isBuyer && order?.buyer_id === user?.id) return true;
-        return false;
-    };
+    if (!order) return false;
+    if (isAdmin) return true; // Admin can view any order
+    if (isFarmer && order?.product?.farmer_id === user?.id) return true;
+    if (isBuyer && order?.buyer_id === user?.id) return true;
+    return false;
+};
 
     // Format date helper
     const formatDate = (date) => {
@@ -200,6 +237,7 @@ import api from '../../services/api';
     const product = order?.product || {};
     const buyer = order?.buyer || {};
     const farmer = product?.farmer || {};
+    const confirmationContent = getConfirmationContent();
 
     return (
         <div className="max-w-4xl mx-auto">
@@ -447,8 +485,8 @@ import api from '../../services/api';
 
             {/* Confirmation Modal */}
             {showConfirmModal && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-white rounded-xl max-w-md w-full shadow-xl">
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
+                    <div className="bg-white rounded-xl max-w-md w-full shadow-xl animate-in zoom-in-95 duration-200">
                         <div className="flex justify-between items-center p-6 border-b border-gray-100">
                             <h2 className="text-xl font-bold text-gray-900">Confirm Action</h2>
                             <button
@@ -462,84 +500,43 @@ import api from '../../services/api';
                         </div>
 
                         <div className="p-6">
-                            <div className="mb-4">
-                                {confirmAction === 'confirm' && (
-                                    <>
-                                        <div className="flex items-center justify-center mb-4">
-                                            <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center text-3xl">
-                                                ✅
-                                            </div>
-                                        </div>
-                                        <h3 className="text-lg font-semibold text-gray-900 text-center mb-2">
-                                            Confirm Order
-                                        </h3>
-                                        <p className="text-gray-600 text-center">
-                                            Are you sure you want to confirm this order?
-                                        </p>
-                                    </>
-                                )}
-                                {confirmAction === 'ship' && (
-                                    <>
-                                        <div className="flex items-center justify-center mb-4">
-                                            <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center text-3xl">
-                                                🚚
-                                            </div>
-                                        </div>
-                                        <h3 className="text-lg font-semibold text-gray-900 text-center mb-2">
-                                            Mark as Shipped
-                                        </h3>
-                                        <p className="text-gray-600 text-center">
-                                            Are you sure you want to mark this order as shipped?
-                                        </p>
-                                    </>
-                                )}
-                                {confirmAction === 'deliver' && (
-                                    <>
-                                        <div className="flex items-center justify-center mb-4">
-                                            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center text-3xl">
-                                                📦
-                                            </div>
-                                        </div>
-                                        <h3 className="text-lg font-semibold text-gray-900 text-center mb-2">
-                                            Mark as Delivered
-                                        </h3>
-                                        <p className="text-gray-600 text-center">
-                                            Are you sure you want to mark this order as delivered?
-                                        </p>
-                                    </>
-                                )}
-                                {confirmAction === 'cancel' && (
-                                    <>
-                                        <div className="flex items-center justify-center mb-4">
-                                            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center text-3xl">
-                                                ❌
-                                            </div>
-                                        </div>
-                                        <h3 className="text-lg font-semibold text-gray-900 text-center mb-2">
-                                            Cancel Order
-                                        </h3>
-                                        <p className="text-gray-600 text-center">
-                                            Are you sure you want to cancel this order? This action cannot be undone.
-                                        </p>
-                                    </>
-                                )}
+                            <div className="flex flex-col items-center text-center mb-6">
+                                <div className={`w-16 h-16 ${confirmationContent.iconBg} rounded-full flex items-center justify-center text-3xl mb-4`}>
+                                    {confirmationContent.icon}
+                                </div>
+                                <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                                    {confirmationContent.title}
+                                </h3>
+                                <p className="text-gray-600 text-sm leading-relaxed">
+                                    {confirmationContent.message}
+                                </p>
                             </div>
 
-                            <div className="flex justify-end space-x-4">
-                                <Button variant="secondary" onClick={closeConfirmModal}>
-                                    Cancel
-                                </Button>
-                                <Button 
-                                    variant={confirmAction === 'cancel' ? 'danger' : 'primary'}
-                                    onClick={handleConfirmAction}
-                                    isLoading={loadingAction}
+                            <div className="flex gap-3">
+                                <button
+                                    onClick={closeConfirmModal}
+                                    className="flex-1 px-4 py-2.5 text-sm font-semibold text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition border-none cursor-pointer"
                                     disabled={loadingAction}
                                 >
-                                    {confirmAction === 'confirm' ? 'Confirm Order' : 
-                                     confirmAction === 'ship' ? 'Mark as Shipped' : 
-                                     confirmAction === 'deliver' ? 'Mark as Delivered' : 
-                                     'Cancel Order'}
-                                </Button>
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={handleConfirmAction}
+                                    disabled={loadingAction}
+                                    className={`flex-1 px-4 py-2.5 text-sm font-semibold text-white rounded-lg transition border-none cursor-pointer ${confirmationContent.confirmColor} disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2`}
+                                >
+                                    {loadingAction ? (
+                                        <>
+                                            <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+                                            </svg>
+                                            Processing...
+                                        </>
+                                    ) : (
+                                        confirmationContent.confirmText
+                                    )}
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -549,4 +546,4 @@ import api from '../../services/api';
     );
 };
 
-export default OrderDetailsPage
+export default OrderDetailsPage;

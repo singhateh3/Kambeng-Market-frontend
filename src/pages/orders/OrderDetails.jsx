@@ -1,7 +1,8 @@
 // src/pages/orders/OrderDetails.jsx
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '../../components/common/Button';
-import { ReviewStars } from '../../components/ReviewStars';
+import ReviewStars from '../../components/ReviewStars';
 import { OrderStatusBadge } from './OrderStatusBadge';
 
 export const OrderDetails = ({ 
@@ -13,6 +14,9 @@ export const OrderDetails = ({
     onCancelOrder,
     loadingAction 
 }) => {
+    const [showConfirmModal, setShowConfirmModal] = useState(false);
+    const [confirmAction, setConfirmAction] = useState(null);
+
     if (!order) return null;
 
     // Safely access all properties with fallbacks
@@ -78,292 +82,368 @@ export const OrderDetails = ({
         }
     };
 
-    return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-xl">
-                <div className="flex justify-between items-center p-6 border-b border-gray-100">
-                    <h2 className="text-xl font-bold text-gray-900">
-                        Order Details #{orderId}
-                    </h2>
-                    <button
-                        onClick={onClose}
-                        className="text-gray-400 hover:text-gray-600 transition"
-                    >
-                        <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                    </button>
-                </div>
+    const handleActionClick = (action) => {
+        setConfirmAction(action);
+        setShowConfirmModal(true);
+    };
 
-                <div className="p-6 space-y-6">
-                    {/* Order Status */}
-                    <div className="flex items-center justify-between bg-gray-50 rounded-xl p-4 border border-gray-100">
-                        <div className="flex items-center">
-                            <span className="text-2xl mr-3">
-                                {getStatusIcon(status)}
-                            </span>
-                            <div>
-                                <p className="text-sm text-gray-500">Order Status</p>
-                                <div className="mt-1">
-                                    <OrderStatusBadge status={status} />
+    const handleConfirmAction = () => {
+        if (confirmAction === 'cancel') {
+            onCancelOrder(orderId);
+        }
+        setShowConfirmModal(false);
+        setConfirmAction(null);
+        onClose();
+    };
+
+    const handleCancel = () => {
+        setShowConfirmModal(false);
+        setConfirmAction(null);
+    };
+
+    // Get confirmation message based on action
+    const getConfirmationMessage = () => {
+        if (confirmAction === 'cancel') {
+            return {
+                title: 'Cancel Order',
+                message: 'Are you sure you want to cancel this order? This action cannot be undone.',
+                icon: '❌',
+                confirmText: 'Yes, Cancel Order',
+                confirmColor: 'bg-red-600 hover:bg-red-700'
+            };
+        }
+        return {
+            title: 'Confirm Action',
+            message: 'Are you sure you want to proceed?',
+            icon: '⚠️',
+            confirmText: 'Confirm',
+            confirmColor: 'bg-green-600 hover:bg-green-700'
+        };
+    };
+
+    const confirmData = getConfirmationMessage();
+
+    return (
+        <>
+            {/* Main Modal */}
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                <div className="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-xl">
+                    <div className="flex justify-between items-center p-6 border-b border-gray-100">
+                        <h2 className="text-xl font-bold text-gray-900">
+                            Order Details #{orderId}
+                        </h2>
+                        <button
+                            onClick={onClose}
+                            className="text-gray-400 hover:text-gray-600 transition"
+                        >
+                            <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
+
+                    <div className="p-6 space-y-6">
+                        {/* Order Status */}
+                        <div className="flex items-center justify-between bg-gray-50 rounded-xl p-4 border border-gray-100">
+                            <div className="flex items-center">
+                                <span className="text-2xl mr-3">
+                                    {getStatusIcon(status)}
+                                </span>
+                                <div>
+                                    <p className="text-sm text-gray-500">Order Status</p>
+                                    <div className="mt-1">
+                                        <OrderStatusBadge status={status} />
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="text-right">
+                                <p className="text-sm text-gray-500">Order Date</p>
+                                <p className="text-sm font-medium text-gray-900">
+                                    {formatDate(orderDate)}
+                                </p>
+                            </div>
+                        </div>
+
+                        {/* Order Items */}
+                        <div>
+                            <h3 className="font-semibold text-gray-900 mb-3">Order Items</h3>
+                            <div className="border border-gray-200 rounded-xl overflow-hidden">
+                                <div className="bg-gray-50 px-4 py-2 grid grid-cols-12 gap-2 text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    <div className="col-span-5">Product</div>
+                                    <div className="col-span-2">Quantity</div>
+                                    <div className="col-span-2">Unit Price</div>
+                                    <div className="col-span-3 text-right">Total</div>
+                                </div>
+                                <div className="px-4 py-3 grid grid-cols-12 gap-2 items-center hover:bg-gray-50">
+                                    <div className="col-span-5">
+                                        <div className="flex items-center">
+                                            <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center mr-3">
+                                                {productPhotos.length > 0 ? (
+                                                    <img 
+                                                        src={productPhotos[0]} 
+                                                        alt={productName} 
+                                                        className="w-12 h-12 object-cover rounded-lg"
+                                                    />
+                                                ) : (
+                                                    <span className="text-2xl">🌾</span>
+                                                )}
+                                            </div>
+                                            <div>
+                                                <p className="font-medium text-gray-900">
+                                                    {productName}
+                                                </p>
+                                                {productCategory && (
+                                                    <p className="text-xs text-gray-500">
+                                                        {productCategory}
+                                                    </p>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="col-span-2">
+                                        <span className="font-medium text-gray-900">
+                                            {quantity}
+                                        </span>
+                                        {productUnit && (
+                                            <span className="text-xs text-gray-500 ml-1">
+                                                {productUnit}
+                                            </span>
+                                        )}
+                                    </div>
+                                    <div className="col-span-2">
+                                        <span className="text-gray-900">
+                                            {productPriceFormatted}
+                                        </span>
+                                    </div>
+                                    <div className="col-span-3 text-right font-bold text-gray-900">
+                                        {totalPriceFormatted}
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                        <div className="text-right">
-                            <p className="text-sm text-gray-500">Order Date</p>
-                            <p className="text-sm font-medium text-gray-900">
-                                {formatDate(orderDate)}
-                            </p>
-                        </div>
-                    </div>
 
-                    {/* Order Items */}
-                    <div>
-                        <h3 className="font-semibold text-gray-900 mb-3">Order Items</h3>
-                        <div className="border border-gray-200 rounded-xl overflow-hidden">
-                            <div className="bg-gray-50 px-4 py-2 grid grid-cols-12 gap-2 text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                <div className="col-span-5">Product</div>
-                                <div className="col-span-2">Quantity</div>
-                                <div className="col-span-2">Unit Price</div>
-                                <div className="col-span-3 text-right">Total</div>
+                        {/* Delivery Details */}
+                        <div>
+                            <h3 className="font-semibold text-gray-900 mb-3">Delivery Details</h3>
+                            <div className="grid grid-cols-2 gap-4 bg-gray-50 rounded-xl p-4 border border-gray-100">
+                                <div>
+                                    <p className="text-sm text-gray-500">Delivery Method</p>
+                                    <p className="font-medium text-gray-900 capitalize">
+                                        {deliveryMethod === 'pickup' ? '📍 Pickup from Farm' : '🚚 Farmer Delivery'}
+                                    </p>
+                                </div>
+                                {deliveryMethod === 'pickup' ? (
+                                    <div>
+                                        <p className="text-sm text-gray-500">Pickup Date</p>
+                                        <p className="font-medium text-gray-900">
+                                            {pickupDate ? formatDate(pickupDate) : 'Not set'}
+                                        </p>
+                                    </div>
+                                ) : (
+                                    <div>
+                                        <p className="text-sm text-gray-500">Delivery Deadline</p>
+                                        <p className="font-medium text-gray-900">
+                                            {deliveryDeadline ? formatDate(deliveryDeadline) : 'Not set'}
+                                        </p>
+                                    </div>
+                                )}
+                                {specialInstructions && (
+                                    <div className="col-span-2">
+                                        <p className="text-sm text-gray-500">Special Instructions</p>
+                                        <p className="font-medium text-gray-900">
+                                            {specialInstructions}
+                                        </p>
+                                    </div>
+                                )}
                             </div>
-                            <div className="px-4 py-3 grid grid-cols-12 gap-2 items-center hover:bg-gray-50">
-                                <div className="col-span-5">
+                        </div>
+
+                        {/* Buyer/Farmer Info */}
+                        <div>
+                            <h3 className="font-semibold text-gray-900 mb-3">
+                                {isFarmer ? 'Buyer Information' : 'Farmer Information'}
+                            </h3>
+                            <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
+                                {isFarmer ? (
                                     <div className="flex items-center">
-                                        <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center mr-3">
-                                            {productPhotos.length > 0 ? (
-                                                <img 
-                                                    src={productPhotos[0]} 
-                                                    alt={productName} 
-                                                    className="w-12 h-12 object-cover rounded-lg"
-                                                />
-                                            ) : (
-                                                <span className="text-2xl">🌾</span>
-                                            )}
+                                        <div className="w-12 h-12 rounded-full bg-gray-300 flex items-center justify-center text-lg font-medium text-gray-600">
+                                            {buyerName?.[0]?.toUpperCase() || 'U'}
                                         </div>
-                                        <div>
+                                        <div className="ml-3">
                                             <p className="font-medium text-gray-900">
-                                                {productName}
+                                                {buyerName}
                                             </p>
-                                            {productCategory && (
-                                                <p className="text-xs text-gray-500">
-                                                    {productCategory}
+                                            {buyerEmail && (
+                                                <p className="text-sm text-gray-500">
+                                                    📧 {buyerEmail}
+                                                </p>
+                                            )}
+                                            {buyerLocation && (
+                                                <p className="text-sm text-gray-500">
+                                                    📍 {buyerLocation}
+                                                </p>
+                                            )}
+                                            {buyerPhone && (
+                                                <p className="text-sm text-gray-500">
+                                                    📞 {buyerPhone}
                                                 </p>
                                             )}
                                         </div>
                                     </div>
-                                </div>
-                                <div className="col-span-2">
-                                    <span className="font-medium text-gray-900">
-                                        {quantity}
-                                    </span>
-                                    {productUnit && (
-                                        <span className="text-xs text-gray-500 ml-1">
-                                            {productUnit}
-                                        </span>
-                                    )}
-                                </div>
-                                <div className="col-span-2">
-                                    <span className="text-gray-900">
-                                        {productPriceFormatted}
-                                    </span>
-                                </div>
-                                <div className="col-span-3 text-right font-bold text-gray-900">
-                                    {totalPriceFormatted}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Delivery Details */}
-                    <div>
-                        <h3 className="font-semibold text-gray-900 mb-3">Delivery Details</h3>
-                        <div className="grid grid-cols-2 gap-4 bg-gray-50 rounded-xl p-4 border border-gray-100">
-                            <div>
-                                <p className="text-sm text-gray-500">Delivery Method</p>
-                                <p className="font-medium text-gray-900 capitalize">
-                                    {deliveryMethod === 'pickup' ? '📍 Pickup from Farm' : '🚚 Farmer Delivery'}
-                                </p>
-                            </div>
-                            {deliveryMethod === 'pickup' ? (
-                                <div>
-                                    <p className="text-sm text-gray-500">Pickup Date</p>
-                                    <p className="font-medium text-gray-900">
-                                        {pickupDate ? formatDate(pickupDate) : 'Not set'}
-                                    </p>
-                                </div>
-                            ) : (
-                                <div>
-                                    <p className="text-sm text-gray-500">Delivery Deadline</p>
-                                    <p className="font-medium text-gray-900">
-                                        {deliveryDeadline ? formatDate(deliveryDeadline) : 'Not set'}
-                                    </p>
-                                </div>
-                            )}
-                            {specialInstructions && (
-                                <div className="col-span-2">
-                                    <p className="text-sm text-gray-500">Special Instructions</p>
-                                    <p className="font-medium text-gray-900">
-                                        {specialInstructions}
-                                    </p>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-
-                    {/* Buyer/Farmer Info */}
-                    <div>
-                        <h3 className="font-semibold text-gray-900 mb-3">
-                            {isFarmer ? 'Buyer Information' : 'Farmer Information'}
-                        </h3>
-                        <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
-                            {isFarmer ? (
-                                <div className="flex items-center">
-                                    <div className="w-12 h-12 rounded-full bg-gray-300 flex items-center justify-center text-lg font-medium text-gray-600">
-                                        {buyerName?.[0]?.toUpperCase() || 'U'}
-                                    </div>
-                                    <div className="ml-3">
-                                        <p className="font-medium text-gray-900">
-                                            {buyerName}
-                                        </p>
-                                        {buyerEmail && (
-                                            <p className="text-sm text-gray-500">
-                                                📧 {buyerEmail}
-                                            </p>
-                                        )}
-                                        {buyerLocation && (
-                                            <p className="text-sm text-gray-500">
-                                                📍 {buyerLocation}
-                                            </p>
-                                        )}
-                                        {buyerPhone && (
-                                            <p className="text-sm text-gray-500">
-                                                📞 {buyerPhone}
-                                            </p>
-                                        )}
-                                    </div>
-                                </div>
-                            ) : (
-                                <div className="flex items-center">
-                                    <div className="w-12 h-12 rounded-full bg-gray-300 flex items-center justify-center text-lg font-medium text-gray-600">
-                                        {farmerName?.[0]?.toUpperCase() || 'F'}
-                                    </div>
-                                    <div className="ml-3">
-                                        <p className="font-medium text-gray-900">
-                                            {farmerName}
-                                        </p>
-                                        {farmerLocation && (
-                                            <p className="text-sm text-gray-500">
-                                                📍 {farmerLocation}
-                                            </p>
-                                        )}
-                                        {farmerPhone && (
-                                            <p className="text-sm text-gray-500">
-                                                📞 {farmerPhone}
-                                            </p>
-                                        )}
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-
-                    {/* Review Section */}
-                    {review && (
-                        <div>
-                            <h3 className="font-semibold text-gray-900 mb-3">Your Review</h3>
-                            <div className="bg-purple-50 rounded-xl p-4 border border-purple-200">
-                                <div className="flex items-start justify-between">
-                                    <div>
-                                        <div className="flex items-center space-x-2">
-                                            <ReviewStars rating={review.rating} size="md" />
-                                            <span className="text-sm font-medium text-gray-900">
-                                                {review.rating}.0
-                                            </span>
+                                ) : (
+                                    <div className="flex items-center">
+                                        <div className="w-12 h-12 rounded-full bg-gray-300 flex items-center justify-center text-lg font-medium text-gray-600">
+                                            {farmerName?.[0]?.toUpperCase() || 'F'}
                                         </div>
-                                        {review.comment && (
-                                            <p className="mt-2 text-gray-700 text-sm">
-                                                "{review.comment}"
+                                        <div className="ml-3">
+                                            <p className="font-medium text-gray-900">
+                                                {farmerName}
                                             </p>
-                                        )}
-                                        <p className="mt-1 text-xs text-gray-400">
-                                            Reviewed on {formatDate(review.created_at)}
-                                        </p>
+                                            {farmerLocation && (
+                                                <p className="text-sm text-gray-500">
+                                                    📍 {farmerLocation}
+                                                </p>
+                                            )}
+                                            {farmerPhone && (
+                                                <p className="text-sm text-gray-500">
+                                                    📞 {farmerPhone}
+                                                </p>
+                                            )}
+                                        </div>
                                     </div>
-                                    <span className="text-2xl">⭐</span>
-                                </div>
+                                )}
                             </div>
                         </div>
-                    )}
 
-                    {/* Actions */}
-                    <div className="flex flex-wrap gap-2 pt-4 border-t border-gray-100">
-                        <Button variant="secondary" onClick={onClose}>
-                            Close
-                        </Button>
-                        {isFarmer && status === 'pending' && (
-                            <Button 
-                                variant="primary"
-                                onClick={() => {
-                                    onStatusUpdate(orderId, 'confirmed');
-                                    onClose();
-                                }}
-                                isLoading={loadingAction}
-                            >
-                                Confirm Order
-                            </Button>
-                        )}
-                        {isFarmer && status === 'confirmed' && (
-                            <Button 
-                                variant="primary"
-                                onClick={() => {
-                                    onStatusUpdate(orderId, 'shipped');
-                                    onClose();
-                                }}
-                                isLoading={loadingAction}
-                            >
-                                Mark as Shipped
-                            </Button>
-                        )}
-                        {isFarmer && status === 'shipped' && (
-                            <Button 
-                                variant="primary"
-                                onClick={() => {
-                                    onStatusUpdate(orderId, 'delivered');
-                                    onClose();
-                                }}
-                                isLoading={loadingAction}
-                            >
-                                Mark as Delivered
-                            </Button>
-                        )}
-                        {isBuyer && status === 'pending' && (
-                            <Button 
-                                variant="danger"
-                                onClick={() => {
-                                    onCancelOrder(orderId);
-                                    onClose();
-                                }}
-                                isLoading={loadingAction}
-                            >
-                                Cancel Order
-                            </Button>
-                        )}
-                        {isBuyer && status === 'delivered' && !review && (
-                            <Link to={`/app/orders/${orderId}/review`}>
-                                <Button variant="outline" className="bg-green-50 text-green-600 hover:bg-green-100 border-green-200">
-                                    ⭐ Write Review
-                                </Button>
-                            </Link>
-                        )}
-                        {isBuyer && status === 'delivered' && review && (
-                            <div className="text-sm text-green-600 font-medium flex items-center">
-                                ✅ Review submitted
+                        {/* Review Section */}
+                        {review && (
+                            <div>
+                                <h3 className="font-semibold text-gray-900 mb-3">Your Review</h3>
+                                <div className="bg-purple-50 rounded-xl p-4 border border-purple-200">
+                                    <div className="flex items-start justify-between">
+                                        <div>
+                                            <div className="flex items-center space-x-2">
+                                                <ReviewStars rating={review.rating} size="md" />
+                                                <span className="text-sm font-medium text-gray-900">
+                                                    {review.rating}.0
+                                                </span>
+                                            </div>
+                                            {review.comment && (
+                                                <p className="mt-2 text-gray-700 text-sm">
+                                                    "{review.comment}"
+                                                </p>
+                                            )}
+                                            <p className="mt-1 text-xs text-gray-400">
+                                                Reviewed on {formatDate(review.created_at)}
+                                            </p>
+                                        </div>
+                                        <span className="text-2xl">⭐</span>
+                                    </div>
+                                </div>
                             </div>
                         )}
+
+                        {/* Actions */}
+                        <div className="flex flex-wrap gap-2 pt-4 border-t border-gray-100">
+                            <Button variant="secondary" onClick={onClose}>
+                                Close
+                            </Button>
+                            {isFarmer && status === 'pending' && (
+                                <Button 
+                                    variant="primary"
+                                    onClick={() => {
+                                        onStatusUpdate(orderId, 'confirmed');
+                                        onClose();
+                                    }}
+                                    isLoading={loadingAction}
+                                >
+                                    Confirm Order
+                                </Button>
+                            )}
+                            {isFarmer && status === 'confirmed' && (
+                                <Button 
+                                    variant="primary"
+                                    onClick={() => {
+                                        onStatusUpdate(orderId, 'shipped');
+                                        onClose();
+                                    }}
+                                    isLoading={loadingAction}
+                                >
+                                    Mark as Shipped
+                                </Button>
+                            )}
+                            {isFarmer && status === 'shipped' && (
+                                <Button 
+                                    variant="primary"
+                                    onClick={() => {
+                                        onStatusUpdate(orderId, 'delivered');
+                                        onClose();
+                                    }}
+                                    isLoading={loadingAction}
+                                >
+                                    Mark as Delivered
+                                </Button>
+                            )}
+                            {isBuyer && status === 'pending' && (
+                                <Button 
+                                    variant="danger"
+                                    onClick={() => handleActionClick('cancel')}
+                                    isLoading={loadingAction}
+                                >
+                                    Cancel Order
+                                </Button>
+                            )}
+                            {isBuyer && status === 'delivered' && !review && (
+                                <Link to={`/app/orders/${orderId}/review`}>
+                                    <Button variant="outline" className="bg-green-50 text-green-600 hover:bg-green-100 border-green-200">
+                                        ⭐ Write Review
+                                    </Button>
+                                </Link>
+                            )}
+                            {isBuyer && status === 'delivered' && review && (
+                                <div className="text-sm text-green-600 font-medium flex items-center">
+                                    ✅ Review submitted
+                                </div>
+                            )}
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
+
+            {/* Confirmation Modal */}
+            {showConfirmModal && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60] p-4 animate-in fade-in duration-200">
+                    <div className="bg-white rounded-xl max-w-md w-full shadow-xl animate-in zoom-in-95 duration-200">
+                        <div className="p-6">
+                            <div className="flex items-center justify-center mb-4">
+                                <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center text-3xl">
+                                    {confirmData.icon}
+                                </div>
+                            </div>
+                            <h3 className="text-xl font-bold text-gray-900 text-center mb-2">
+                                {confirmData.title}
+                            </h3>
+                            <p className="text-gray-600 text-center mb-6">
+                                {confirmData.message}
+                            </p>
+                            <div className="flex gap-3">
+                                <button
+                                    onClick={handleCancel}
+                                    className="flex-1 px-4 py-2.5 text-sm font-semibold text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition border-none cursor-pointer"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={handleConfirmAction}
+                                    className={`flex-1 px-4 py-2.5 text-sm font-semibold text-white rounded-lg transition border-none cursor-pointer ${confirmData.confirmColor}`}
+                                >
+                                    {confirmData.confirmText}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+        </>
     );
 };

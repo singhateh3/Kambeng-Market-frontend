@@ -10,7 +10,7 @@ import { LoadingScreen } from './components/common/LoadingScreen';
 import { AuthProvider } from './context/AuthContext';
 import { NotificationProvider } from './context/NotificationContext';
 
-// Helper to handle both named and default exports (keep for components that need it)
+// Helper to handle both named and default exports
 const namedLazy = (importFn, name) =>
     lazy(() => importFn().then(m => ({ default: m[name] ?? m.default })));
 
@@ -31,9 +31,6 @@ const Products = lazy(() => import('./pages/farmer/Products'));
 const OrderDetailsPage = lazy(() => import('./pages/orders/OrderDetailsPage'));
 const Orders = lazy(() => import('./pages/orders/Orders'));
 const WriteReview = lazy(() => import('./pages/orders/WriteReview'));
-
-// Use namedLazy only for components that use named exports (keep if you have any)
-// Example: const SomeNamedComponent = namedLazy(() => import('./pages/SomeComponent'), 'SomeNamedExport');
 
 export const App = () => {
     return (
@@ -61,30 +58,93 @@ export const App = () => {
                             <Route path="profile" element={<Profile />} />
 
                             {/* Farmer Routes */}
-                            <Route path="products" element={<ProtectedRoute requiredRole="farmer"><Products /></ProtectedRoute>} />
-                            <Route path="products/create" element={<ProtectedRoute requiredRole="farmer"><CreateProduct /></ProtectedRoute>} />
+                            <Route 
+                                path="products" 
+                                element={
+                                    <ProtectedRoute requiredRole="farmer">
+                                        <Products />
+                                    </ProtectedRoute>
+                                } 
+                            />
+                            <Route 
+                                path="products/create" 
+                                element={
+                                    <ProtectedRoute requiredRole="farmer">
+                                        <CreateProduct />
+                                    </ProtectedRoute>
+                                } 
+                            />
 
                             {/* Buyer Routes */}
-                            <Route path="browse" element={<ProtectedRoute requiredRole="buyer"><Browse /></ProtectedRoute>} />
-                            <Route path="place-order/:productId" element={<ProtectedRoute requiredRole="buyer"><PlaceOrder /></ProtectedRoute>} />
+                            <Route 
+                                path="browse" 
+                                element={
+                                    <ProtectedRoute requiredRole="buyer">
+                                        <Browse />
+                                    </ProtectedRoute>
+                                } 
+                            />
+                            <Route 
+                                path="place-order/:productId" 
+                                element={
+                                    <ProtectedRoute requiredRole="buyer">
+                                        <PlaceOrder />
+                                    </ProtectedRoute>
+                                } 
+                            />
 
-                            {/* Product Detail */}
+                            {/* Product Detail - Accessible by both farmers and buyers */}
                             <Route path="products/:productId" element={<ProtectedRoute><ProductDetail /></ProtectedRoute>} />
 
-                            {/* Orders */}
+                            {/* Orders - Accessible by both farmers and buyers */}
                             <Route path="orders" element={<ProtectedRoute><Orders /></ProtectedRoute>} />
                             <Route path="orders/:orderId" element={<ProtectedRoute><OrderDetailsPage /></ProtectedRoute>} />
                             <Route path="orders/:orderId/review" element={<ProtectedRoute><WriteReview /></ProtectedRoute>} />
 
-                            {/* Notifications */}
+                            {/* Notifications - Accessible by all authenticated users */}
                             <Route path="notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
 
                             {/* Admin Routes */}
-                            <Route path="admin" element={<ProtectedRoute requiredRole="admin"><Navigate to="/app/admin/dashboard" /></ProtectedRoute>} />
-                            <Route path="admin/dashboard" element={<ProtectedRoute requiredRole="admin"><AdminDashboard /></ProtectedRoute>} />
-                            <Route path="admin/users" element={<ProtectedRoute requiredRole="admin"><AdminUsers /></ProtectedRoute>} />
-                            <Route path="admin/farmers/verification" element={<ProtectedRoute requiredRole="admin"><FarmerVerification /></ProtectedRoute>} />
-                            <Route path="admin/products" element={<ProtectedRoute requiredRole="admin"><AdminProducts /></ProtectedRoute>} />
+                            <Route 
+                                path="admin" 
+                                element={
+                                    <ProtectedRoute requiredRole="admin">
+                                        <Navigate to="/app/admin/dashboard" />
+                                    </ProtectedRoute>
+                                } 
+                            />
+                            <Route 
+                                path="admin/dashboard" 
+                                element={
+                                    <ProtectedRoute requiredRole="admin">
+                                        <AdminDashboard />
+                                    </ProtectedRoute>
+                                } 
+                            />
+                            <Route 
+                                path="admin/users" 
+                                element={
+                                    <ProtectedRoute requiredRole="admin">
+                                        <AdminUsers />
+                                    </ProtectedRoute>
+                                } 
+                            />
+                            <Route 
+                                path="admin/farmers/verification" 
+                                element={
+                                    <ProtectedRoute requiredRole="admin">
+                                        <FarmerVerification />
+                                    </ProtectedRoute>
+                                } 
+                            />
+                            <Route 
+                                path="admin/products" 
+                                element={
+                                    <ProtectedRoute requiredRole="admin">
+                                        <AdminProducts />
+                                    </ProtectedRoute>
+                                } 
+                            />
                         </Route>
 
                         {/* Redirect old routes */}

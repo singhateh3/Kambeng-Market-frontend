@@ -1,8 +1,9 @@
 // src/pages/Browse.jsx
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { BrowseSkeleton } from '../components/common/skeletons/BrowseSkeleton';
 import { useAuth } from '../hooks/useAuth';
+import { useDebounce } from '../hooks/useDebounce';
 import api from '../services/api';
 
 const CATEGORY_ICONS = {
@@ -16,35 +17,41 @@ const CATEGORY_ICONS = {
 const Browse = () => {
     const { user } = useAuth();
     const [searchParams] = useSearchParams();
+    const navigate = useNavigate();
+    
     const [products, setProducts] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const [isInitialLoad, setIsInitialLoad] = useState(true);
+    const [loading, setLoading] = useState(false);
     const [categories, setCategories] = useState([]);
-    const [filters, setFilters] = useState({
-        category: searchParams.get('category') || '',
-        search:   searchParams.get('search')   || '',
-        page: 1,
-        per_page: 20,
-    });
+    
+    // Controlled text input string
+    const [searchValue, setSearchValue] = useState(searchParams.get('search') || '');
+    const [category, setCategory] = useState(searchParams.get('category') || '');
+    const [page, setPage] = useState(1);
+    
     const [pagination, setPagination] = useState({
         current_page: 1, last_page: 1, per_page: 20, total: 0,
     });
 
-    useEffect(() => {
-        fetchProducts();
-    }, [filters]);
+    const searchInputRef = useRef(null);
 
-    useEffect(() => {
-        fetchCategories();
-    }, []);
+    // Debounce processing
+    const debouncedSearch = useDebounce(searchValue, 300);
 
-    const fetchProducts = async () => {
+    // Reset pagination cleanly back to page 1 whenever search terms or categories alter
+    useEffect(() => {
+        setPage(1);
+    }, [debouncedSearch, category]);
+
+    // Primary data fetcher
+    const fetchProducts = useCallback(async () => {
         try {
             setLoading(true);
             const params = new URLSearchParams({
-                category: String(filters.category ?? ''),
-                search:   String(filters.search   ?? ''),
-                page:     String(filters.page     ?? 1),
-                per_page: String(filters.per_page ?? 20),
+                category: String(category ?? ''),
+                search: String(debouncedSearch ?? ''),
+                page: String(page),
+                per_page: '20',
             });
             const response = await api.get(`/products?${params}`);
             setProducts(response.data.data || []);
@@ -53,26 +60,37 @@ const Browse = () => {
             console.error('Error fetching products:', err);
         } finally {
             setLoading(false);
+            setIsInitialLoad(false);
+        }
+    }, [category, debouncedSearch, page]);
+
+    useEffect(() => {
+        fetchProducts();
+    }, [fetchProducts]);
+
+    // Isolated runtime category fetcher
+    useEffect(() => {
+        const fetchCategories = async () => {
+            try {
+                const response = await api.get('/products/categories');
+                setCategories(response.data.data || []);
+            } catch (err) {
+                console.error('Error fetching categories:', err);
+            }
+        };
+        fetchCategories();
+    }, []);
+
+    const clearFilters = () => {
+        setSearchValue('');
+        setCategory('');
+        setPage(1);
+        if (searchInputRef.current) {
+            searchInputRef.current.focus();
         }
     };
 
-    const fetchCategories = async () => {
-        try {
-            const response = await api.get('/products/categories');
-            setCategories(response.data.data || []);
-        } catch {}
-    };
-
-    const handleFilterChange = (key, value) =>
-        setFilters(f => ({ ...f, [key]: value, page: 1 }));
-
-    const handlePageChange = (newPage) =>
-        setFilters(f => ({ ...f, page: newPage }));
-
-    const clearFilters = () =>
-        setFilters({ category: '', search: '', page: 1, per_page: 20 });
-
-    if (loading) return <BrowseSkeleton />;
+    if (isInitialLoad) return <BrowseSkeleton />;
 
     return (
         <div className="bg-slate-50 min-h-screen">
@@ -92,16 +110,18 @@ const Browse = () => {
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                         </svg>
                         <input
+                            ref={searchInputRef}
                             type="text"
                             placeholder="Search products or farmers..."
-                            value={filters.search}
-                            onChange={(e) => handleFilterChange('search', e.target.value)}
+                            value={searchValue}
+                            onChange={(e) => setSearchValue(e.target.value)}
                             className="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-lg text-sm bg-slate-50 text-slate-900 outline-none focus:border-green-400 focus:bg-white transition"
+                            autoComplete="off"
                         />
                     </div>
                     <select
-                        value={filters.category}
-                        onChange={(e) => handleFilterChange('category', e.target.value)}
+                        value={category}
+                        onChange={(e) => setCategory(e.target.value)}
                         className="px-3 py-2 border border-slate-200 rounded-lg text-sm bg-slate-50 text-slate-700 outline-none focus:border-green-400 focus:bg-white transition sm:w-48 cursor-pointer"
                     >
                         <option value="">All categories</option>
@@ -109,7 +129,7 @@ const Browse = () => {
                             <option key={cat} value={cat}>{CATEGORY_ICONS[cat] || '📦'} {cat}</option>
                         ))}
                     </select>
-                    {(filters.search || filters.category) && (
+                    {(searchValue || category) && (
                         <button
                             onClick={clearFilters}
                             className="px-4 py-2 text-sm font-semibold text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200 transition border-none cursor-pointer flex-shrink-0"
@@ -123,9 +143,9 @@ const Browse = () => {
                 {categories.length > 0 && (
                     <div className="flex gap-2 overflow-x-auto pb-1 mb-5">
                         <button
-                            onClick={() => handleFilterChange('category', '')}
+                            onClick={() => setCategory('')}
                             className={`flex-shrink-0 px-3.5 py-1.5 rounded-full text-xs font-semibold border transition cursor-pointer ${
-                                !filters.category
+                                !category
                                     ? 'bg-green-600 text-white border-green-600'
                                     : 'bg-white text-slate-600 border-slate-200 hover:border-green-400 hover:text-green-700'
                             }`}
@@ -135,9 +155,9 @@ const Browse = () => {
                         {categories.slice(0, 12).map((cat) => (
                             <button
                                 key={cat}
-                                onClick={() => handleFilterChange('category', cat)}
+                                onClick={() => setCategory(cat)}
                                 className={`flex-shrink-0 flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold border transition cursor-pointer ${
-                                    filters.category === cat
+                                    category === cat
                                         ? 'bg-green-600 text-white border-green-600'
                                         : 'bg-white text-slate-600 border-slate-200 hover:border-green-400 hover:text-green-700'
                                 }`}
@@ -154,69 +174,70 @@ const Browse = () => {
                     <p className="text-xs text-slate-500">
                         {pagination.total > 0 ? `${pagination.total} product${pagination.total !== 1 ? 's' : ''} found` : ''}
                     </p>
-                    {(filters.search || filters.category) && (
+                    {(debouncedSearch || category) && (
                         <p className="text-xs text-slate-400">
-                            {filters.category && <span className="font-medium text-green-600">{filters.category}</span>}
-                            {filters.search && filters.category && ' · '}
-                            {filters.search && <span>"{filters.search}"</span>}
+                            {category && <span className="font-medium text-green-600">{category}</span>}
+                            {debouncedSearch && category && ' · '}
+                            {debouncedSearch && <span>"{debouncedSearch}"</span>}
                         </p>
                     )}
                 </div>
 
-                {/* Products grid */}
-                {products.length === 0 ? (
-                    <div className="bg-white border border-slate-200 rounded-xl text-center py-20">
-                        <div className="text-5xl mb-3">🔍</div>
-                        <h3 className="text-base font-bold text-slate-900 mb-1">No products found</h3>
-                        <p className="text-sm text-slate-400 mb-5">Try a different search or category.</p>
-                        <button
-                            onClick={clearFilters}
-                            className="bg-green-600 text-white text-sm font-semibold px-5 py-2.5 rounded-lg hover:bg-green-700 transition border-none cursor-pointer"
-                        >
-                            Clear filters
-                        </button>
-                    </div>
-                ) : (
-                    <>
-                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-                            {products.map((product) => (
-                                <ProductCard key={product.id} product={product} />
-                            ))}
+                {/* Products grid container with smooth opacity transitions */}
+                <div className={`transition-opacity duration-200 ${loading ? 'opacity-60 pointer-events-none' : 'opacity-100'}`}>
+                    {products.length === 0 ? (
+                        <div className="bg-white border border-slate-200 rounded-xl text-center py-20">
+                            <div className="text-5xl mb-3">🔍</div>
+                            <h3 className="text-base font-bold text-slate-900 mb-1">No products found</h3>
+                            <p className="text-sm text-slate-400 mb-5">Try a different search or category.</p>
+                            <button
+                                onClick={clearFilters}
+                                className="bg-green-600 text-white text-sm font-semibold px-5 py-2.5 rounded-lg hover:bg-green-700 transition border-none cursor-pointer"
+                            >
+                                Clear filters
+                            </button>
                         </div>
-
-                        {/* Pagination */}
-                        {pagination.last_page > 1 && (
-                            <div className="mt-5 bg-white border border-slate-200 rounded-xl px-5 py-3.5 flex items-center justify-between flex-wrap gap-3">
-                                <span className="text-xs text-slate-500">
-                                    Showing {products.length} of {pagination.total} products
-                                </span>
-                                <div className="flex items-center gap-2">
-                                    <button
-                                        disabled={pagination.current_page <= 1}
-                                        onClick={() => handlePageChange(pagination.current_page - 1)}
-                                        className="px-3.5 py-1.5 text-xs font-semibold rounded-lg border border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed transition cursor-pointer"
-                                    >← Previous</button>
-                                    <span className="text-xs text-slate-500 px-1">
-                                        {pagination.current_page} / {pagination.last_page}
-                                    </span>
-                                    <button
-                                        disabled={pagination.current_page >= pagination.last_page}
-                                        onClick={() => handlePageChange(pagination.current_page + 1)}
-                                        className="px-3.5 py-1.5 text-xs font-semibold rounded-lg border border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed transition cursor-pointer"
-                                    >Next →</button>
-                                </div>
+                    ) : (
+                        <>
+                            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                                {products.map((product) => (
+                                    <ProductCard key={product.id} product={product} navigate={navigate} user={user} />
+                                ))}
                             </div>
-                        )}
-                    </>
-                )}
+
+                            {/* Pagination */}
+                            {pagination.last_page > 1 && (
+                                <div className="mt-5 bg-white border border-slate-200 rounded-xl px-5 py-3.5 flex items-center justify-between flex-wrap gap-3">
+                                    <span className="text-xs text-slate-500">
+                                        Showing {products.length} of {pagination.total} products
+                                    </span>
+                                    <div className="flex items-center gap-2">
+                                        <button
+                                            disabled={pagination.current_page <= 1}
+                                            onClick={() => setPage(pagination.current_page - 1)}
+                                            className="px-3.5 py-1.5 text-xs font-semibold rounded-lg border border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed transition cursor-pointer"
+                                        >← Previous</button>
+                                        <span className="text-xs text-slate-500 px-1">
+                                            {pagination.current_page} / {pagination.last_page}
+                                        </span>
+                                        <button
+                                            disabled={pagination.current_page >= pagination.last_page}
+                                            onClick={() => setPage(pagination.current_page + 1)}
+                                            className="px-3.5 py-1.5 text-xs font-semibold rounded-lg border border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed transition cursor-pointer"
+                                        >Next →</button>
+                                    </div>
+                                </div>
+                            )}
+                        </>
+                    )}
+                </div>
             </div>
         </div>
     );
 };
 
-const ProductCard = ({ product }) => {
-    const { user } = useAuth();
-    const navigate = useNavigate();
+// Declared strictly outside the main container scope to safeguard input structural focus tracking
+const ProductCard = ({ product, navigate, user }) => {
     const isExpired = product.expiry_date && new Date(product.expiry_date) < new Date();
     const isAvailable = product.is_available && !isExpired;
 
@@ -230,8 +251,8 @@ const ProductCard = ({ product }) => {
             onClick={() => navigate(`/app/products/${product.id}`)}
             className="bg-white rounded-xl border border-slate-200 overflow-hidden cursor-pointer hover:-translate-y-0.5 hover:shadow-lg transition-all group"
         >
-            {/* Image */}
-            <div className="relative h-36 bg-slate-100">
+            {/* Image Wrap */}
+            <div className="relative h-36 bg-slate-100 overflow-hidden">
                 {product.photos?.length > 0 ? (
                     <img
                         src={product.photos[0]}

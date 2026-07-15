@@ -7,7 +7,7 @@ import api from '../../services/api';
 import { OrderCard } from './OrderCard';
 import { OrderDetails } from './OrderDetails';
 
- const Orders = () => {
+const Orders = () => {
     const { user } = useAuth();
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -55,15 +55,18 @@ import { OrderDetails } from './OrderDetails';
         finally { setLoadingAction(false); }
     };
 
+    // FIXED: Removed confirm() - confirmation is now handled in the modal
     const handleCancelOrder = async (orderId) => {
-        if (!confirm('Are you sure you want to cancel this order?')) return;
         try {
             setLoadingAction(true);
             await api.post(`/orders/${orderId}/cancel`);
             flash('success', 'Order cancelled successfully');
             await fetchOrders();
-        } catch { flash('error', 'Failed to cancel order'); }
-        finally { setLoadingAction(false); }
+        } catch { 
+            flash('error', 'Failed to cancel order'); 
+        } finally { 
+            setLoadingAction(false); 
+        }
     };
 
     const handleFilterChange = (key, value) => setFilters(f => ({ ...f, [key]: value, page: 1 }));
@@ -207,4 +210,4 @@ import { OrderDetails } from './OrderDetails';
     );
 };
 
-export default Orders
+export default Orders;

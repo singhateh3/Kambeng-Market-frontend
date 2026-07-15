@@ -2,22 +2,13 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { AdminDashboardSkeleton } from '../../components/common/skeletons/AdminDashboardSkeleton';
-import { useNotifications } from '../../context/NotificationContext';
 import { useAuth } from '../../hooks/useAuth';
 import { useCachedFetch } from '../../hooks/useCachedFetch';
 
 const AdminDashboard = () => {
     const { user } = useAuth();
-    const { 
-        notifications, 
-        unreadCount, 
-        fetchNotifications, 
-        markAsRead, 
-        markAllAsRead 
-    } = useNotifications();
     const [stats, setStats] = useState(null);
     const [loading, setLoading] = useState(true);
-    const [showNotifications, setShowNotifications] = useState(false);
     const [pendingVerifications, setPendingVerifications] = useState(0);
     const [refreshing, setRefreshing] = useState(false);
 
@@ -67,8 +58,6 @@ const AdminDashboard = () => {
 
     // Initial data fetch - check cache first
     useEffect(() => {
-        fetchNotifications();
-        
         // If cached stats exist, use them
         if (cachedStats) {
             console.log('📦 Using cached stats:', cachedStats);
@@ -105,48 +94,18 @@ const AdminDashboard = () => {
             // Invalidate and refresh stats
             invalidateStatsCache();
             await refreshStats();
-            
-            // Refresh notifications
-            await fetchNotifications();
         } catch (error) {
             console.error('Error refreshing data:', error);
         } finally {
             setRefreshing(false);
             setLoading(false);
         }
-    }, [refreshStats, fetchNotifications, invalidateStatsCache]);
+    }, [refreshStats, invalidateStatsCache]);
 
     const fmt = (amount) => {
         if (amount === undefined || amount === null) return 'GMD 0.00';
         const n = typeof amount === 'string' ? parseFloat(amount) : amount;
         return isNaN(n) ? 'GMD 0.00' : `GMD ${n.toFixed(2)}`;
-    };
-
-    const handleNotificationClick = async (notification) => {
-        if (!notification.is_read) {
-            await markAsRead(notification.id);
-        }
-        // Navigate based on notification type
-        if (notification.link) {
-            window.location.href = notification.link;
-        } else if (notification.type === 'farmer_verification_request') {
-            window.location.href = '/app/admin/farmers/verification';
-        } else if (notification.type === 'order_placed' || notification.type === 'order_confirmed' || 
-                   notification.type === 'order_shipped' || notification.type === 'order_delivered' || 
-                   notification.type === 'order_cancelled') {
-            const orderId = notification.data?.order_id;
-            if (orderId) {
-                window.location.href = `/app/orders/${orderId}`;
-            }
-        } else if (notification.type === 'user_registered') {
-            window.location.href = '/app/admin/users';
-        } else if (notification.type === 'new_product') {
-            const productId = notification.data?.product_id;
-            if (productId) {
-                window.location.href = `/app/products/${productId}`;
-            }
-        }
-        setShowNotifications(false);
     };
 
     // Show skeleton only on initial load
@@ -173,17 +132,9 @@ const AdminDashboard = () => {
         1
     );
 
-    // Get admin-specific notifications
-    const adminNotifications = notifications.filter(n => 
-        n.type === 'farmer_verification_request' || 
-        n.type === 'user_registered' ||
-        n.type === 'reported_product' ||
-        n.type === 'payment_dispute'
-    );
-
     return (
         <div className="bg-slate-50 min-h-screen">
-            {/* Header with Notification Bell */}
+            {/* Header */}
             <div className="bg-white border-b border-slate-200">
                 <div className="max-w-6xl mx-auto px-6 py-5">
                     <div className="flex items-center justify-between">
@@ -205,130 +156,6 @@ const AdminDashboard = () => {
                                         </svg>
                                         Refreshing...
                                     </span>
-                                )}
-                            </div>
-                        </div>
-                        
-                        <div className="flex items-center gap-3">
-                            {/* Refresh Button */}
-                            <button
-                                onClick={handleRefresh}
-                                disabled={refreshing}
-                                className="flex items-center gap-1.5 text-sm text-slate-600 hover:text-slate-800 border border-slate-200 px-3 py-1.5 rounded-lg hover:bg-slate-50 transition disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                                <svg className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                                </svg>
-                                {refreshing ? 'Refreshing...' : 'Refresh'}
-                            </button>
-
-                            {/* Notification Bell */}
-                            <div className="relative">
-                                <button
-                                    onClick={() => setShowNotifications(!showNotifications)}
-                                    className="relative p-2 rounded-lg hover:bg-slate-100 transition-colors"
-                                >
-                                    <svg className="w-6 h-6 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
-                                            d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" 
-                                        />
-                                    </svg>
-                                    {unreadCount > 0 && (
-                                        <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center animate-pulse">
-                                            {unreadCount > 99 ? '99+' : unreadCount}
-                                        </span>
-                                    )}
-                                </button>
-
-                                {/* Notification Dropdown */}
-                                {showNotifications && (
-                                    <div className="absolute right-0 mt-2 w-96 bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden z-50 animate-in fade-in-down duration-200">
-                                        <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100">
-                                            <h3 className="font-bold text-sm text-slate-900">Notifications</h3>
-                                            <div className="flex items-center gap-2">
-                                                {unreadCount > 0 && (
-                                                    <button
-                                                        onClick={() => {
-                                                            markAllAsRead();
-                                                            setShowNotifications(false);
-                                                        }}
-                                                        className="text-xs text-green-600 hover:text-green-700 font-semibold"
-                                                    >
-                                                        Mark all read
-                                                    </button>
-                                                )}
-                                                <Link
-                                                    to="/app/notifications"
-                                                    className="text-xs text-green-600 hover:text-green-700 font-semibold"
-                                                    onClick={() => setShowNotifications(false)}
-                                                >
-                                                    View all
-                                                </Link>
-                                            </div>
-                                        </div>
-
-                                        <div className="max-h-96 overflow-y-auto">
-                                            {notifications.length === 0 ? (
-                                                <div className="text-center py-8">
-                                                    <span className="text-3xl block mb-2">🔔</span>
-                                                    <p className="text-sm text-slate-400">No notifications</p>
-                                                </div>
-                                            ) : (
-                                                notifications.slice(0, 10).map((notification) => (
-                                                    <div
-                                                        key={notification.id}
-                                                        onClick={() => handleNotificationClick(notification)}
-                                                        className={`px-4 py-3 border-b border-slate-50 cursor-pointer hover:bg-slate-50 transition ${
-                                                            !notification.is_read ? 'bg-blue-50 border-l-4 border-l-blue-500' : ''
-                                                        }`}
-                                                    >
-                                                        <div className="flex items-start gap-2">
-                                                            <span className="text-lg flex-shrink-0">
-                                                                {notification.icon || '🔔'}
-                                                            </span>
-                                                            <div className="flex-1 min-w-0">
-                                                                <div className="flex items-center gap-2">
-                                                                    <p className={`text-sm font-medium ${!notification.is_read ? 'text-slate-900' : 'text-slate-600'}`}>
-                                                                        {notification.title}
-                                                                    </p>
-                                                                    {!notification.is_read && (
-                                                                        <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-blue-100 text-blue-800 flex-shrink-0">
-                                                                            New
-                                                                        </span>
-                                                                    )}
-                                                                </div>
-                                                                <p className="text-xs text-slate-500 mt-0.5 line-clamp-2">
-                                                                    {notification.message}
-                                                                </p>
-                                                                <div className="flex items-center gap-3 mt-1">
-                                                                    <span className="text-[10px] text-slate-400">
-                                                                        {notification.time_ago || new Date(notification.created_at).toLocaleString()}
-                                                                    </span>
-                                                                    {notification.type && (
-                                                                        <span className="text-[10px] font-medium text-slate-400 uppercase">
-                                                                            {notification.type.replace(/_/g, ' ')}
-                                                                        </span>
-                                                                    )}
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                ))
-                                            )}
-                                        </div>
-
-                                        {notifications.length > 0 && (
-                                            <div className="px-4 py-2 border-t border-slate-100 bg-slate-50">
-                                                <Link
-                                                    to="/app/notifications"
-                                                    className="text-xs text-green-600 hover:text-green-700 font-semibold block text-center"
-                                                    onClick={() => setShowNotifications(false)}
-                                                >
-                                                    View all notifications →
-                                                </Link>
-                                            </div>
-                                        )}
-                                    </div>
                                 )}
                             </div>
                         </div>
@@ -394,26 +221,6 @@ const AdminDashboard = () => {
                             >
                                 Review now →
                             </Link>
-                        </div>
-                    </div>
-                )}
-
-                {/* Unread Notifications Alert */}
-                {unreadCount > 0 && (
-                    <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6 animate-in slide-in-from-top duration-300">
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                                <span className="text-blue-600">🔔</span>
-                                <p className="text-sm text-blue-800">
-                                    <strong>{unreadCount}</strong> unread notification{unreadCount > 1 ? 's' : ''}
-                                </p>
-                            </div>
-                            <button
-                                onClick={markAllAsRead}
-                                className="text-xs font-semibold text-blue-600 hover:text-blue-700"
-                            >
-                                Mark all read
-                            </button>
                         </div>
                     </div>
                 )}
@@ -542,62 +349,6 @@ const AdminDashboard = () => {
                         ))}
                     </div>
                 </div>
-
-                {/* Recent Admin Notifications */}
-                {adminNotifications.length > 0 && (
-                    <div className="bg-white border border-slate-200 rounded-xl p-5 mb-6 hover:shadow-md transition-shadow">
-                        <div className="flex items-center justify-between mb-4">
-                            <h3 className="text-sm font-bold text-slate-900">Admin notifications</h3>
-                            <Link to="/app/notifications" className="text-xs font-semibold text-green-600 no-underline hover:text-green-700">
-                                View all →
-                            </Link>
-                        </div>
-                        <div className="divide-y divide-slate-100">
-                            {adminNotifications.slice(0, 5).map((notification) => (
-                                <div 
-                                    key={notification.id} 
-                                    className={`py-3 flex items-start gap-3 cursor-pointer hover:bg-slate-50 px-2 rounded-lg transition ${
-                                        !notification.is_read ? 'bg-blue-50/50' : ''
-                                    }`}
-                                    onClick={() => handleNotificationClick(notification)}
-                                >
-                                    <span className="text-xl flex-shrink-0 mt-0.5">
-                                        {notification.icon || '🔔'}
-                                    </span>
-                                    <div className="flex-1 min-w-0">
-                                        <div className="flex items-center gap-2">
-                                            <p className={`text-sm font-medium ${!notification.is_read ? 'text-slate-900' : 'text-slate-600'}`}>
-                                                {notification.title}
-                                            </p>
-                                            {!notification.is_read && (
-                                                <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-blue-100 text-blue-800 flex-shrink-0">
-                                                    New
-                                                </span>
-                                            )}
-                                        </div>
-                                        <p className="text-xs text-slate-500 mt-0.5 line-clamp-2">
-                                            {notification.message}
-                                        </p>
-                                        <p className="text-[10px] text-slate-400 mt-1">
-                                            {notification.time_ago || new Date(notification.created_at).toLocaleString()}
-                                        </p>
-                                    </div>
-                                    {!notification.is_read && (
-                                        <button
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                markAsRead(notification.id);
-                                            }}
-                                            className="text-xs text-blue-600 hover:text-blue-700 font-medium flex-shrink-0"
-                                        >
-                                            Mark read
-                                        </button>
-                                    )}
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                )}
 
                 {/* Recent Orders */}
                 <div className="bg-white border border-slate-200 rounded-xl p-5 hover:shadow-md transition-shadow">

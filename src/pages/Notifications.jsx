@@ -4,9 +4,9 @@ import { useNavigate } from 'react-router-dom';
 import { Alert } from '../components/common/Alert';
 import { Button } from '../components/common/Button';
 import { Skeleton } from '../components/common/skeletons/Skeleton';
-import { useNotifications } from '../context/NotificationContext'; // ✅ Correct import
+import { useNotifications } from '../context/NotificationContext';
 
- const Notifications = () => {
+const Notifications = () => {
     const navigate = useNavigate();
     const {
         notifications,
@@ -25,6 +25,9 @@ import { useNotifications } from '../context/NotificationContext'; // ✅ Correc
     const [success, setSuccess] = useState(null);
     const [error, setError] = useState(null);
     const [isInitialLoad, setIsInitialLoad] = useState(true);
+    const [showConfirmModal, setShowConfirmModal] = useState(false);
+    const [confirmAction, setConfirmAction] = useState(null);
+    const [confirmData, setConfirmData] = useState(null);
 
     useEffect(() => {
         fetchNotifications(currentPage, 20, filter).finally(() => {
@@ -66,10 +69,12 @@ import { useNotifications } from '../context/NotificationContext'; // ✅ Correc
     };
 
     const handleDelete = async (id) => {
-        if (!confirm('Are you sure you want to delete this notification?')) return;
         try {
             await deleteNotification(id);
             setSuccess('Notification deleted');
+            setShowConfirmModal(false);
+            setConfirmAction(null);
+            setConfirmData(null);
             setTimeout(() => setSuccess(null), 3000);
         } catch (err) {
             setError('Failed to delete notification');
@@ -78,10 +83,12 @@ import { useNotifications } from '../context/NotificationContext'; // ✅ Correc
     };
 
     const handleDeleteRead = async () => {
-        if (!confirm('Delete all read notifications?')) return;
         try {
             await deleteRead();
             setSuccess('Read notifications deleted');
+            setShowConfirmModal(false);
+            setConfirmAction(null);
+            setConfirmData(null);
             setTimeout(() => setSuccess(null), 3000);
         } catch (err) {
             setError('Failed to delete read notifications');
@@ -90,14 +97,136 @@ import { useNotifications } from '../context/NotificationContext'; // ✅ Correc
     };
 
     const handleNotificationClick = async (notification) => {
+        console.log('🔔 Notification clicked:', notification);
+        console.log('🔗 Notification link from database:', notification.link);
+        
+        // Mark as read if unread
         if (!notification.is_read) {
             await markAsRead(notification.id);
         }
         
-        if (notification.link) {
-            navigate(notification.link);
+        // Get the link from notification
+        let link = notification.link;
+        
+        // If no link, try to generate one from the type
+        if (!link) {
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            const isAdmin = user?.role === 'admin';
+            const data = notification.data || {};
+            
+            console.log('👤 User role:', user?.role, 'isAdmin:', isAdmin);
+            
+            switch (notification.type) {
+                // Order related notifications - Admin goes to regular order details
+                case 'order_placed':
+                case 'order_confirmed':
+                case 'order_shipped':
+                case 'order_delivered':
+                case 'order_cancelled':
+                    if (data.order_id) {
+                        link = `/app/orders/${data.order_id}`;
+                    } else {
+                        link = '/app/orders';
+                    }
+                    break;
+                // Review notifications - Admin goes to regular order details
+                case 'new_review':
+                    if (data.order_id) {
+                        link = `/app/orders/${data.order_id}`;
+                    } else {
+                        link = '/app/orders';
+                    }
+                    break;
+                case 'farmer_verification_request':
+                case 'farmer_verified':
+                case 'farmer_rejected':
+                    link = isAdmin ? '/app/admin/farmers/verification' : '/app/profile';
+                    break;
+                case 'user_registered':
+                    link = '/app/admin/users';
+                    break;
+                case 'new_product':
+                case 'low_stock':
+                    link = isAdmin ? '/app/admin/products' : '/app/products';
+                    break;
+                default:
+                    link = isAdmin ? '/app/admin/dashboard' : '/app/dashboard';
+            }
+        }
+        
+        // Ensure the link is properly formatted
+        if (link) {
+            if (!link.startsWith('/app') && !link.startsWith('http')) {
+                link = `/app${link.startsWith('/') ? '' : '/'}${link}`;
+            }
+            
+            console.log('📍 Navigating to final link:', link);
+            navigate(link);
+        } else {
+            console.warn('⚠️ No link found for notification');
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            if (user?.role === 'admin') {
+                navigate('/app/admin/dashboard');
+            } else {
+                navigate('/app/dashboard');
+            }
         }
     };
+
+    const openConfirmModal = (action, data) => {
+        setConfirmAction(action);
+        setConfirmData(data);
+        setShowConfirmModal(true);
+    };
+
+    const closeConfirmModal = () => {
+        setShowConfirmModal(false);
+        setConfirmAction(null);
+        setConfirmData(null);
+    };
+
+    const handleConfirmAction = () => {
+        if (confirmAction === 'delete') {
+            handleDelete(confirmData);
+        } else if (confirmAction === 'deleteRead') {
+            handleDeleteRead();
+        }
+    };
+
+    const getConfirmationContent = () => {
+        if (confirmAction === 'delete') {
+            return {
+                title: 'Delete Notification',
+                message: 'Are you sure you want to delete this notification? This action cannot be undone.',
+                icon: '🗑️',
+                confirmText: 'Yes, Delete',
+                confirmColor: 'bg-red-600 hover:bg-red-700',
+                iconBg: 'bg-red-100',
+                iconColor: 'text-red-600',
+            };
+        } else if (confirmAction === 'deleteRead') {
+            return {
+                title: 'Delete All Read Notifications',
+                message: 'Are you sure you want to delete all read notifications? This action cannot be undone.',
+                icon: '🗑️',
+                confirmText: 'Yes, Delete All',
+                confirmColor: 'bg-red-600 hover:bg-red-700',
+                iconBg: 'bg-red-100',
+                iconColor: 'text-red-600',
+            };
+        }
+        return {
+            title: 'Confirm Action',
+            message: 'Are you sure you want to proceed?',
+            icon: '⚠️',
+            confirmText: 'Confirm',
+            confirmColor: 'bg-green-600 hover:bg-green-700',
+            iconBg: 'bg-yellow-100',
+            iconColor: 'text-yellow-600',
+        };
+    };
+
+    const confirmationContent = getConfirmationContent();
 
     // Loading skeleton component
     const NotificationSkeleton = () => (
@@ -129,7 +258,6 @@ import { useNotifications } from '../context/NotificationContext'; // ✅ Correc
         return (
             <div className="max-w-4xl mx-auto">
                 <div className="bg-white shadow rounded-lg overflow-hidden">
-                    {/* Header Skeleton */}
                     <div className="p-6 border-b">
                         <div className="flex justify-between items-center">
                             <div>
@@ -143,7 +271,6 @@ import { useNotifications } from '../context/NotificationContext'; // ✅ Correc
                         </div>
                     </div>
                     
-                    {/* Filter Skeleton */}
                     <div className="p-4 border-b bg-gray-50">
                         <div className="flex space-x-2">
                             <Skeleton className="h-10 w-20" />
@@ -152,19 +279,16 @@ import { useNotifications } from '../context/NotificationContext'; // ✅ Correc
                         </div>
                     </div>
                     
-                    {/* Notifications Skeleton */}
                     <NotificationSkeleton />
                 </div>
             </div>
         );
     }
 
-    // Show spinner while loading more data (pagination)
     if (loading && !isInitialLoad) {
         return (
             <div className="max-w-4xl mx-auto">
                 <div className="bg-white shadow rounded-lg overflow-hidden">
-                    {/* Header - keep visible */}
                     <div className="p-6 border-b">
                         <div className="flex flex-wrap justify-between items-center gap-4">
                             <div>
@@ -181,7 +305,11 @@ import { useNotifications } from '../context/NotificationContext'; // ✅ Correc
                                         Mark All Read
                                     </Button>
                                 )}
-                                <Button size="sm" variant="danger" onClick={handleDeleteRead}>
+                                <Button 
+                                    size="sm" 
+                                    variant="danger" 
+                                    onClick={() => openConfirmModal('deleteRead')}
+                                >
                                     Delete Read
                                 </Button>
                             </div>
@@ -202,7 +330,6 @@ import { useNotifications } from '../context/NotificationContext'; // ✅ Correc
     return (
         <div className="max-w-4xl mx-auto">
             <div className="bg-white shadow rounded-lg overflow-hidden">
-                {/* Header */}
                 <div className="p-6 border-b">
                     <div className="flex flex-wrap justify-between items-center gap-4">
                         <div>
@@ -219,18 +346,20 @@ import { useNotifications } from '../context/NotificationContext'; // ✅ Correc
                                     Mark All Read
                                 </Button>
                             )}
-                            <Button size="sm" variant="danger" onClick={handleDeleteRead}>
+                            <Button 
+                                size="sm" 
+                                variant="danger" 
+                                onClick={() => openConfirmModal('deleteRead')}
+                            >
                                 Delete Read
                             </Button>
                         </div>
                     </div>
                 </div>
 
-                {/* Success/Error */}
                 {success && <Alert type="success" message={success} onClose={() => setSuccess(null)} />}
                 {error && <Alert type="error" message={error} onClose={() => setError(null)} />}
 
-                {/* Filters */}
                 <div className="p-4 border-b bg-gray-50">
                     <div className="flex flex-wrap gap-2">
                         <button
@@ -266,7 +395,6 @@ import { useNotifications } from '../context/NotificationContext'; // ✅ Correc
                     </div>
                 </div>
 
-                {/* Notifications List */}
                 {notifications.length === 0 ? (
                     <div className="text-center py-12">
                         <div className="text-6xl mb-4">🔔</div>
@@ -317,6 +445,11 @@ import { useNotifications } from '../context/NotificationContext'; // ✅ Correc
                                                             {notification.time_ago || 
                                                                 new Date(notification.created_at).toLocaleString()}
                                                         </span>
+                                                        {notification.link && (
+                                                            <span className="text-xs text-blue-500">
+                                                                Click to view →
+                                                            </span>
+                                                        )}
                                                     </div>
                                                 </div>
                                             </div>
@@ -337,7 +470,7 @@ import { useNotifications } from '../context/NotificationContext'; // ✅ Correc
                                             <button
                                                 onClick={(e) => {
                                                     e.stopPropagation();
-                                                    handleDelete(notification.id);
+                                                    openConfirmModal('delete', notification.id);
                                                 }}
                                                 className="text-gray-400 hover:text-red-600 transition-colors"
                                                 title="Delete"
@@ -352,7 +485,6 @@ import { useNotifications } from '../context/NotificationContext'; // ✅ Correc
                             ))}
                         </div>
 
-                        {/* Pagination */}
                         {pagination.total > pagination.per_page && (
                             <div className="px-6 py-4 border-t flex flex-wrap items-center justify-between gap-2">
                                 <div className="text-sm text-gray-700">
@@ -384,8 +516,52 @@ import { useNotifications } from '../context/NotificationContext'; // ✅ Correc
                     </>
                 )}
             </div>
+
+            {showConfirmModal && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
+                    <div className="bg-white rounded-xl max-w-md w-full shadow-xl animate-in zoom-in-95 duration-200">
+                        <div className="flex justify-between items-center p-6 border-b border-gray-100">
+                            <h2 className="text-xl font-bold text-gray-900">{confirmationContent.title}</h2>
+                            <button
+                                onClick={closeConfirmModal}
+                                className="text-gray-400 hover:text-gray-600 transition"
+                            >
+                                <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+
+                        <div className="p-6">
+                            <div className="flex flex-col items-center text-center mb-6">
+                                <div className={`w-16 h-16 ${confirmationContent.iconBg} rounded-full flex items-center justify-center text-3xl mb-4`}>
+                                    {confirmationContent.icon}
+                                </div>
+                                <p className="text-gray-600 text-sm leading-relaxed">
+                                    {confirmationContent.message}
+                                </p>
+                            </div>
+
+                            <div className="flex gap-3">
+                                <button
+                                    onClick={closeConfirmModal}
+                                    className="flex-1 px-4 py-2.5 text-sm font-semibold text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition border-none cursor-pointer"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={handleConfirmAction}
+                                    className={`flex-1 px-4 py-2.5 text-sm font-semibold text-white rounded-lg transition border-none cursor-pointer ${confirmationContent.confirmColor}`}
+                                >
+                                    {confirmationContent.confirmText}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
 
-export default Notifications
+export default Notifications;

@@ -1,7 +1,7 @@
 // src/components/ReviewList.jsx
 import { useEffect, useState } from 'react';
 import api from '../services/api';
-import { ReviewStars } from './ReviewStars';
+import ReviewStars from './ReviewStars'; // ✅ Fixed - default import (no curly braces)
 
 export const ReviewList = ({ productId }) => {
     const [reviews, setReviews] = useState([]);

@@ -5,7 +5,7 @@ import { ReviewForm } from '../../components/ReviewForm';
 import { useAuth } from '../../hooks/useAuth';
 import api from '../../services/api';
 
-export const WriteReview = () => {
+ const WriteReview = () => {
     const { orderId } = useParams();
     const navigate = useNavigate();
     const { user } = useAuth();
@@ -76,3 +76,4 @@ export const WriteReview = () => {
         </div>
     );
 };
+export default WriteReview;

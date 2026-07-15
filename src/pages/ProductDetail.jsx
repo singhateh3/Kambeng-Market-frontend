@@ -5,7 +5,7 @@ import { Button } from '../components/common/Button';
 import { useAuth } from '../hooks/useAuth';
 import api from '../services/api';
 
-export const ProductDetail = () => {
+ const ProductDetail = () => {
     const { productId } = useParams();
     const navigate = useNavigate();
     const { user } = useAuth();
@@ -300,3 +300,5 @@ export const ProductDetail = () => {
         </div>
     );
 };
+
+export default ProductDetail;

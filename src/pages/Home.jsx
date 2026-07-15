@@ -2,8 +2,18 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Skeleton } from "../components/common/skeletons/Skeleton";
+import ReviewStars from '../components/ReviewStars';
 import { useAuth } from '../hooks/useAuth';
 import api from '../services/api';
+
+const CATEGORY_ICONS = {
+    'Vegetables': '🥬', 'Fruits': '🍎', 'Grains': '🌾',
+    'Herbs': '🌿', 'Spices': '🌶️', 'Dairy': '🥛',
+    'Meat': '🥩', 'Fish': '🐟', 'Poultry': '🐔',
+    'Eggs': '🥚', 'Rice': '🍚', 'Groundnuts': '🥜',
+    'Cereals': '🌾', 'Legumes': '🫘', 'Roots': '🥔', 'Tubers': '🍠',
+};
+const getCategoryIcon = (category) => CATEGORY_ICONS[category] || '📦';
 
 const Home = () => {
     const { user, isAuthenticated } = useAuth();
@@ -19,16 +29,21 @@ const Home = () => {
     const fetchHomeData = async () => {
         try {
             setLoading(true);
+            // Each request fails independently now — one flaky endpoint no longer
+            // blanks out the whole homepage. Previously Promise.all([...]) meant
+            // a single rejection (e.g. categories timing out) prevented
+            // featuredProducts from rendering even though that call succeeded.
             const [productsRes, categoriesRes, statsRes] = await Promise.all([
-                api.get('/products?limit=8&sort_by=created_at&sort_order=desc'),
-                api.get('/products/categories'),
-                api.get('/public/statistics').catch(() => ({ data: { data: null } })),
+                api.get('/products?limit=8&sort_by=created_at&sort_order=desc')
+                    .catch((err) => { console.error('Error fetching products:', err); return { data: { data: [] } }; }),
+                api.get('/products/categories')
+                    .catch((err) => { console.error('Error fetching categories:', err); return { data: { data: [] } }; }),
+                api.get('/public/statistics')
+                    .catch((err) => { console.error('Error fetching statistics:', err); return { data: { data: null } }; }),
             ]);
             setFeaturedProducts(productsRes.data?.data || []);
             setCategories(categoriesRes.data?.data || []);
             setStats(statsRes.data?.data || null);
-        } catch (error) {
-            console.error('Error fetching home data:', error);
         } finally {
             setLoading(false);
         }
@@ -37,11 +52,10 @@ const Home = () => {
     const handleSearch = (e) => {
         e.preventDefault();
         if (searchQuery.trim()) {
-            navigate(isAuthenticated ? `/browse?search=${encodeURIComponent(searchQuery)}` : '/login');
+            navigate(isAuthenticated ? `/app/browse?search=${encodeURIComponent(searchQuery)}` : '/login');
         }
     };
 
-    // If loading, show skeleton
     if (loading) {
         return <HomeSkeleton />;
     }
@@ -54,10 +68,10 @@ const Home = () => {
                     <Link to="/" className="flex items-center gap-2 no-underline flex-shrink-0">
                         <span className="text-xl">🌾</span>
                         <span className="font-extrabold text-green-700 tracking-tight">Kambeng</span>
-                        <span className="font-normal text-slate-400">Market</span>
+                        <span className="font-normal text-slate-400 hidden sm:inline">Market</span>
                     </Link>
 
-                    <form onSubmit={handleSearch} className="flex-1 max-w-md">
+                    <form onSubmit={handleSearch} className="flex-1 max-w-md hidden sm:block">
                         <div className="relative">
                             <svg className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -81,27 +95,44 @@ const Home = () => {
                                 </Link>
                             </>
                         ) : (
-                            <Link to="/dashboard" className="bg-green-50 text-green-700 border border-green-200 text-sm font-semibold px-4 py-2 rounded-lg no-underline hover:bg-green-100 transition">
+                            <Link to="/app/dashboard" className="bg-green-50 text-green-700 border border-green-200 text-sm font-semibold px-4 py-2 rounded-lg no-underline hover:bg-green-100 transition">
                                 Dashboard
                             </Link>
                         )}
                     </div>
                 </div>
+                {/* Search on its own row on small screens, where it's hidden above */}
+                <div className="sm:hidden px-6 pb-3">
+                    <form onSubmit={handleSearch}>
+                        <div className="relative">
+                            <svg className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            </svg>
+                            <input
+                                type="text"
+                                placeholder="Search produce, farmers..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-lg text-sm bg-slate-50 text-slate-900 outline-none focus:border-green-400 focus:bg-white transition"
+                            />
+                        </div>
+                    </form>
+                </div>
             </nav>
 
             {/* Hero */}
             <section className="bg-white border-b border-slate-100">
-                <div className="max-w-6xl mx-auto px-6 py-16 grid grid-cols-2 gap-16 items-center">
+                <div className="max-w-6xl mx-auto px-6 py-10 sm:py-16 grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-16 items-center">
                     <div>
                         <div className="inline-flex items-center gap-1.5 bg-green-50 text-green-700 border border-green-200 text-xs font-semibold px-3 py-1 rounded-full mb-5">
                             <span className="w-1.5 h-1.5 bg-green-600 rounded-full" />
                             Fresh from Gambian farms
                         </div>
-                        <h1 className="text-5xl font-extrabold text-slate-900 leading-tight tracking-tight mb-4">
+                        <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-slate-900 leading-tight tracking-tight mb-4">
                             Farm-fresh produce,<br />
                             <span className="text-green-600">no middlemen.</span>
                         </h1>
-                        <p className="text-lg text-slate-500 leading-relaxed mb-8 max-w-md">
+                        <p className="text-base sm:text-lg text-slate-500 leading-relaxed mb-8 max-w-md">
                             Order directly from verified Gambian farmers. Fair prices for buyers, fair pay for farmers.
                         </p>
 
@@ -116,7 +147,7 @@ const Home = () => {
                                     </button>
                                 </>
                             ) : (
-                                <button onClick={() => navigate('/dashboard')} className="bg-green-600 text-white font-bold px-7 py-3 rounded-lg hover:bg-green-700 transition cursor-pointer border-none text-sm">
+                                <button onClick={() => navigate('/app/dashboard')} className="bg-green-600 text-white font-bold px-7 py-3 rounded-lg hover:bg-green-700 transition cursor-pointer border-none text-sm">
                                     Go to dashboard
                                 </button>
                             )}
@@ -151,7 +182,7 @@ const Home = () => {
                     <div className="max-w-6xl mx-auto px-6">
                         <div className="flex items-center justify-between mb-4">
                             <h2 className="text-sm font-bold text-slate-900">Shop by category</h2>
-                            <Link to={isAuthenticated ? '/browse' : '/login'} className="text-xs font-semibold text-green-600 no-underline hover:text-green-700">
+                            <Link to={isAuthenticated ? '/app/browse' : '/login'} className="text-xs font-semibold text-green-600 no-underline hover:text-green-700">
                                 All categories →
                             </Link>
                         </div>
@@ -159,7 +190,7 @@ const Home = () => {
                             {categories.slice(0, 14).map((cat, i) => (
                                 <Link
                                     key={i}
-                                    to={isAuthenticated ? `/browse?category=${cat}` : '/login'}
+                                    to={isAuthenticated ? `/app/browse?category=${encodeURIComponent(cat)}` : '/login'}
                                     className="flex-shrink-0 flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-slate-200 bg-slate-50 text-slate-700 text-xs font-medium no-underline hover:bg-green-50 hover:border-green-400 hover:text-green-700 transition"
                                 >
                                     <span>{getCategoryIcon(cat)}</span>
@@ -179,7 +210,7 @@ const Home = () => {
                             <h2 className="text-lg font-extrabold text-slate-900 tracking-tight">Featured products</h2>
                             <p className="text-xs text-slate-500 mt-0.5">Freshly listed by farmers near you</p>
                         </div>
-                        <Link to={isAuthenticated ? '/browse' : '/login'} className="text-xs font-semibold text-green-600 no-underline hover:text-green-700">
+                        <Link to={isAuthenticated ? '/app/browse' : '/login'} className="text-xs font-semibold text-green-600 no-underline hover:text-green-700">
                             View all →
                         </Link>
                     </div>
@@ -195,7 +226,7 @@ const Home = () => {
                             <div className="text-5xl mb-3">🌾</div>
                             <p className="text-slate-500 text-sm">No products listed yet.</p>
                             {isAuthenticated && user?.role === 'farmer' && (
-                                <Link to="/products/create" className="text-green-600 text-sm font-semibold no-underline hover:text-green-700 mt-2 inline-block">
+                                <Link to="/app/products/create" className="text-green-600 text-sm font-semibold no-underline hover:text-green-700 mt-2 inline-block">
                                     List your first product →
                                 </Link>
                             )}
@@ -208,7 +239,7 @@ const Home = () => {
             <section className="bg-white border-t border-slate-100 py-14">
                 <div className="max-w-6xl mx-auto px-6">
                     <h2 className="text-lg font-extrabold text-slate-900 tracking-tight mb-8">Why Kambeng Market?</h2>
-                    <div className="grid grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
                         {[
                             { icon: '🌱', title: 'Straight from the farm', desc: 'No cold storage, no middlemen. Produce moves from farm to you within 24 hours.' },
                             { icon: '💰', title: 'Farmers earn more', desc: 'Farmers set their own prices and keep the majority of every sale.' },
@@ -229,7 +260,7 @@ const Home = () => {
                 <div className="max-w-xl mx-auto text-center">
                     {!isAuthenticated ? (
                         <>
-                            <h2 className="text-3xl font-extrabold text-white tracking-tight mb-3">Ready to buy fresh?</h2>
+                            <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight mb-3">Ready to buy fresh?</h2>
                             <p className="text-green-100 text-sm mb-7 leading-relaxed">
                                 Create a free account and start ordering directly from Gambian farmers today.
                             </p>
@@ -244,17 +275,17 @@ const Home = () => {
                         </>
                     ) : user?.role === 'farmer' ? (
                         <>
-                            <h2 className="text-3xl font-extrabold text-white tracking-tight mb-3">List your produce</h2>
+                            <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight mb-3">List your produce</h2>
                             <p className="text-green-100 text-sm mb-7">Reach hotels, restaurants and caterers across The Gambia.</p>
-                            <button onClick={() => navigate('/products/create')} className="bg-white text-green-700 font-bold px-7 py-3 rounded-lg text-sm hover:bg-green-50 transition cursor-pointer border-none">
+                            <button onClick={() => navigate('/app/products/create')} className="bg-white text-green-700 font-bold px-7 py-3 rounded-lg text-sm hover:bg-green-50 transition cursor-pointer border-none">
                                 Add a product
                             </button>
                         </>
                     ) : (
                         <>
-                            <h2 className="text-3xl font-extrabold text-white tracking-tight mb-3">Browse today's listings</h2>
+                            <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight mb-3">Browse today's listings</h2>
                             <p className="text-green-100 text-sm mb-7">Fresh produce added daily by farmers across The Gambia.</p>
-                            <button onClick={() => navigate('/browse')} className="bg-white text-green-700 font-bold px-7 py-3 rounded-lg text-sm hover:bg-green-50 transition cursor-pointer border-none">
+                            <button onClick={() => navigate('/app/browse')} className="bg-white text-green-700 font-bold px-7 py-3 rounded-lg text-sm hover:bg-green-50 transition cursor-pointer border-none">
                                 Browse products
                             </button>
                         </>
@@ -265,8 +296,8 @@ const Home = () => {
             {/* Footer */}
             <footer className="bg-slate-900 px-6 pt-12 pb-8">
                 <div className="max-w-6xl mx-auto">
-                    <div className="grid grid-cols-4 gap-10 mb-10">
-                        <div>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-8 sm:gap-10 mb-10">
+                        <div className="col-span-2 sm:col-span-1">
                             <div className="flex items-center gap-2 mb-3">
                                 <span className="text-lg">🌾</span>
                                 <span className="font-extrabold text-white">Kambeng Market</span>
@@ -276,7 +307,7 @@ const Home = () => {
                             </p>
                         </div>
                         {[
-                            { title: 'Platform', links: [{ label: 'Browse products', to: isAuthenticated ? '/browse' : '/login' }, { label: 'About us', to: '/about' }, { label: 'Contact', to: '/contact' }] },
+                            { title: 'Platform', links: [{ label: 'Browse products', to: isAuthenticated ? '/app/browse' : '/login' }, { label: 'About us', to: '/about' }, { label: 'Contact', to: '/contact' }] },
                             { title: 'Farmers', links: [{ label: 'Join as farmer', to: '/register' }, { label: 'Farmer guide', to: '/help/farmer' }, { label: 'Pricing', to: '/help/pricing' }] },
                         ].map((col, i) => (
                             <div key={i}>
@@ -299,7 +330,7 @@ const Home = () => {
                             </ul>
                         </div>
                     </div>
-                    <div className="border-t border-slate-800 pt-6 flex items-center justify-between">
+                    <div className="border-t border-slate-800 pt-6 flex flex-col sm:flex-row items-center justify-between gap-2">
                         <p className="text-slate-600 text-xs">© {new Date().getFullYear()} Kambeng Market. All rights reserved.</p>
                         <p className="text-slate-600 text-xs">Made in 🇬🇲 The Gambia</p>
                     </div>
@@ -320,7 +351,7 @@ const HomeSkeleton = () => {
                         <Skeleton className="w-6 h-6 rounded-full" />
                         <Skeleton className="h-6 w-24" />
                     </div>
-                    <div className="flex-1 max-w-md">
+                    <div className="flex-1 max-w-md hidden sm:block">
                         <Skeleton className="h-10 w-full rounded-lg" />
                     </div>
                     <div className="ml-auto flex items-center gap-3 flex-shrink-0">
@@ -332,17 +363,17 @@ const HomeSkeleton = () => {
 
             {/* Hero Skeleton */}
             <section className="bg-white border-b border-slate-100">
-                <div className="max-w-6xl mx-auto px-6 py-16 grid grid-cols-2 gap-16 items-center">
+                <div className="max-w-6xl mx-auto px-6 py-10 sm:py-16 grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-16 items-center">
                     <div>
                         <Skeleton className="h-6 w-40 rounded-full mb-5" />
-                        <Skeleton className="h-12 w-full mb-3" />
-                        <Skeleton className="h-12 w-3/4 mb-4" />
-                        <Skeleton className="h-6 w-80 mb-8" />
+                        <Skeleton className="h-10 sm:h-12 w-full mb-3" />
+                        <Skeleton className="h-10 sm:h-12 w-3/4 mb-4" />
+                        <Skeleton className="h-6 w-80 max-w-full mb-8" />
                         <div className="flex gap-3 flex-wrap">
                             <Skeleton className="h-12 w-32 rounded-lg" />
                             <Skeleton className="h-12 w-32 rounded-lg" />
                         </div>
-                        <Skeleton className="h-5 w-60 mt-6" />
+                        <Skeleton className="h-5 w-60 max-w-full mt-6" />
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                         {[1, 2, 3, 4].map((i) => (
@@ -404,7 +435,7 @@ const HomeSkeleton = () => {
             <section className="bg-white border-t border-slate-100 py-14">
                 <div className="max-w-6xl mx-auto px-6">
                     <Skeleton className="h-7 w-48 mb-8" />
-                    <div className="grid grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
                         {[1, 2, 3].map((i) => (
                             <div key={i} className="bg-slate-50 border border-slate-200 rounded-xl p-6">
                                 <Skeleton className="h-10 w-10 mb-3" />
@@ -420,8 +451,8 @@ const HomeSkeleton = () => {
             {/* CTA Skeleton */}
             <section className="bg-green-600 py-14 px-6">
                 <div className="max-w-xl mx-auto text-center">
-                    <Skeleton className="h-8 w-64 mx-auto mb-3" />
-                    <Skeleton className="h-5 w-80 mx-auto mb-7" />
+                    <Skeleton className="h-8 w-64 max-w-full mx-auto mb-3" />
+                    <Skeleton className="h-5 w-80 max-w-full mx-auto mb-7" />
                     <div className="flex gap-3 justify-center flex-wrap">
                         <Skeleton className="h-12 w-40 rounded-lg" />
                         <Skeleton className="h-12 w-32 rounded-lg" />
@@ -432,8 +463,8 @@ const HomeSkeleton = () => {
             {/* Footer Skeleton */}
             <footer className="bg-slate-900 px-6 pt-12 pb-8">
                 <div className="max-w-6xl mx-auto">
-                    <div className="grid grid-cols-4 gap-10 mb-10">
-                        <div>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-8 sm:gap-10 mb-10">
+                        <div className="col-span-2 sm:col-span-1">
                             <Skeleton className="h-6 w-32 mb-3" />
                             <Skeleton className="h-4 w-40" />
                         </div>
@@ -458,6 +489,7 @@ const HomeSkeleton = () => {
     );
 };
 
+// Updated ProductCard with Ratings
 const ProductCard = ({ product }) => {
     const navigate = useNavigate();
     const { isAuthenticated } = useAuth();
@@ -468,17 +500,23 @@ const ProductCard = ({ product }) => {
         navigate(isAuthenticated ? `/app/place-order/${product.id}` : '/login');
     };
 
+    // Coerce to Number defensively — Laravel's withAvg() aggregate can come back
+    // as a string on some DB drivers, and calling .toFixed on a string throws.
+    const averageRating = Number(product?.average_rating ?? product?.avg_rating ?? 0) || 0;
+    const reviewCount = product?.reviews_count || product?.orders_count || 0;
+
     return (
         <div
             onClick={handleClick}
-            className="bg-white rounded-xl border border-slate-200 overflow-hidden cursor-pointer hover:-translate-y-0.5 hover:shadow-lg transition-all"
+            className="bg-white rounded-xl border border-slate-200 overflow-hidden cursor-pointer hover:-translate-y-0.5 hover:shadow-lg transition-all group"
         >
             <div className="relative h-36 bg-slate-100">
                 {product.photos?.length > 0 ? (
                     <img
                         src={product.photos[0]}
                         alt={product.name}
-                        className="w-full h-full object-cover"
+                        loading="lazy"
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                         onError={(e) => { e.target.style.display = 'none'; }}
                     />
                 ) : (
@@ -491,12 +529,37 @@ const ProductCard = ({ product }) => {
                         Fresh
                     </span>
                 )}
+                {averageRating > 0 && (
+                    <div className="absolute bottom-2 left-2 bg-black/60 backdrop-blur-sm text-white text-[10px] font-semibold px-2 py-0.5 rounded-full flex items-center gap-1">
+                        <span>⭐</span>
+                        <span>{averageRating.toFixed(1)}</span>
+                        {reviewCount > 0 && (
+                            <span className="text-[8px] text-white/70">({reviewCount})</span>
+                        )}
+                    </div>
+                )}
             </div>
             <div className="p-3">
-                <p className="text-[11px] text-slate-400 font-medium mb-0.5">{product.farmer?.name || 'Unknown Farmer'}</p>
-                <h3 className="text-sm font-bold text-slate-900 truncate mb-1.5">{product.name}</h3>
+                <p className="text-[11px] text-slate-400 font-medium mb-0.5 truncate">
+                    {product.farmer?.name || 'Unknown Farmer'}
+                </p>
+                <h3 className="text-sm font-bold text-slate-900 truncate mb-1.5 group-hover:text-green-700 transition-colors">
+                    {product.name}
+                </h3>
+
+                <div className="flex items-center gap-1.5 mb-2">
+                    <ReviewStars rating={averageRating} size="sm" />
+                    {reviewCount > 0 && (
+                        <span className="text-[10px] text-slate-400">
+                            ({reviewCount})
+                        </span>
+                    )}
+                </div>
+
                 <div className="flex items-center justify-between mb-2.5">
-                    <span className="text-base font-extrabold text-green-600">{product.price_formatted}</span>
+                    <span className="text-base font-extrabold text-green-600">
+                        {product.price_formatted || `GMD ${product.price}`}
+                    </span>
                     <span className="text-[11px] text-slate-400">{product.quantity} {product.unit}</span>
                 </div>
                 <button
@@ -510,16 +573,4 @@ const ProductCard = ({ product }) => {
     );
 };
 
-const getCategoryIcon = (category) => {
-    const icons = {
-        'Vegetables': '🥬', 'Fruits': '🍎', 'Grains': '🌾',
-        'Herbs': '🌿', 'Spices': '🌶️', 'Dairy': '🥛',
-        'Meat': '🥩', 'Fish': '🐟', 'Poultry': '🐔',
-        'Eggs': '🥚', 'Rice': '🍚', 'Groundnuts': '🥜',
-        'Cereals': '🌾', 'Legumes': '🫘', 'Roots': '🥔', 'Tubers': '🍠',
-    };
-    return icons[category] || '📦';
-};
-
-// ✅ DEFAULT EXPORT - This is the key fix!
 export default Home;

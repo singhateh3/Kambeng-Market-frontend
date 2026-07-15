@@ -72,7 +72,7 @@ export const NotificationBell = () => {
     // Handle notification click
     const handleNotificationClick = async (notification) => {
         console.log('🔔 Notification clicked:', notification);
-        console.log('🔗 Link from database:', notification.link);
+        console.log('🔗 Original link from database:', notification.link);
         
         try {
             // Mark as read if unread
@@ -83,70 +83,107 @@ export const NotificationBell = () => {
             // Close dropdown
             setIsOpen(false);
             
-            // Get the link from notification - USE THE LINK FROM DATABASE FIRST
-            let link = notification.link;
+            // Determine the correct link to navigate to
+            let finalLink = null;
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            const isAdmin = user?.role === 'admin';
             
-            // If no link is set in the database, try to generate one from type
-            if (!link) {
-                console.log('⚠️ No link in database, generating from type');
-                link = getLinkFromNotification(notification);
+            // Check if the notification has a link from the database
+            if (notification.link) {
+                // If it's an admin notification, ensure it goes to the correct page
+                let link = notification.link;
+                
+                // If the link contains '/admin/' or starts with '/app/admin', it's an admin link
+                if (link.includes('/admin/') || link.startsWith('/app/admin')) {
+                    // For order notifications, redirect to regular order details
+                    if (notification.type === 'order_placed' || 
+                        notification.type === 'order_confirmed' || 
+                        notification.type === 'order_shipped' || 
+                        notification.type === 'order_delivered' || 
+                        notification.type === 'order_cancelled') {
+                        const orderId = notification.data?.order_id;
+                        if (orderId) {
+                            finalLink = `/app/orders/${orderId}`;
+                        } else {
+                            finalLink = '/app/orders';
+                        }
+                    } else {
+                        // For other admin notifications, use the link as-is
+                        finalLink = formatLink(link);
+                    }
+                } else {
+                    // Regular user link
+                    finalLink = formatLink(link);
+                }
             }
             
-            console.log('📍 Final link before navigation:', link);
+            // If no link found or link is empty, generate one from the type
+            if (!finalLink) {
+                finalLink = generateLinkFromNotification(notification);
+            }
             
-            if (link) {
-                // Check if the link already has /app prefix
-                let finalLink = link;
-                
-                // If link already starts with /app, use it as-is (for admin links)
-                if (link.startsWith('/app')) {
-                    finalLink = link;
-                    console.log('✅ Link already has /app prefix, navigating to:', finalLink);
-                } 
-                // If link starts with just /, add /app prefix
-                else if (link.startsWith('/')) {
-                    finalLink = `/app${link}`;
-                    console.log('✅ Added /app prefix, navigating to:', finalLink);
-                }
-                // If link doesn't start with /, add /app/
-                else {
-                    finalLink = `/app/${link}`;
-                    console.log('✅ Added /app/ prefix, navigating to:', finalLink);
-                }
-                
+            console.log('📍 Final navigation link:', finalLink);
+            
+            // Navigate to the final link
+            if (finalLink) {
                 navigate(finalLink);
             } else {
-                console.warn('⚠️ No link found for notification, navigating to notifications page');
-                navigate('/app/notifications');
+                // Fallback to dashboard
+                if (isAdmin) {
+                    navigate('/app/admin/dashboard');
+                } else {
+                    navigate('/app/dashboard');
+                }
             }
         } catch (error) {
             console.error('❌ Error handling notification click:', error);
-            // Still try to navigate even if marking as read fails
             setIsOpen(false);
-            if (notification.link) {
-                let link = notification.link;
-                // Only add /app if it doesn't already have it
-                if (!link.startsWith('/app') && !link.startsWith('http')) {
-                    link = `/app${link}`;
-                }
-                navigate(link);
+            // Fallback navigation
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            if (user?.role === 'admin') {
+                navigate('/app/admin/dashboard');
+            } else {
+                navigate('/app/dashboard');
             }
         }
     };
 
-    // Generate link based on notification type (only used as fallback)
-    const getLinkFromNotification = (notification) => {
+    // Format link to ensure it has /app prefix
+    const formatLink = (link) => {
+        if (!link) return null;
+        
+        // If link already starts with /app, return as-is
+        if (link.startsWith('/app')) {
+            return link;
+        }
+        
+        // If link starts with /, add /app prefix
+        if (link.startsWith('/')) {
+            return `/app${link}`;
+        }
+        
+        // If link doesn't start with /, add /app/
+        return `/app/${link}`;
+    };
+
+    // Generate link based on notification type (fallback)
+    const generateLinkFromNotification = (notification) => {
         const type = notification.type;
         const data = notification.data || {};
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
+        const isAdmin = user?.role === 'admin';
+        
+        console.log('🔍 Generating link for type:', type, 'isAdmin:', isAdmin);
         
         switch (type) {
-            // Order related notifications
+            // Order related notifications - FIXED: Admin goes to regular order details
             case 'order_placed':
             case 'order_confirmed':
             case 'order_shipped':
             case 'order_delivered':
             case 'order_cancelled':
                 if (data.order_id) {
+                    // Both admin and regular users go to the same order details page
                     return `/app/orders/${data.order_id}`;
                 }
                 return '/app/orders';
@@ -155,27 +192,27 @@ export const NotificationBell = () => {
             case 'farmer_verification_request':
             case 'farmer_verified':
             case 'farmer_rejected':
-                return '/app/admin/farmers/verification';
+                return isAdmin ? '/app/admin/farmers/verification' : '/app/profile';
             
-            // User registration notifications
+            // User registration notifications - only for admins
             case 'user_registered':
                 return '/app/admin/users';
             
             // Product notifications
             case 'new_product':
             case 'low_stock':
-                return '/app/admin/products';
+                return isAdmin ? '/app/admin/products' : '/app/products';
             
             // Review notifications
             case 'new_review':
                 if (data.order_id) {
                     return `/app/orders/${data.order_id}`;
                 }
-                return '/app/orders';
+                return isAdmin ? '/app/admin/orders' : '/app/orders';
             
             // Default fallback
             default:
-                return '/app/admin/dashboard';
+                return isAdmin ? '/app/admin/dashboard' : '/app/dashboard';
         }
     };
 
@@ -295,16 +332,8 @@ export const NotificationBell = () => {
                     {/* Notification List */}
                     <div className="flex-1 overflow-y-auto">
                         {loading && isFirstOpen ? (
-                            // Show skeleton while loading
-                            <>
-                                <NotificationSkeleton />
-                                <NotificationSkeleton />
-                                <NotificationSkeleton />
-                                <NotificationSkeleton />
-                                <NotificationSkeleton />
-                            </>
+                            <NotificationSkeleton />
                         ) : loading && notifications.length > 0 ? (
-                            // Show loading overlay on existing notifications
                             <div className="relative">
                                 {notifications.map((notification) => (
                                     <div
@@ -344,7 +373,6 @@ export const NotificationBell = () => {
                                         </div>
                                     </div>
                                 ))}
-                                {/* Loading overlay */}
                                 <div className="absolute inset-0 bg-white/50 backdrop-blur-sm flex items-center justify-center">
                                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
                                 </div>
@@ -352,7 +380,6 @@ export const NotificationBell = () => {
                         ) : notifications.length === 0 ? (
                             <EmptyState />
                         ) : (
-                            // Show notifications
                             notifications.map((notification) => (
                                 <div
                                     key={notification.id}

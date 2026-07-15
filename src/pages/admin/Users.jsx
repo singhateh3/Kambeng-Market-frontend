@@ -1,14 +1,16 @@
 // src/pages/admin/AdminUsers.jsx
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Alert } from '../../components/common/Alert';
 import { Button } from '../../components/common/Button';
 import { useAuth } from '../../hooks/useAuth';
+import { useDebounce } from '../../hooks/useDebounce';
 import api from '../../services/api';
 
- const AdminUsers = () => {
+const AdminUsers = () => {
     const { user: currentUser } = useAuth();
     const [users, setUsers] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const [isInitialLoad, setIsInitialLoad] = useState(true);
+    const [loading, setLoading] = useState(false);
     const [filters, setFilters] = useState({
         role: '',
         search: '',
@@ -29,27 +31,40 @@ import api from '../../services/api';
     const [success, setSuccess] = useState(null);
     const [error, setError] = useState(null);
 
-    useEffect(() => {
-        fetchUsers();
-    }, [filters]);
+    // Track local input text cleanly before debouncing
+    const [searchValue, setSearchValue] = useState(filters.search);
+    const debouncedSearch = useDebounce(searchValue, 300);
 
-    const fetchUsers = async () => {
+    // Sync debounced search string to query filters
+    useEffect(() => {
+        setFilters(f => ({ ...f, search: debouncedSearch, page: 1 }));
+    }, [debouncedSearch]);
+
+    // Isolated primary fetch engine
+    const fetchUsers = useCallback(async () => {
         try {
             setLoading(true);
             const params = new URLSearchParams({
-                ...filters,
+                role: filters.role || '',
+                search: filters.search || '',
+                verified: filters.verified || '',
                 page: filters.page || 1,
             });
             const response = await api.get(`/admin/users?${params}`);
-            setUsers(response.data.data);
-            setPagination(response.data.meta);
+            setUsers(response.data.data || []);
+            setPagination(response.data.meta || { current_page: 1, last_page: 1, per_page: 20, total: 0 });
         } catch (err) {
             console.error('Error fetching users:', err);
             setError('Failed to load users');
         } finally {
             setLoading(false);
+            setIsInitialLoad(false);
         }
-    };
+    }, [filters.role, filters.search, filters.verified, filters.page]);
+
+    useEffect(() => {
+        fetchUsers();
+    }, [fetchUsers]);
 
     const handleRoleChange = async (userId, role) => {
         try {
@@ -112,7 +127,6 @@ import api from '../../services/api';
         
         try {
             setLoadingAction(true);
-            // Delete each user
             for (const userId of selectedUsers) {
                 await api.delete(`/admin/users/${userId}`);
             }
@@ -157,7 +171,8 @@ import api from '../../services/api';
         setModalAction('');
     };
 
-    if (loading) {
+    // Keep safe initial full layout spinner logic isolated from filtering refreshes
+    if (isInitialLoad) {
         return (
             <div className="flex items-center justify-center h-64">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
@@ -193,18 +208,18 @@ import api from '../../services/api';
             {success && <Alert type="success" message={success} onClose={() => setSuccess(null)} />}
             {error && <Alert type="error" message={error} onClose={() => setError(null)} />}
 
-            {/* Filters */}
+            {/* Filters layout container holds tracking active state elements permanently */}
             <div className="bg-white shadow rounded-lg p-4 mb-6">
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-4">
                     <input
                         type="text"
                         placeholder="Search users..."
-                        className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
-                        value={filters.search}
-                        onChange={(e) => setFilters({ ...filters, search: e.target.value, page: 1 })}
+                        className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 text-gray-900"
+                        value={searchValue}
+                        onChange={(e) => setSearchValue(e.target.value)}
                     />
                     <select
-                        className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                        className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 text-gray-700"
                         value={filters.role}
                         onChange={(e) => setFilters({ ...filters, role: e.target.value, page: 1 })}
                     >
@@ -214,7 +229,7 @@ import api from '../../services/api';
                         <option value="admin">Admin</option>
                     </select>
                     <select
-                        className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                        className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 text-gray-700"
                         value={filters.verified}
                         onChange={(e) => setFilters({ ...filters, verified: e.target.value, page: 1 })}
                     >
@@ -234,8 +249,8 @@ import api from '../../services/api';
                 </div>
             </div>
 
-            {/* Users Table */}
-            <div className="bg-white shadow rounded-lg overflow-hidden">
+            {/* Users Table section wrapping opacity variations */}
+            <div className={`bg-white shadow rounded-lg overflow-hidden transition-opacity duration-200 ${loading ? 'opacity-60 pointer-events-none' : 'opacity-100'}`}>
                 {users.length === 0 ? (
                     <div className="text-center py-12">
                         <p className="text-gray-500">No users found</p>
@@ -304,7 +319,7 @@ import api from '../../services/api';
                                             </td>
                                             <td className="px-4 py-3 whitespace-nowrap">
                                                 <select
-                                                    className={`px-2 py-1 text-xs rounded border ${
+                                                    className={`px-2 py-1 text-xs rounded border text-gray-800 ${
                                                         user.id === currentUser?.id ? 'bg-gray-100 cursor-not-allowed' : 'border-gray-300'
                                                     }`}
                                                     value={user.role}
@@ -342,7 +357,7 @@ import api from '../../services/api';
                                                     {user.role === 'farmer' && !user.verified_at && (
                                                         <button
                                                             onClick={() => handleVerifyFarmer(user.id)}
-                                                            className="text-green-600 hover:text-green-900 text-xs"
+                                                            className="text-green-600 hover:text-green-900 text-xs cursor-pointer border-none bg-transparent"
                                                             disabled={loadingAction}
                                                         >
                                                             Verify
@@ -350,14 +365,14 @@ import api from '../../services/api';
                                                     )}
                                                     <button
                                                         onClick={() => openModal(user, 'view')}
-                                                        className="text-blue-600 hover:text-blue-900 text-xs"
+                                                        className="text-blue-600 hover:text-blue-900 text-xs cursor-pointer border-none bg-transparent"
                                                     >
                                                         View
                                                     </button>
                                                     {user.id !== currentUser?.id && (
                                                         <button
                                                             onClick={() => openModal(user, 'delete')}
-                                                            className="text-red-600 hover:text-red-900 text-xs"
+                                                            className="text-red-600 hover:text-red-900 text-xs cursor-pointer border-none bg-transparent"
                                                         >
                                                             Delete
                                                         </button>
@@ -411,7 +426,7 @@ import api from '../../services/api';
                             </h2>
                             <button
                                 onClick={closeModal}
-                                className="text-gray-400 hover:text-gray-600"
+                                className="text-gray-400 hover:text-gray-600 cursor-pointer border-none bg-transparent"
                             >
                                 <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -499,4 +514,4 @@ import api from '../../services/api';
     );
 };
 
-export default AdminUsers
+export default AdminUsers;

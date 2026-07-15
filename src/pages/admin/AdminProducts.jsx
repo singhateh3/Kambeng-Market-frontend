@@ -1,15 +1,15 @@
 // src/pages/admin/AdminProducts.jsx
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Alert } from '../../components/common/Alert';
 import { Button } from '../../components/common/Button';
 import { Skeleton } from '../../components/common/skeletons/Skeleton';
+import { useDebounce } from '../../hooks/useDebounce';
 import api from '../../services/api';
 
 // Admin Products Skeleton Component
 const AdminProductsSkeleton = () => (
     <div>
-        {/* Header Skeleton */}
         <div className="flex flex-wrap justify-between items-center gap-4 mb-6">
             <div>
                 <Skeleton className="h-8 w-32" />
@@ -20,8 +20,6 @@ const AdminProductsSkeleton = () => (
                 <Skeleton className="h-10 w-32" />
             </div>
         </div>
-
-        {/* Filters Skeleton */}
         <div className="bg-white shadow rounded-lg p-4 mb-6">
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
                 <Skeleton className="h-10 w-full" />
@@ -30,8 +28,6 @@ const AdminProductsSkeleton = () => (
                 <Skeleton className="h-10 w-full" />
             </div>
         </div>
-
-        {/* Table Skeleton */}
         <div className="bg-white shadow rounded-lg overflow-hidden">
             <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-gray-200">
@@ -90,54 +86,16 @@ const AdminProductsSkeleton = () => (
     </div>
 );
 
-// Product Row Skeleton for loading more
-const ProductRowSkeleton = () => (
-    <tr>
-        <td className="px-4 py-3">
-            <Skeleton className="h-4 w-4" />
-        </td>
-        <td className="px-4 py-3">
-            <div className="flex items-center">
-                <Skeleton className="w-12 h-12 rounded-lg" />
-                <div className="ml-3">
-                    <Skeleton className="h-4 w-32" />
-                    <Skeleton className="h-3 w-20 mt-1" />
-                </div>
-            </div>
-        </td>
-        <td className="px-4 py-3">
-            <Skeleton className="h-4 w-24" />
-            <Skeleton className="h-3 w-16 mt-1" />
-        </td>
-        <td className="px-4 py-3">
-            <Skeleton className="h-4 w-20" />
-        </td>
-        <td className="px-4 py-3">
-            <Skeleton className="h-4 w-16" />
-        </td>
-        <td className="px-4 py-3">
-            <Skeleton className="h-6 w-16 rounded-full" />
-        </td>
-        <td className="px-4 py-3">
-            <Skeleton className="h-4 w-24" />
-        </td>
-        <td className="px-4 py-3">
-            <div className="flex items-center space-x-2">
-                <Skeleton className="h-8 w-8 rounded" />
-                <Skeleton className="h-8 w-8 rounded" />
-            </div>
-        </td>
-    </tr>
-);
-
 const AdminProducts = () => {
     const [products, setProducts] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [loadingMore, setLoadingMore] = useState(false);
+    const [isInitialLoad, setIsInitialLoad] = useState(true);
+    const [loading, setLoading] = useState(false);
     const [filters, setFilters] = useState({
         status: '',
         category: '',
         search: '',
+        expiring_soon: false,
+        expired: false,
         page: 1,
     });
     const [pagination, setPagination] = useState({
@@ -154,18 +112,34 @@ const AdminProducts = () => {
     const [error, setError] = useState(null);
     const [loadingAction, setLoadingAction] = useState(false);
     const [categories, setCategories] = useState([]);
+    const [searchHistory, setSearchHistory] = useState([]);
+    const [showSearchHistory, setShowSearchHistory] = useState(false);
+    const [searchValue, setSearchValue] = useState('');
+    const searchInputRef = useRef(null);
+    const searchContainerRef = useRef(null);
+    const isTypingRef = useRef(false);
 
+    // Debounce search to avoid too many API calls
+    const debouncedSearch = useDebounce(filters.search, 300);
+
+    // Fetch products when filters change (except search on every keystroke)
     useEffect(() => {
         fetchProducts();
         fetchCategories();
-    }, [filters]);
+        loadSearchHistory();
+    }, [filters.status, filters.category, filters.page, debouncedSearch, filters.expiring_soon, filters.expired]);
 
-    const fetchProducts = async () => {
+    const fetchProducts = useCallback(async () => {
         try {
             setLoading(true);
             const params = new URLSearchParams({
-                ...filters,
+                status: filters.status || '',
+                category: filters.category || '',
+                search: debouncedSearch || '',
+                expiring_soon: filters.expiring_soon ? 'true' : '',
+                expired: filters.expired ? 'true' : '',
                 page: filters.page || 1,
+                per_page: 20,
             });
             const response = await api.get(`/admin/products?${params}`);
             setProducts(response.data.data || []);
@@ -181,8 +155,9 @@ const AdminProducts = () => {
             setTimeout(() => setError(null), 3000);
         } finally {
             setLoading(false);
+            setIsInitialLoad(false);
         }
-    };
+    }, [filters.status, filters.category, filters.page, debouncedSearch, filters.expiring_soon, filters.expired]);
 
     const fetchCategories = async () => {
         try {
@@ -191,6 +166,25 @@ const AdminProducts = () => {
         } catch (err) {
             console.error('Error fetching categories:', err);
         }
+    };
+
+    const loadSearchHistory = () => {
+        try {
+            const history = JSON.parse(localStorage.getItem('adminProductSearchHistory') || '[]');
+            setSearchHistory(history.slice(0, 5));
+        } catch {
+            setSearchHistory([]);
+        }
+    };
+
+    const saveSearchToHistory = (searchTerm) => {
+        if (!searchTerm.trim()) return;
+        try {
+            const history = JSON.parse(localStorage.getItem('adminProductSearchHistory') || '[]');
+            const updated = [searchTerm, ...history.filter(h => h !== searchTerm)].slice(0, 10);
+            localStorage.setItem('adminProductSearchHistory', JSON.stringify(updated));
+            setSearchHistory(updated);
+        } catch {}
     };
 
     const handleDelete = async (productId) => {
@@ -270,8 +264,84 @@ const AdminProducts = () => {
         setFilters({ ...filters, page: newPage });
     };
 
-    // If loading, show skeleton
-    if (loading) {
+    const handleSearchChange = (e) => {
+        const value = e.target.value;
+        
+        // Update the input value directly
+        setSearchValue(value);
+        
+        // Mark as typing
+        isTypingRef.current = true;
+        
+        // Update filters with the new search value
+        setFilters(f => ({ ...f, search: value, page: 1 }));
+        
+        // Show search history if there's text or on focus
+        if (value.length > 0) {
+            setShowSearchHistory(true);
+        } else {
+            setShowSearchHistory(false);
+        }
+        
+        // Save to history when user types enough
+        if (value.length > 2) {
+            saveSearchToHistory(value);
+        }
+        
+        // Reset typing flag after a short delay
+        clearTimeout(window.typingTimeout);
+        window.typingTimeout = setTimeout(() => {
+            isTypingRef.current = false;
+        }, 500);
+    };
+
+    const handleSearchSubmit = (e) => {
+        e.preventDefault();
+        setShowSearchHistory(false);
+        if (filters.search.trim()) {
+            saveSearchToHistory(filters.search);
+            fetchProducts();
+        }
+    };
+
+    const clearSearch = () => {
+        setSearchValue('');
+        setFilters({ ...filters, search: '', page: 1 });
+        setShowSearchHistory(false);
+        if (searchInputRef.current) {
+            searchInputRef.current.focus();
+        }
+    };
+
+    const handleHistoryClick = (term) => {
+        setSearchValue(term);
+        setFilters({ ...filters, search: term, page: 1 });
+        setShowSearchHistory(false);
+        if (searchInputRef.current) {
+            searchInputRef.current.focus();
+        }
+    };
+
+    const clearHistory = () => {
+        localStorage.removeItem('adminProductSearchHistory');
+        setSearchHistory([]);
+        setShowSearchHistory(false);
+    };
+
+    // Click outside handler for search history
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (searchContainerRef.current && !searchContainerRef.current.contains(event.target)) {
+                if (!isTypingRef.current) {
+                    setShowSearchHistory(false);
+                }
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
+    if (isInitialLoad) {
         return <AdminProductsSkeleton />;
     }
 
@@ -305,16 +375,72 @@ const AdminProducts = () => {
             {success && <Alert type="success" message={success} onClose={() => setSuccess(null)} />}
             {error && <Alert type="error" message={error} onClose={() => setError(null)} />}
 
-            {/* Filters */}
+            {/* Search and Filters */}
             <div className="bg-white shadow rounded-lg p-4 mb-6">
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                    <input
-                        type="text"
-                        placeholder="Search products..."
-                        className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
-                        value={filters.search}
-                        onChange={(e) => setFilters({ ...filters, search: e.target.value, page: 1 })}
-                    />
+                <form onSubmit={handleSearchSubmit} className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
+                    {/* Search Input with Suggestions */}
+                    <div className="relative lg:col-span-2" ref={searchContainerRef}>
+                        <div className="relative">
+                            <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            </svg>
+                            <input
+                                ref={searchInputRef}
+                                type="text"
+                                placeholder="Search products by name, category, or farmer..."
+                                value={searchValue}
+                                onChange={handleSearchChange}
+                                onFocus={() => {
+                                    if (searchHistory.length > 0 && !searchValue) {
+                                        setShowSearchHistory(true);
+                                    }
+                                }}
+                                className="w-full pl-9 pr-10 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                                autoComplete="off"
+                            />
+                            {searchValue && (
+                                <button
+                                    type="button"
+                                    onClick={clearSearch}
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                                >
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            )}
+                        </div>
+
+                        {/* Search History Dropdown */}
+                        {showSearchHistory && searchHistory.length > 0 && (
+                            <div className="absolute left-0 right-0 top-full mt-1 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
+                                <div className="p-2">
+                                    <div className="text-xs text-gray-400 px-2 py-1">Recent searches</div>
+                                    {searchHistory.map((term, i) => (
+                                        <button
+                                            key={i}
+                                            type="button"
+                                            onClick={() => handleHistoryClick(term)}
+                                            className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition flex items-center gap-2"
+                                        >
+                                            <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                            </svg>
+                                            {term}
+                                        </button>
+                                    ))}
+                                    <button
+                                        type="button"
+                                        onClick={clearHistory}
+                                        className="w-full text-left px-3 py-1 text-xs text-red-500 hover:bg-red-50 rounded-lg transition"
+                                    >
+                                        Clear search history
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
                     <select
                         className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                         value={filters.status}
@@ -324,6 +450,7 @@ const AdminProducts = () => {
                         <option value="active">Active</option>
                         <option value="sold">Sold</option>
                     </select>
+
                     <select
                         className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                         value={filters.category}
@@ -334,18 +461,70 @@ const AdminProducts = () => {
                             <option key={category} value={category}>{category}</option>
                         ))}
                     </select>
-                    <Button variant="secondary" onClick={() => fetchProducts()}>
-                        Apply Filters
-                    </Button>
+
+                    <div className="flex gap-2">
+                        <Button type="submit" variant="primary">
+                            Search
+                        </Button>
+                        <Button 
+                            type="button" 
+                            variant="secondary" 
+                            onClick={() => {
+                                setSearchValue('');
+                                setFilters({ status: '', category: '', search: '', expiring_soon: false, expired: false, page: 1 });
+                                setShowSearchHistory(false);
+                            }}
+                        >
+                            Clear
+                        </Button>
+                    </div>
+                </form>
+
+                {/* Advanced Filters */}
+                <div className="flex flex-wrap items-center gap-4 mt-3 pt-3 border-t border-gray-100">
+                    <span className="text-sm text-gray-500">Advanced:</span>
+                    <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
+                        <input
+                            type="checkbox"
+                            checked={filters.expiring_soon}
+                            onChange={(e) => setFilters({ ...filters, expiring_soon: e.target.checked, page: 1 })}
+                            className="w-4 h-4 text-primary-600 rounded focus:ring-primary-500"
+                        />
+                        Expiring Soon (7 days)
+                    </label>
+                    <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
+                        <input
+                            type="checkbox"
+                            checked={filters.expired}
+                            onChange={(e) => setFilters({ ...filters, expired: e.target.checked, page: 1 })}
+                            className="w-4 h-4 text-primary-600 rounded focus:ring-primary-500"
+                        />
+                        Expired
+                    </label>
+                    {(filters.status || filters.category || filters.search || filters.expiring_soon || filters.expired) && (
+                        <button
+                            onClick={() => {
+                                setSearchValue('');
+                                setFilters({ status: '', category: '', search: '', expiring_soon: false, expired: false, page: 1 });
+                                setShowSearchHistory(false);
+                            }}
+                            className="text-sm text-red-500 hover:text-red-700"
+                        >
+                            Clear all filters
+                        </button>
+                    )}
                 </div>
             </div>
 
-            {/* Products Table */}
-            <div className="bg-white shadow rounded-lg overflow-hidden">
+            {/* Products Table Wrapper with Transition */}
+            <div className={`bg-white shadow rounded-lg overflow-hidden transition-opacity duration-200 ${loading ? 'opacity-60 pointer-events-none' : 'opacity-100'}`}>
                 {products.length === 0 ? (
                     <div className="text-center py-12">
                         <div className="text-4xl mb-4">📦</div>
                         <p className="text-gray-500">No products found</p>
+                        {filters.search && (
+                            <p className="text-sm text-gray-400 mt-1">No results for "{filters.search}"</p>
+                        )}
                         <Link to="/products/create" className="text-primary-600 hover:text-primary-700 mt-2 inline-block">
                             List your first product →
                         </Link>
@@ -450,6 +629,12 @@ const AdminProducts = () => {
                                                         Expired
                                                     </span>
                                                 )}
+                                                {product.expiry_date && new Date(product.expiry_date) > new Date() && 
+                                                    new Date(product.expiry_date) < new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) && (
+                                                    <span className="ml-1 px-2 py-1 text-xs rounded-full bg-yellow-100 text-yellow-800">
+                                                        Expiring soon
+                                                    </span>
+                                                )}
                                             </td>
                                             <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
                                                 {product.expiry_date ? new Date(product.expiry_date).toLocaleDateString() : '-'}
@@ -483,6 +668,7 @@ const AdminProducts = () => {
                         <div className="px-4 py-4 border-t border-gray-200 flex flex-wrap items-center justify-between gap-2">
                             <div className="text-sm text-gray-700">
                                 Showing {products.length} of {pagination.total} products
+                                {filters.search && <span> for "{filters.search}"</span>}
                             </div>
                             <div className="flex space-x-2">
                                 <Button

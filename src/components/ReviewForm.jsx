@@ -1,7 +1,7 @@
 // src/components/ReviewForm.jsx
 import { useState } from 'react';
 import api from '../services/api'; // <-- Add this import
-import { ReviewStars } from './ReviewStars';
+import ReviewStars from './ReviewStars';
 import { Alert } from './common/Alert';
 import { Button } from './common/Button';
 

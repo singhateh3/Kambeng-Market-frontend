@@ -2,6 +2,7 @@
 import { lazy, Suspense, useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { DashboardSkeleton } from '../components/common/skeletons/DashboardSkeleton';
+import ReviewStars from '../components/ReviewStars';
 import { useAuth } from '../hooks/useAuth';
 import api from '../services/api';
 
@@ -28,13 +29,23 @@ const RegularDashboard = () => {
     const [stats, setStats] = useState({
         total_products: 0, active_products: 0, total_orders: 0,
         pending_orders: 0, total_revenue: 0, orders_placed: 0,
+        average_rating: 0, total_reviews: 0,
     });
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
     const [recentOrders, setRecentOrders] = useState([]);
     const [recentProducts, setRecentProducts] = useState([]);
 
-    useEffect(() => { fetchDashboardData(); }, [user, location.key]);
+    // Depend on primitives (id + role), not the whole `user` object. If
+    // AuthContext ever returns a new object reference for `user` after
+    // refreshUser() — which it very likely does — depending on the full
+    // object here caused this effect to re-fire on every refresh, on top
+    // of the explicit fetchDashboardData() call inside handleRefresh,
+    // resulting in duplicate requests every time "Refresh" was clicked.
+    useEffect(() => {
+        fetchDashboardData();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [user?.id, user?.role, location.key]);
 
     const fmt = (amount) => {
         if (amount === undefined || amount === null) return 'GMD 0.00';
@@ -58,6 +69,12 @@ const RegularDashboard = () => {
                     pending_orders: statsRes.data.data?.pending_orders || 0,
                     total_revenue: statsRes.data.data?.total_revenue || 0,
                     orders_placed: 0,
+                    // Coerce to Number defensively — Laravel avg()/withAvg()
+                    // aggregates can come back as strings on some DB drivers,
+                    // and this value gets .toFixed()'d further down. Calling
+                    // .toFixed on a string throws.
+                    average_rating: Number(statsRes.data.data?.average_rating ?? 0) || 0,
+                    total_reviews: statsRes.data.data?.total_reviews || 0,
                 });
                 setRecentOrders(ordersRes.data.data || []);
                 setRecentProducts(productsRes.data.data || []);
@@ -69,6 +86,8 @@ const RegularDashboard = () => {
                     pending_orders: ordersRes.data.data?.filter(o => o.status === 'pending').length || 0,
                     total_revenue: 0,
                     orders_placed: ordersRes.data.meta?.total || 0,
+                    average_rating: 0,
+                    total_reviews: 0,
                 });
                 setRecentOrders(ordersRes.data.data || []);
                 setRecentProducts([]);
@@ -145,18 +164,46 @@ const RegularDashboard = () => {
 
             <div className="max-w-6xl mx-auto px-6 py-6">
                 {isFarmer && (
-                    <div className="grid grid-cols-4 gap-4 mb-6">
-                        {[
-                            { label: 'Total products', value: stats.total_products, icon: '🌾', to: '/app/products' },
-                            { label: 'Active listings', value: stats.active_products, icon: '✅', to: '/app/products' },
-                            { label: 'Total orders', value: stats.total_orders, icon: '📦', to: '/app/orders' },
-                            { label: 'Revenue', value: fmt(stats.total_revenue), icon: '💰', to: null },
-                        ].map((s, i) => <StatCard key={i} {...s} />)}
-                    </div>
+                    <>
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
+                            {[
+                                { label: 'Total products', value: stats.total_products, icon: '🌾', to: '/app/products' },
+                                { label: 'Active listings', value: stats.active_products, icon: '✅', to: '/app/products' },
+                                { label: 'Total orders', value: stats.total_orders, icon: '📦', to: '/app/orders' },
+                                { label: 'Revenue', value: fmt(stats.total_revenue), icon: '💰', to: null },
+                            ].map((s, i) => <StatCard key={i} {...s} />)}
+                        </div>
+
+                        {/* Farmer Rating Card */}
+                        <div className="bg-white border border-slate-200 rounded-xl p-5 mb-6 hover:shadow-md transition-shadow">
+                            <div className="flex items-center justify-between flex-wrap gap-3">
+                                <div>
+                                    <p className="text-xs text-slate-500">Your Rating</p>
+                                    <div className="flex items-center gap-3 mt-1">
+                                        <ReviewStars rating={stats.average_rating} size="lg" />
+                                        <span className="text-sm font-bold text-slate-900">
+                                            {stats.average_rating.toFixed(1)}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div className="text-right">
+                                    <p className="text-2xl font-extrabold text-slate-900">
+                                        {stats.total_reviews}
+                                    </p>
+                                    <p className="text-xs text-slate-500">Total Reviews</p>
+                                </div>
+                            </div>
+                            {stats.total_reviews === 0 && (
+                                <p className="text-xs text-slate-400 mt-2">
+                                    No reviews yet. Keep selling to get feedback from buyers!
+                                </p>
+                            )}
+                        </div>
+                    </>
                 )}
 
                 {isBuyer && (
-                    <div className="grid grid-cols-3 gap-4 mb-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
                         {[
                             { label: 'Orders placed', value: stats.orders_placed, icon: '🛒', to: '/app/orders' },
                             { label: 'Pending orders', value: stats.pending_orders, icon: '⏳', to: '/app/orders' },
@@ -165,14 +212,14 @@ const RegularDashboard = () => {
                     </div>
                 )}
 
-                <div className="grid grid-cols-3 gap-3 mb-6">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
                     {isFarmer && <ActionCard icon="➕" title="Add product" desc="List a new product for sale" to="/app/products/create" />}
                     {isBuyer && <ActionCard icon="🔍" title="Browse products" desc="Discover fresh produce" to="/app/browse" />}
                     <ActionCard icon="📋" title="View orders" desc="Check your order history" to="/app/orders" />
                     <ActionCard icon="👤" title="Edit profile" desc="Update your information" to="/app/profile" />
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="bg-white border border-slate-200 rounded-xl p-5">
                         <div className="flex items-center justify-between mb-4">
                             <span className="text-sm font-bold text-slate-900">Recent orders</span>
@@ -185,6 +232,12 @@ const RegularDashboard = () => {
                                 <div>
                                     <p className="text-sm font-semibold text-slate-900">{order.product?.name || 'Product'}</p>
                                     <p className="text-xs text-slate-400">{order.quantity} × {order.product?.price_formatted || 'GMD 0'}</p>
+                                    {/* Show review status for buyers */}
+                                    {isBuyer && order.review && (
+                                        <div className="mt-1">
+                                            <ReviewStars rating={order.review.rating} size="sm" />
+                                        </div>
+                                    )}
                                 </div>
                                 <div className="flex flex-col items-end gap-1">
                                     <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${statusStyles(order.status)}`}>
@@ -193,6 +246,12 @@ const RegularDashboard = () => {
                                     <span className="text-xs text-slate-400">
                                         {order.order_date ? new Date(order.order_date).toLocaleDateString() : ''}
                                     </span>
+                                    {/* Show "Reviewed" badge for buyers */}
+                                    {isBuyer && order.review && (
+                                        <span className="text-[10px] text-green-600 font-medium">
+                                            ✅ Reviewed
+                                        </span>
+                                    )}
                                 </div>
                             </div>
                         ))}
@@ -212,24 +271,42 @@ const RegularDashboard = () => {
                                             List your first product
                                         </Link>
                                     </div>
-                                ) : recentProducts.map((product) => (
-                                    <div key={product.id} className="flex items-center justify-between py-2.5 border-b border-slate-50 last:border-0">
-                                        <div className="flex items-center gap-2.5">
-                                            <div className="w-9 h-9 rounded-lg overflow-hidden bg-slate-100 flex items-center justify-center text-lg flex-shrink-0">
-                                                {product.photos?.length > 0
-                                                    ? <img src={product.photos[0]} alt={product.name} className="w-full h-full object-cover" />
-                                                    : '🌾'}
+                                ) : recentProducts.map((product) => {
+                                    // Number() coercion here too — same reasoning as stats.average_rating above.
+                                    const avgRating = Number(product?.average_rating ?? product?.avg_rating ?? 0) || 0;
+                                    const reviewCount = product?.reviews_count || 0;
+                                    
+                                    return (
+                                        <div key={product.id} className="flex items-center justify-between py-2.5 border-b border-slate-50 last:border-0">
+                                            <div className="flex items-center gap-2.5">
+                                                <div className="w-9 h-9 rounded-lg overflow-hidden bg-slate-100 flex items-center justify-center text-lg flex-shrink-0">
+                                                    {product.photos?.length > 0
+                                                        ? <img src={product.photos[0]} alt={product.name} loading="lazy" className="w-full h-full object-cover" />
+                                                        : '🌾'}
+                                                </div>
+                                                <div>
+                                                    <p className="text-sm font-semibold text-slate-900">{product.name}</p>
+                                                    <p className="text-xs text-slate-400">{product.price_formatted || `GMD ${product.price}`} · {product.quantity} {product.unit}</p>
+                                                    {/* Show product rating for farmers */}
+                                                    {avgRating > 0 && (
+                                                        <div className="flex items-center gap-1 mt-0.5">
+                                                            <ReviewStars rating={avgRating} size="sm" />
+                                                            <span className="text-[10px] text-slate-400">
+                                                                ({reviewCount})
+                                                            </span>
+                                                        </div>
+                                                    )}
+                                                    {avgRating === 0 && reviewCount === 0 && (
+                                                        <p className="text-[10px] text-slate-400">No reviews yet</p>
+                                                    )}
+                                                </div>
                                             </div>
-                                            <div>
-                                                <p className="text-sm font-semibold text-slate-900">{product.name}</p>
-                                                <p className="text-xs text-slate-400">{product.price_formatted || `GMD ${product.price}`} · {product.quantity} {product.unit}</p>
-                                            </div>
+                                            <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${statusStyles(product.status)}`}>
+                                                {product.status_label || product.status}
+                                            </span>
                                         </div>
-                                        <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${statusStyles(product.status)}`}>
-                                            {product.status_label || product.status}
-                                        </span>
-                                    </div>
-                                ))}
+                                    );
+                                })}
                             </>
                         ) : (
                             <>
