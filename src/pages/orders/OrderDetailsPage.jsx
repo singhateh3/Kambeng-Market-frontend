@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { Alert } from '../../components/common/Alert';
 import { Button } from '../../components/common/Button';
+import ReviewStars from '../../components/ReviewStars';
 import { useAuth } from '../../hooks/useAuth';
 import api from '../../services/api';
 
@@ -26,7 +27,16 @@ const OrderDetailsPage = () => {
         try {
             setLoading(true);
             const response = await api.get(`/orders/${orderId}`);
-            setOrder(response.data?.data || null);
+            const orderData = response.data?.data || null;
+            
+            // Log review data for debugging
+            if (orderData && orderData.review) {
+                console.log('📝 Review found:', orderData.review);
+            } else {
+                console.log('📝 No review found for this order');
+            }
+            
+            setOrder(orderData);
         } catch (err) {
             console.error('Error fetching order:', err);
             setError('Failed to load order details');
@@ -175,12 +185,12 @@ const OrderDetailsPage = () => {
     const isAdmin = user?.role === 'admin';
 
     const canViewOrder = () => {
-    if (!order) return false;
-    if (isAdmin) return true; // Admin can view any order
-    if (isFarmer && order?.product?.farmer_id === user?.id) return true;
-    if (isBuyer && order?.buyer_id === user?.id) return true;
-    return false;
-};
+        if (!order) return false;
+        if (isAdmin) return true;
+        if (isFarmer && order?.product?.farmer_id === user?.id) return true;
+        if (isBuyer && order?.buyer_id === user?.id) return true;
+        return false;
+    };
 
     // Format date helper
     const formatDate = (date) => {
@@ -238,6 +248,7 @@ const OrderDetailsPage = () => {
     const buyer = order?.buyer || {};
     const farmer = product?.farmer || {};
     const confirmationContent = getConfirmationContent();
+    const review = order?.review || null;
 
     return (
         <div className="max-w-4xl mx-auto">
@@ -266,6 +277,11 @@ const OrderDetailsPage = () => {
                             <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(order?.status)}`}>
                                 {getStatusIcon(order?.status)} {getStatusLabel(order?.status)}
                             </span>
+                            {review && (
+                                <span className="px-3 py-1 rounded-full text-sm font-medium bg-purple-100 text-purple-800">
+                                    ⭐ Reviewed
+                                </span>
+                            )}
                         </div>
                     </div>
                 </div>
@@ -431,6 +447,44 @@ const OrderDetailsPage = () => {
                         </div>
                     )}
 
+                    {/* ========== REVIEW SECTION ========== */}
+                    {review && (
+                        <div>
+                            <h3 className="font-semibold text-gray-900 mb-3">
+                                {isAdmin ? 'Buyer\'s Review' : isFarmer ? 'Buyer\'s Review' : 'Your Review'}
+                            </h3>
+                            <div className="bg-purple-50 rounded-xl p-4 border border-purple-200">
+                                <div className="flex items-start justify-between">
+                                    <div>
+                                        <div className="flex items-center space-x-2">
+                                            <ReviewStars rating={review.rating} size="md" />
+                                            <span className="text-sm font-medium text-gray-900">
+                                                {review.rating}.0
+                                            </span>
+                                        </div>
+                                        {review.comment && (
+                                            <p className="mt-2 text-gray-700 text-sm">
+                                                "{review.comment}"
+                                            </p>
+                                        )}
+                                        <div className="flex items-center gap-3 mt-1">
+                                            <p className="text-xs text-gray-400">
+                                                Reviewed on {formatDate(review.created_at)}
+                                            </p>
+                                            {(isAdmin || isFarmer) && review.user && (
+                                                <p className="text-xs text-gray-400">
+                                                    By: {review.user.name}
+                                                </p>
+                                            )}
+                                        </div>
+                                    </div>
+                                    <span className="text-2xl">⭐</span>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                    {/* ========== END REVIEW SECTION ========== */}
+
                     {/* Actions */}
                     <div className="flex flex-wrap gap-2 pt-4 border-t">
                         <Button variant="secondary" onClick={() => navigate('/app/orders')}>
@@ -478,6 +532,11 @@ const OrderDetailsPage = () => {
                                     ⭐ Write Review
                                 </Button>
                             </Link>
+                        )}
+                        {isAdmin && order?.status === 'delivered' && !order?.review && (
+                            <div className="text-sm text-gray-500 italic">
+                                Buyer has not reviewed this order yet.
+                            </div>
                         )}
                     </div>
                 </div>

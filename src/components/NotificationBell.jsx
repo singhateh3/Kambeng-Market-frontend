@@ -87,15 +87,25 @@ export const NotificationBell = () => {
             let finalLink = null;
             const user = JSON.parse(localStorage.getItem('user') || '{}');
             const isAdmin = user?.role === 'admin';
+            const data = notification.data || {};
             
+            // Special handling for review notifications
+            if (notification.type === 'new_review') {
+                // Always navigate to order details for review notifications
+                if (data.order_id) {
+                    finalLink = `/app/orders/${data.order_id}`;
+                    console.log('📍 Review notification -> Order details:', finalLink);
+                } else {
+                    finalLink = '/app/orders';
+                    console.log('📍 Review notification -> Orders list');
+                }
+            }
             // Check if the notification has a link from the database
-            if (notification.link) {
-                // If it's an admin notification, ensure it goes to the correct page
+            else if (notification.link) {
                 let link = notification.link;
                 
-                // If the link contains '/admin/' or starts with '/app/admin', it's an admin link
+                // If it's an admin notification for orders, redirect to regular order details
                 if (link.includes('/admin/') || link.startsWith('/app/admin')) {
-                    // For order notifications, redirect to regular order details
                     if (notification.type === 'order_placed' || 
                         notification.type === 'order_confirmed' || 
                         notification.type === 'order_shipped' || 
@@ -174,19 +184,29 @@ export const NotificationBell = () => {
         const isAdmin = user?.role === 'admin';
         
         console.log('🔍 Generating link for type:', type, 'isAdmin:', isAdmin);
+        console.log('📦 Notification data:', data);
         
         switch (type) {
-            // Order related notifications - FIXED: Admin goes to regular order details
+            // Order related notifications
             case 'order_placed':
             case 'order_confirmed':
             case 'order_shipped':
             case 'order_delivered':
             case 'order_cancelled':
                 if (data.order_id) {
-                    // Both admin and regular users go to the same order details page
+                    console.log('✅ Generated order link: /app/orders/${data.order_id}');
                     return `/app/orders/${data.order_id}`;
                 }
                 return '/app/orders';
+            
+            // Review notifications - FIXED: Navigate to order details
+            case 'new_review':
+                if (data.order_id) {
+                    console.log('✅ Generated review link: /app/orders/${data.order_id}');
+                    return `/app/orders/${data.order_id}`;
+                }
+                console.log('⚠️ No order_id in review notification data');
+                return isAdmin ? '/app/admin/orders' : '/app/orders';
             
             // Farmer verification notifications
             case 'farmer_verification_request':
@@ -202,13 +222,6 @@ export const NotificationBell = () => {
             case 'new_product':
             case 'low_stock':
                 return isAdmin ? '/app/admin/products' : '/app/products';
-            
-            // Review notifications
-            case 'new_review':
-                if (data.order_id) {
-                    return `/app/orders/${data.order_id}`;
-                }
-                return isAdmin ? '/app/admin/orders' : '/app/orders';
             
             // Default fallback
             default:
