@@ -25,7 +25,6 @@ export const AuthProvider = ({ children }) => {
             }
 
             const response = await authService.getUser();
-            // response already contains the data from the API
             if (response && response.data) {
                 setUser(response.data);
                 return response.data;
@@ -53,18 +52,28 @@ export const AuthProvider = ({ children }) => {
     }, []);
 
     const login = async (data) => {
-        const response = await authService.login(data);
-        // response contains { user, token }
-        localStorage.setItem('authToken', response.token || response.data?.token);
-        setUser(response.user || response.data?.user);
-        return response;
+        try {
+            const response = await authService.login(data);
+            localStorage.setItem('authToken', response.token || response.data?.token);
+            setUser(response.user || response.data?.user);
+            return response;
+        } catch (error) {
+            console.error('Login error in AuthContext:', error);
+            // Re-throw the error so the component can handle it
+            throw error;
+        }
     };
 
     const register = async (data) => {
-        const response = await authService.register(data);
-        localStorage.setItem('authToken', response.token || response.data?.token);
-        setUser(response.user || response.data?.user);
-        return response;
+        try {
+            const response = await authService.register(data);
+            localStorage.setItem('authToken', response.token || response.data?.token);
+            setUser(response.user || response.data?.user);
+            return response;
+        } catch (error) {
+            console.error('Register error in AuthContext:', error);
+            throw error;
+        }
     };
 
     const logout = async () => {
@@ -82,7 +91,6 @@ export const AuthProvider = ({ children }) => {
         try {
             const response = await authService.updateProfile(data);
             
-            // The response might have the user data directly or nested
             let updatedUser = null;
             if (response && response.data) {
                 updatedUser = response.data;
@@ -96,7 +104,6 @@ export const AuthProvider = ({ children }) => {
                 setUser(updatedUser);
                 console.log('✅ User state updated:', updatedUser);
             } else {
-                // If no user data in response, refresh the user
                 await refreshUser();
             }
             

@@ -13,21 +13,19 @@ export const Login = () => {
         password: '',
         remember: false,
     });
-    const [errors, setErrors] = useState({});
     const [isLoading, setIsLoading] = useState(false);
     const [generalError, setGeneralError] = useState(null);
     const [fieldErrors, setFieldErrors] = useState({});
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setErrors({});
         setFieldErrors({});
         setGeneralError(null);
         setIsLoading(true);
 
         try {
             const response = await login(formData);
-            console.log('Login response:', response);
+            console.log('Login successful:', response);
             
             // Navigate based on role
             if (response?.user?.role === 'admin') {
@@ -36,45 +34,59 @@ export const Login = () => {
                 navigate('/app/dashboard');
             }
         } catch (error) {
-            console.error('Login error - Full error object:', error);
-            console.error('Login error - Response:', error.response);
-            console.error('Login error - Data:', error.response?.data);
-            console.error('Login error - Status:', error.response?.status);
+            console.error('Login error:', error);
             
-            // Handle the error properly
+            // Check if error has response data
             if (error.response) {
                 const status = error.response.status;
                 const data = error.response.data;
                 
+                console.log('Error status:', status);
+                console.log('Error data:', data);
+                
+                // Handle validation errors (422)
                 if (status === 422) {
-                    // Validation errors - Laravel returns errors in data.errors
                     if (data.errors) {
-                        // Field-specific errors
-                        const fieldErrors = {};
+                        // Field-specific errors from Laravel
+                        const errors = {};
                         Object.keys(data.errors).forEach(key => {
-                            fieldErrors[key] = data.errors[key][0];
+                            errors[key] = data.errors[key][0];
                         });
-                        setFieldErrors(fieldErrors);
+                        setFieldErrors(errors);
                         setGeneralError('Please fix the errors below.');
                     } else if (data.message) {
                         setGeneralError(data.message);
                     } else {
                         setGeneralError('Validation failed. Please check your inputs.');
                     }
-                } else if (status === 401) {
+                } 
+                // Handle authentication errors (401)
+                else if (status === 401) {
                     setGeneralError(data.message || 'Invalid email or password.');
-                } else if (status === 403) {
+                }
+                // Handle forbidden errors (403)
+                else if (status === 403) {
                     setGeneralError(data.message || 'You do not have permission to access this account.');
-                } else if (status === 404) {
+                }
+                // Handle not found errors (404)
+                else if (status === 404) {
                     setGeneralError('User not found. Please check your email address.');
-                } else if (status === 500) {
+                }
+                // Handle server errors (500)
+                else if (status === 500) {
                     setGeneralError('Server error. Please try again later.');
-                } else {
+                }
+                // Handle other errors
+                else {
                     setGeneralError(data.message || 'Login failed. Please try again.');
                 }
-            } else if (error.request) {
+            } 
+            // Handle network errors
+            else if (error.request) {
                 setGeneralError('Network error. Please check your internet connection.');
-            } else {
+            } 
+            // Handle other errors
+            else {
                 setGeneralError(error.message || 'Login failed. Please try again.');
             }
         } finally {
@@ -83,8 +95,11 @@ export const Login = () => {
     };
 
     const handleChange = (e) => {
-        const { name, value } = e.target;
-        setFormData(prev => ({ ...prev, [name]: value }));
+        const { name, value, type, checked } = e.target;
+        setFormData(prev => ({ 
+            ...prev, 
+            [name]: type === 'checkbox' ? checked : value 
+        }));
         
         // Clear field-specific error when user types
         if (fieldErrors[name]) {
@@ -168,9 +183,10 @@ export const Login = () => {
                                     <input
                                         id="remember"
                                         type="checkbox"
+                                        name="remember"
                                         className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
                                         checked={formData.remember}
-                                        onChange={(e) => setFormData({ ...formData, remember: e.target.checked })}
+                                        onChange={handleChange}
                                     />
                                     <label htmlFor="remember" className="ml-2 block text-sm text-gray-700">
                                         Remember me
