@@ -16,24 +16,87 @@ export const Login = () => {
     const [errors, setErrors] = useState({});
     const [isLoading, setIsLoading] = useState(false);
     const [generalError, setGeneralError] = useState(null);
+    const [fieldErrors, setFieldErrors] = useState({});
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setErrors({});
+        setFieldErrors({});
         setGeneralError(null);
         setIsLoading(true);
 
         try {
-            await login(formData);
-            navigate('/home');
-        } catch (error) {
-            if (error.errors) {
-                setErrors(error.errors);
+            const response = await login(formData);
+            console.log('Login response:', response);
+            
+            // Navigate based on role
+            if (response?.user?.role === 'admin') {
+                navigate('/app/admin/dashboard');
             } else {
+                navigate('/app/dashboard');
+            }
+        } catch (error) {
+            console.error('Login error:', error);
+            
+            // Handle the error properly
+            if (error.response) {
+                // The request was made and the server responded with a status code
+                const status = error.response.status;
+                const data = error.response.data;
+                
+                console.log('Error status:', status);
+                console.log('Error data:', data);
+                
+                if (status === 422) {
+                    // Validation errors
+                    if (data.errors) {
+                        // Field-specific errors
+                        const fieldErrors = {};
+                        Object.keys(data.errors).forEach(key => {
+                            fieldErrors[key] = data.errors[key][0];
+                        });
+                        setFieldErrors(fieldErrors);
+                        setGeneralError('Please fix the errors below.');
+                    } else if (data.message) {
+                        setGeneralError(data.message);
+                    } else {
+                        setGeneralError('Validation failed. Please check your inputs.');
+                    }
+                } else if (status === 401) {
+                    // Authentication error
+                    setGeneralError(data.message || 'Invalid email or password. Please try again.');
+                } else if (status === 403) {
+                    // Forbidden
+                    setGeneralError(data.message || 'You do not have permission to access this account.');
+                } else if (status === 404) {
+                    setGeneralError('User not found. Please check your email address.');
+                } else if (status === 500) {
+                    setGeneralError('Server error. Please try again later.');
+                } else {
+                    setGeneralError(data.message || 'Login failed. Please try again.');
+                }
+            } else if (error.request) {
+                // The request was made but no response was received
+                setGeneralError('Network error. Please check your internet connection.');
+            } else {
+                // Something happened in setting up the request
                 setGeneralError(error.message || 'Login failed. Please try again.');
             }
         } finally {
             setIsLoading(false);
+        }
+    };
+
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({ ...prev, [name]: value }));
+        
+        // Clear field-specific error when user types
+        if (fieldErrors[name]) {
+            setFieldErrors(prev => ({ ...prev, [name]: '' }));
+        }
+        if (generalError) {
+            setGeneralError(null);
         }
     };
 
@@ -52,8 +115,13 @@ export const Login = () => {
 
                 <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8">
                     <form className="space-y-6" onSubmit={handleSubmit}>
+                        {/* General Error */}
                         {generalError && (
-                            <Alert type="error" message={generalError} />
+                            <Alert 
+                                type="error" 
+                                message={generalError} 
+                                onClose={() => setGeneralError(null)}
+                            />
                         )}
 
                         <div className="space-y-4">
@@ -64,16 +132,17 @@ export const Login = () => {
                                 </label>
                                 <input
                                     type="email"
+                                    name="email"
                                     placeholder="Enter your email"
                                     value={formData.email}
-                                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                                    onChange={handleChange}
                                     className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition ${
-                                        errors.email ? 'border-red-500' : 'border-gray-200'
+                                        fieldErrors.email ? 'border-red-500' : 'border-gray-200'
                                     }`}
                                     required
                                 />
-                                {errors.email && (
-                                    <p className="mt-1 text-sm text-red-600">{errors.email}</p>
+                                {fieldErrors.email && (
+                                    <p className="mt-1 text-sm text-red-600">{fieldErrors.email}</p>
                                 )}
                             </div>
 
@@ -84,16 +153,17 @@ export const Login = () => {
                                 </label>
                                 <input
                                     type="password"
+                                    name="password"
                                     placeholder="Enter your password"
                                     value={formData.password}
-                                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                                    onChange={handleChange}
                                     className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition ${
-                                        errors.password ? 'border-red-500' : 'border-gray-200'
+                                        fieldErrors.password ? 'border-red-500' : 'border-gray-200'
                                     }`}
                                     required
                                 />
-                                {errors.password && (
-                                    <p className="mt-1 text-sm text-red-600">{errors.password}</p>
+                                {fieldErrors.password && (
+                                    <p className="mt-1 text-sm text-red-600">{fieldErrors.password}</p>
                                 )}
                             </div>
 
