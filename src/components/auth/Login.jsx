@@ -36,19 +36,18 @@ export const Login = () => {
                 navigate('/app/dashboard');
             }
         } catch (error) {
-            console.error('Login error:', error);
+            console.error('Login error - Full error object:', error);
+            console.error('Login error - Response:', error.response);
+            console.error('Login error - Data:', error.response?.data);
+            console.error('Login error - Status:', error.response?.status);
             
             // Handle the error properly
             if (error.response) {
-                // The request was made and the server responded with a status code
                 const status = error.response.status;
                 const data = error.response.data;
                 
-                console.log('Error status:', status);
-                console.log('Error data:', data);
-                
                 if (status === 422) {
-                    // Validation errors
+                    // Validation errors - Laravel returns errors in data.errors
                     if (data.errors) {
                         // Field-specific errors
                         const fieldErrors = {};
@@ -63,10 +62,8 @@ export const Login = () => {
                         setGeneralError('Validation failed. Please check your inputs.');
                     }
                 } else if (status === 401) {
-                    // Authentication error
-                    setGeneralError(data.message || 'Invalid email or password. Please try again.');
+                    setGeneralError(data.message || 'Invalid email or password.');
                 } else if (status === 403) {
-                    // Forbidden
                     setGeneralError(data.message || 'You do not have permission to access this account.');
                 } else if (status === 404) {
                     setGeneralError('User not found. Please check your email address.');
@@ -76,10 +73,8 @@ export const Login = () => {
                     setGeneralError(data.message || 'Login failed. Please try again.');
                 }
             } else if (error.request) {
-                // The request was made but no response was received
                 setGeneralError('Network error. Please check your internet connection.');
             } else {
-                // Something happened in setting up the request
                 setGeneralError(error.message || 'Login failed. Please try again.');
             }
         } finally {
