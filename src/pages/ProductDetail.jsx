@@ -5,7 +5,7 @@ import { Button } from '../components/common/Button';
 import { useAuth } from '../hooks/useAuth';
 import api from '../services/api';
 
- const ProductDetail = () => {
+const ProductDetail = () => {
     const { productId } = useParams();
     const navigate = useNavigate();
     const { user } = useAuth();
@@ -22,12 +22,43 @@ import api from '../services/api';
     const fetchProduct = async () => {
         try {
             setLoading(true);
+            setError(null);
+            
+            console.log('🔍 Fetching product ID:', productId);
+            
             const response = await api.get(`/products/${productId}`);
-            setProduct(response.data.data);
+            console.log('📦 Full API response:', response);
+            console.log('📦 Response data:', response.data);
+            
+            // The ProductResource returns data in response.data.data
+            // But also check if the response is already the data
+            let productData = null;
+            
+            if (response.data && response.data.data) {
+                // Standard Laravel Resource response
+                productData = response.data.data;
+                console.log('✅ Product loaded from response.data.data');
+            } else if (response.data && response.data.id) {
+                // Direct product data without wrapper
+                productData = response.data;
+                console.log('✅ Product loaded from response.data directly');
+            } else if (response.data) {
+                // Try to use whatever is in response.data
+                productData = response.data;
+                console.log('✅ Product loaded from response.data (fallback)');
+            }
+            
+            if (productData && productData.id) {
+                setProduct(productData);
+                console.log('✅ Product set:', productData.name, '(ID:', productData.id, ')');
+            } else {
+                console.error('❌ No product data found in response');
+                setError('Product not found');
+            }
         } catch (err) {
-            console.error('Error fetching product:', err);
-            setError('Failed to load product details');
-            setTimeout(() => setError(null), 3000);
+            console.error('❌ Error fetching product:', err);
+            console.error('❌ Error response:', err.response);
+            setError(err.response?.data?.message || 'Failed to load product details');
         } finally {
             setLoading(false);
         }
@@ -48,8 +79,14 @@ import api from '../services/api';
 
     const isFarmer = user?.role === 'farmer';
     const isBuyer = user?.role === 'buyer';
+    
+    // Check if product is expired
     const isExpired = product?.expiry_date && new Date(product.expiry_date) < new Date();
-    const isAvailable = product?.is_available && !isExpired;
+    
+    // Check if product is available - use the is_available from the resource or calculate it
+    const isAvailable = product?.is_available !== undefined 
+        ? product.is_available 
+        : (product?.status === 'active' && product?.quantity > 0);
 
     if (loading) {
         return (
@@ -59,12 +96,18 @@ import api from '../services/api';
         );
     }
 
-    if (error || !product) {
+    if (error || !product || !product.id) {
         return (
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-12 text-center">
-                <div className="text-6xl mb-4">❌</div>
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-12 text-center max-w-2xl mx-auto">
+                <div className="text-6xl mb-4">🔍</div>
                 <h3 className="text-xl font-semibold text-gray-900 mb-2">Product Not Found</h3>
-                <p className="text-gray-500">The product you're looking for doesn't exist.</p>
+                <p className="text-gray-500">The product you're looking for doesn't exist or has been removed.</p>
+                {productId && (
+                    <p className="text-sm text-gray-400 mt-2">Product ID: {productId}</p>
+                )}
+                {error && (
+                    <p className="text-sm text-red-500 mt-2">Error: {error}</p>
+                )}
                 <Button className="mt-4" onClick={() => navigate('/app/browse')}>
                     Browse Products
                 </Button>
@@ -97,7 +140,10 @@ import api from '../services/api';
                                     <img
                                         src={product.photos[activeImage]}
                                         alt={product.name}
-                                        className="w-full h-96 object-cover main-image"
+                                        className="w-full h-96 object-cover"
+                                        onError={(e) => {
+                                            e.target.style.display = 'none';
+                                        }}
                                     />
                                 ) : (
                                     <div className="w-full h-96 flex items-center justify-center text-6xl bg-gray-100">
@@ -135,6 +181,9 @@ import api from '../services/api';
                                                     : 'border-gray-200 hover:border-green-300'
                                             }`}
                                             onClick={() => setActiveImage(index)}
+                                            onError={(e) => {
+                                                e.target.style.display = 'none';
+                                            }}
                                         />
                                     ))}
                                 </div>
@@ -158,7 +207,7 @@ import api from '../services/api';
                                     <div className="flex items-center">
                                         <span className="text-yellow-400">⭐</span>
                                         <span className="ml-1 text-gray-600 font-medium">
-                                            {product.average_rating.toFixed(1)}
+                                            {Number(product.average_rating).toFixed(1)}
                                         </span>
                                     </div>
                                 )}
@@ -173,7 +222,7 @@ import api from '../services/api';
                                     {product.price_formatted || `GMD ${product.price}`}
                                 </div>
                                 <div className="text-sm text-gray-500 mt-1">
-                                    per {product.unit}
+                                    per {product.unit_display || product.unit}
                                 </div>
                             </div>
 
@@ -181,7 +230,7 @@ import api from '../services/api';
                                 <div className="flex justify-between py-1">
                                     <span className="text-gray-600">Quantity Available</span>
                                     <span className="font-medium text-gray-900">
-                                        {product.quantity} {product.unit}
+                                        {product.quantity} {product.unit_display || product.unit}
                                     </span>
                                 </div>
                                 <div className="flex justify-between py-1">
@@ -190,23 +239,21 @@ import api from '../services/api';
                                         isAvailable && !isExpired ? 'text-green-600' : 'text-red-600'
                                     }`}>
                                         {isExpired ? 'Expired' : 
-                                         isAvailable ? 'Available' : 'Sold Out'}
+                                         isAvailable ? product.status_label || 'Available' : 'Sold Out'}
                                     </span>
                                 </div>
                                 <div className="flex justify-between py-1">
                                     <span className="text-gray-600">Harvest Date</span>
                                     <span className="font-medium text-gray-900">
-                                        {product.harvest_date 
-                                            ? new Date(product.harvest_date).toLocaleDateString() 
-                                            : '-'}
+                                        {product.harvest_date_display || 
+                                         (product.harvest_date ? new Date(product.harvest_date).toLocaleDateString() : '-')}
                                     </span>
                                 </div>
                                 <div className="flex justify-between py-1">
                                     <span className="text-gray-600">Expiry Date</span>
                                     <span className="font-medium text-gray-900">
-                                        {product.expiry_date 
-                                            ? new Date(product.expiry_date).toLocaleDateString() 
-                                            : '-'}
+                                        {product.expiry_date_display || 
+                                         (product.expiry_date ? new Date(product.expiry_date).toLocaleDateString() : '-')}
                                     </span>
                                 </div>
                             </div>
@@ -219,22 +266,26 @@ import api from '../services/api';
                             )}
 
                             {/* Farmer Info */}
-                            <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
-                                <h3 className="font-semibold text-gray-900 mb-2">Sold by</h3>
-                                <div className="flex items-center">
-                                    <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center text-sm font-medium text-green-700">
-                                        {product.farmer?.name?.[0]?.toUpperCase() || 'F'}
-                                    </div>
-                                    <div className="ml-3">
-                                        <p className="font-medium text-gray-900">
-                                            {product.farmer?.name || 'Unknown Farmer'}
-                                        </p>
-                                        <p className="text-sm text-gray-500">
-                                            📍 {product.farmer?.location || 'Location not provided'}
-                                        </p>
+                            {product.farmer && (
+                                <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
+                                    <h3 className="font-semibold text-gray-900 mb-2">Sold by</h3>
+                                    <div className="flex items-center">
+                                        <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center text-sm font-medium text-green-700">
+                                            {product.farmer.name?.[0]?.toUpperCase() || 'F'}
+                                        </div>
+                                        <div className="ml-3">
+                                            <p className="font-medium text-gray-900">
+                                                {product.farmer.name || 'Unknown Farmer'}
+                                            </p>
+                                            {product.farmer.location && (
+                                                <p className="text-sm text-gray-500">
+                                                    📍 {product.farmer.location}
+                                                </p>
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
+                            )}
 
                             {/* Actions */}
                             <div className="pt-4 space-y-3">
@@ -242,7 +293,7 @@ import api from '../services/api';
                                     <>
                                         <div className="flex items-center space-x-4">
                                             <div className="flex items-center space-x-2">
-                                                {/* <label className="text-sm font-medium text-gray-700">
+                                                <label className="text-sm font-medium text-gray-700">
                                                     Quantity:
                                                 </label>
                                                 <input
@@ -252,11 +303,11 @@ import api from '../services/api';
                                                     value={quantity}
                                                     onChange={handleQuantityChange}
                                                     className="w-20 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                                                /> */}
+                                                />
                                             </div>
-                                            {/* <span className="text-sm text-gray-500">
+                                            <span className="text-sm text-gray-500">
                                                 {product.unit}s available
-                                            </span> */}
+                                            </span>
                                         </div>
                                         <button
                                             onClick={handlePlaceOrder}
