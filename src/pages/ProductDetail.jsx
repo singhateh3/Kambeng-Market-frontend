@@ -1,12 +1,6 @@
 // src/pages/ProductDetail.jsx
 import { useEffect, useState } from 'react';
-import { Link, useNavigate, useParams } catch (error) {
-    console.error('Error fetching product:', error);
-    setError('Failed to load product details');
-  } finally {
-    setLoading(false);
-  }
-};
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { Button } from '../components/common/Button';
 import { useAuth } from '../hooks/useAuth';
 import api from '../services/api';
