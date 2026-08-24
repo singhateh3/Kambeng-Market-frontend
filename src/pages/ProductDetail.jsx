@@ -1,6 +1,12 @@
 // src/pages/ProductDetail.jsx
 import { useEffect, useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } catch (error) {
+    console.error('Error fetching product:', error);
+    setError('Failed to load product details');
+  } finally {
+    setLoading(false);
+  }
+};
 import { Button } from '../components/common/Button';
 import { useAuth } from '../hooks/useAuth';
 import api from '../services/api';
@@ -16,7 +22,10 @@ const ProductDetail = () => {
     const [activeImage, setActiveImage] = useState(0);
 
     useEffect(() => {
-        fetchProduct();
+        if (productId) {
+            console.log('🔍 Fetching product ID:', productId);
+            fetchProduct();
+        }
     }, [productId]);
 
     const fetchProduct = async () => {
@@ -24,14 +33,11 @@ const ProductDetail = () => {
             setLoading(true);
             setError(null);
             
-            console.log('🔍 Fetching product ID:', productId);
-            
+            console.log('📡 API Request: /products/' + productId);
             const response = await api.get(`/products/${productId}`);
-            console.log('📦 Full API response:', response);
-            console.log('📦 Response data:', response.data);
+            console.log('📦 API Response:', response.data);
             
-            // The ProductResource returns data in response.data.data
-            // But also check if the response is already the data
+            // Handle different response formats
             let productData = null;
             
             if (response.data && response.data.data) {
@@ -39,11 +45,11 @@ const ProductDetail = () => {
                 productData = response.data.data;
                 console.log('✅ Product loaded from response.data.data');
             } else if (response.data && response.data.id) {
-                // Direct product data without wrapper
+                // Direct product data
                 productData = response.data;
                 console.log('✅ Product loaded from response.data directly');
             } else if (response.data) {
-                // Try to use whatever is in response.data
+                // Fallback
                 productData = response.data;
                 console.log('✅ Product loaded from response.data (fallback)');
             }
@@ -57,7 +63,7 @@ const ProductDetail = () => {
             }
         } catch (err) {
             console.error('❌ Error fetching product:', err);
-            console.error('❌ Error response:', err.response);
+            console.error('❌ Error response:', err.response?.data);
             setError(err.response?.data?.message || 'Failed to load product details');
         } finally {
             setLoading(false);
@@ -79,11 +85,7 @@ const ProductDetail = () => {
 
     const isFarmer = user?.role === 'farmer';
     const isBuyer = user?.role === 'buyer';
-    
-    // Check if product is expired
     const isExpired = product?.expiry_date && new Date(product.expiry_date) < new Date();
-    
-    // Check if product is available - use the is_available from the resource or calculate it
     const isAvailable = product?.is_available !== undefined 
         ? product.is_available 
         : (product?.status === 'active' && product?.quantity > 0);
