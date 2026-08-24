@@ -19,6 +19,9 @@ const ProductDetail = () => {
         if (productId) {
             console.log('🔍 Fetching product ID:', productId);
             fetchProduct();
+        } else {
+            setError('No product ID provided');
+            setLoading(false);
         }
     }, [productId]);
 
@@ -35,15 +38,12 @@ const ProductDetail = () => {
             let productData = null;
             
             if (response.data && response.data.data) {
-                // Standard Laravel Resource response
                 productData = response.data.data;
                 console.log('✅ Product loaded from response.data.data');
             } else if (response.data && response.data.id) {
-                // Direct product data
                 productData = response.data;
                 console.log('✅ Product loaded from response.data directly');
             } else if (response.data) {
-                // Fallback
                 productData = response.data;
                 console.log('✅ Product loaded from response.data (fallback)');
             }
@@ -57,8 +57,14 @@ const ProductDetail = () => {
             }
         } catch (err) {
             console.error('❌ Error fetching product:', err);
-            console.error('❌ Error response:', err.response?.data);
-            setError(err.response?.data?.message || 'Failed to load product details');
+            
+            // Handle 404 specifically
+            if (err.response?.status === 404) {
+                setError('Product not found. It may have been removed or the ID is incorrect.');
+                console.log('📌 Product ID that was not found:', productId);
+            } else {
+                setError(err.response?.data?.message || 'Failed to load product details');
+            }
         } finally {
             setLoading(false);
         }
@@ -97,16 +103,18 @@ const ProductDetail = () => {
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-12 text-center max-w-2xl mx-auto">
                 <div className="text-6xl mb-4">🔍</div>
                 <h3 className="text-xl font-semibold text-gray-900 mb-2">Product Not Found</h3>
-                <p className="text-gray-500">The product you're looking for doesn't exist or has been removed.</p>
+                <p className="text-gray-500">{error || 'The product you\'re looking for doesn\'t exist or has been removed.'}</p>
                 {productId && (
                     <p className="text-sm text-gray-400 mt-2">Product ID: {productId}</p>
                 )}
-                {error && (
-                    <p className="text-sm text-red-500 mt-2">Error: {error}</p>
-                )}
-                <Button className="mt-4" onClick={() => navigate('/app/browse')}>
-                    Browse Products
-                </Button>
+                <div className="mt-4 space-y-2">
+                    <Button className="mt-2" onClick={() => navigate('/app/browse')}>
+                        Browse Products
+                    </Button>
+                    <Button variant="secondary" className="mt-2 ml-2" onClick={handleGoBack}>
+                        Go Back
+                    </Button>
+                </div>
             </div>
         );
     }
