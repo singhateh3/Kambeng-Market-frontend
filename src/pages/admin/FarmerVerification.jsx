@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react';
 import { Alert } from '../../components/common/Alert';
 import { Button } from '../../components/common/Button';
+import { Modal } from '../../components/Modal';
 import { useAuth } from '../../hooks/useAuth';
 import api from '../../services/api';
 
@@ -587,145 +588,116 @@ import api from '../../services/api';
             </div>
 
             {/* Reject Modal (Single) */}
-            {showModal && selectedFarmer && modalAction === 'reject' && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-white rounded-lg max-w-md w-full">
-                        <div className="flex justify-between items-center p-6 border-b">
-                            <h2 className="text-xl font-bold text-gray-900">Reject Farmer</h2>
-                            <button
-                                onClick={closeModal}
-                                className="text-gray-400 hover:text-gray-600"
-                            >
-                                <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                </svg>
-                            </button>
-                        </div>
-
-                        <div className="p-6">
-                            <div className="mb-4">
-                                <div className="flex items-center mb-4">
-                                    <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center text-lg font-medium text-gray-600">
-                                        {selectedFarmer.name?.[0]?.toUpperCase() || 'U'}
-                                    </div>
-                                    <div className="ml-4">
-                                        <h3 className="font-semibold text-gray-900">{selectedFarmer.name}</h3>
-                                        <p className="text-sm text-gray-500">{selectedFarmer.farmer_profile?.farm_name || 'No farm name'}</p>
-                                    </div>
+            <Modal
+                isOpen={showModal && !!selectedFarmer && modalAction === 'reject'}
+                onClose={closeModal}
+                title="Reject Farmer"
+                maxWidth="max-w-md"
+            >
+                {selectedFarmer && (
+                    <div className="p-6">
+                        <div className="mb-4">
+                            <div className="flex items-center mb-4">
+                                <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center text-lg font-medium text-gray-600">
+                                    {selectedFarmer.name?.[0]?.toUpperCase() || 'U'}
+                                </div>
+                                <div className="ml-4">
+                                    <h3 className="font-semibold text-gray-900">{selectedFarmer.name}</h3>
+                                    <p className="text-sm text-gray-500">{selectedFarmer.farmer_profile?.farm_name || 'No farm name'}</p>
                                 </div>
                             </div>
+                        </div>
 
-                            <div className="mb-4">
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Rejection Reason *
-                                </label>
-                                <textarea
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
-                                    rows="3"
-                                    value={rejectionReason}
-                                    onChange={(e) => setRejectionReason(e.target.value)}
-                                    placeholder="Please provide a reason for rejection..."
-                                />
-                            </div>
+                        <div className="mb-4">
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Rejection Reason *
+                            </label>
+                            <textarea
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                                rows="3"
+                                value={rejectionReason}
+                                onChange={(e) => setRejectionReason(e.target.value)}
+                                placeholder="Please provide a reason for rejection..."
+                            />
+                        </div>
 
-                            <div className="flex justify-end space-x-4">
-                                <Button variant="secondary" onClick={closeModal}>
-                                    Cancel
-                                </Button>
-                                <Button 
-                                    variant="danger" 
-                                    onClick={() => {
-                                        if (selectedFarmer) {
-                                            openConfirmModal('reject', { id: selectedFarmer.id });
-                                        }
-                                    }}
-                                    disabled={!rejectionReason.trim() || loadingAction}
-                                >
-                                    Reject Farmer
-                                </Button>
-                            </div>
+                        <div className="flex justify-end space-x-4">
+                            <Button variant="secondary" onClick={closeModal}>
+                                Cancel
+                            </Button>
+                            <Button
+                                variant="danger"
+                                onClick={() => {
+                                    if (selectedFarmer) {
+                                        openConfirmModal('reject', { id: selectedFarmer.id });
+                                    }
+                                }}
+                                disabled={!rejectionReason.trim() || loadingAction}
+                            >
+                                Reject Farmer
+                            </Button>
                         </div>
                     </div>
-                </div>
-            )}
+                )}
+            </Modal>
 
             {/* Bulk Reject Modal */}
-            {showBulkRejectModal && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-white rounded-lg max-w-md w-full">
-                        <div className="flex justify-between items-center p-6 border-b">
-                            <h2 className="text-xl font-bold text-gray-900">Bulk Reject Farmers</h2>
-                            <button
-                                onClick={closeBulkRejectModal}
-                                className="text-gray-400 hover:text-gray-600"
-                            >
-                                <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                </svg>
-                            </button>
-                        </div>
-
-                        <div className="p-6">
-                            <div className="mb-4">
-                                <div className="flex items-center mb-4">
-                                    <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center text-2xl">
-                                        ❌
-                                    </div>
-                                    <div className="ml-4">
-                                        <h3 className="font-semibold text-gray-900">Reject {selectedFarmers.length} Farmers</h3>
-                                        <p className="text-sm text-gray-500">Provide a reason for rejecting these farmers</p>
-                                    </div>
-                                </div>
+            <Modal
+                isOpen={showBulkRejectModal}
+                onClose={closeBulkRejectModal}
+                title="Bulk Reject Farmers"
+                maxWidth="max-w-md"
+            >
+                <div className="p-6">
+                    <div className="mb-4">
+                        <div className="flex items-center mb-4">
+                            <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center text-2xl">
+                                ❌
                             </div>
-
-                            <div className="mb-4">
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Rejection Reason *
-                                </label>
-                                <textarea
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
-                                    rows="3"
-                                    value={bulkRejectionReason}
-                                    onChange={(e) => setBulkRejectionReason(e.target.value)}
-                                    placeholder="Please provide a reason for rejection..."
-                                />
-                            </div>
-
-                            <div className="flex justify-end space-x-4">
-                                <Button variant="secondary" onClick={closeBulkRejectModal}>
-                                    Cancel
-                                </Button>
-                                <Button 
-                                    variant="danger" 
-                                    onClick={handleBulkReject}
-                                    disabled={!bulkRejectionReason.trim() || loadingAction}
-                                    isLoading={loadingAction}
-                                >
-                                    Reject All ({selectedFarmers.length})
-                                </Button>
+                            <div className="ml-4">
+                                <h3 className="font-semibold text-gray-900">Reject {selectedFarmers.length} Farmers</h3>
+                                <p className="text-sm text-gray-500">Provide a reason for rejecting these farmers</p>
                             </div>
                         </div>
                     </div>
+
+                    <div className="mb-4">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Rejection Reason *
+                        </label>
+                        <textarea
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                            rows="3"
+                            value={bulkRejectionReason}
+                            onChange={(e) => setBulkRejectionReason(e.target.value)}
+                            placeholder="Please provide a reason for rejection..."
+                        />
+                    </div>
+
+                    <div className="flex justify-end space-x-4">
+                        <Button variant="secondary" onClick={closeBulkRejectModal}>
+                            Cancel
+                        </Button>
+                        <Button
+                            variant="danger"
+                            onClick={handleBulkReject}
+                            disabled={!bulkRejectionReason.trim() || loadingAction}
+                            isLoading={loadingAction}
+                        >
+                            Reject All ({selectedFarmers.length})
+                        </Button>
+                    </div>
                 </div>
-            )}
+            </Modal>
 
             {/* Confirm Modal */}
-            {showConfirmModal && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-white rounded-lg max-w-md w-full">
-                        <div className="flex justify-between items-center p-6 border-b">
-                            <h2 className="text-xl font-bold text-gray-900">Confirm Action</h2>
-                            <button
-                                onClick={closeConfirmModal}
-                                className="text-gray-400 hover:text-gray-600"
-                            >
-                                <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                </svg>
-                            </button>
-                        </div>
-
-                        <div className="p-6">
+            <Modal
+                isOpen={showConfirmModal}
+                onClose={closeConfirmModal}
+                title="Confirm Action"
+                maxWidth="max-w-md"
+            >
+                <div className="p-6">
                             <div className="mb-4">
                                 {confirmAction === 'approve' && (
                                     <>
@@ -800,10 +772,8 @@ import api from '../../services/api';
                                     {confirmAction === 'bulkApprove' && ' All'}
                                 </Button>
                             </div>
-                        </div>
-                    </div>
                 </div>
-            )}
+            </Modal>
         </div>
     );
 };

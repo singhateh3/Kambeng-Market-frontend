@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Alert } from '../components/common/Alert';
 import { Button } from '../components/common/Button';
+import { Modal } from '../components/Modal';
 import { Skeleton } from '../components/common/skeletons/Skeleton';
 import { useNotifications } from '../context/NotificationContext';
 
@@ -517,49 +518,38 @@ const Notifications = () => {
                 )}
             </div>
 
-            {showConfirmModal && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
-                    <div className="bg-white rounded-xl max-w-md w-full shadow-xl animate-in zoom-in-95 duration-200">
-                        <div className="flex justify-between items-center p-6 border-b border-gray-100">
-                            <h2 className="text-xl font-bold text-gray-900">{confirmationContent.title}</h2>
-                            <button
-                                onClick={closeConfirmModal}
-                                className="text-gray-400 hover:text-gray-600 transition"
-                            >
-                                <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                </svg>
-                            </button>
+            <Modal
+                isOpen={showConfirmModal}
+                onClose={closeConfirmModal}
+                title={confirmationContent.title}
+                maxWidth="max-w-md"
+            >
+                <div className="p-6">
+                    <div className="flex flex-col items-center text-center mb-6">
+                        <div className={`w-16 h-16 ${confirmationContent.iconBg} rounded-full flex items-center justify-center text-3xl mb-4`}>
+                            {confirmationContent.icon}
                         </div>
+                        <p className="text-gray-600 text-sm leading-relaxed">
+                            {confirmationContent.message}
+                        </p>
+                    </div>
 
-                        <div className="p-6">
-                            <div className="flex flex-col items-center text-center mb-6">
-                                <div className={`w-16 h-16 ${confirmationContent.iconBg} rounded-full flex items-center justify-center text-3xl mb-4`}>
-                                    {confirmationContent.icon}
-                                </div>
-                                <p className="text-gray-600 text-sm leading-relaxed">
-                                    {confirmationContent.message}
-                                </p>
-                            </div>
-
-                            <div className="flex gap-3">
-                                <button
-                                    onClick={closeConfirmModal}
-                                    className="flex-1 px-4 py-2.5 text-sm font-semibold text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition border-none cursor-pointer"
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    onClick={handleConfirmAction}
-                                    className={`flex-1 px-4 py-2.5 text-sm font-semibold text-white rounded-lg transition border-none cursor-pointer ${confirmationContent.confirmColor}`}
-                                >
-                                    {confirmationContent.confirmText}
-                                </button>
-                            </div>
-                        </div>
+                    <div className="flex gap-3">
+                        <button
+                            onClick={closeConfirmModal}
+                            className="flex-1 px-4 py-2.5 text-sm font-semibold text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition border-none cursor-pointer"
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            onClick={handleConfirmAction}
+                            className={`flex-1 px-4 py-2.5 text-sm font-semibold text-white rounded-lg transition border-none cursor-pointer ${confirmationContent.confirmColor}`}
+                        >
+                            {confirmationContent.confirmText}
+                        </button>
                     </div>
                 </div>
-            )}
+            </Modal>
         </div>
     );
 };

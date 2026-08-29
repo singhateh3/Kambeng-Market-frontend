@@ -2,6 +2,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Alert } from '../../components/common/Alert';
 import { Button } from '../../components/common/Button';
+import { Modal } from '../../components/Modal';
 import { useAuth } from '../../hooks/useAuth';
 import { useDebounce } from '../../hooks/useDebounce';
 import api from '../../services/api';
@@ -417,23 +418,14 @@ const AdminUsers = () => {
             </div>
 
             {/* Modal */}
-            {showModal && selectedUser && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-white rounded-lg p-6 max-w-md w-full">
-                        <div className="flex justify-between items-center mb-4">
-                            <h2 className="text-xl font-bold text-gray-900">
-                                {modalAction === 'delete' ? 'Delete User' : 'User Details'}
-                            </h2>
-                            <button
-                                onClick={closeModal}
-                                className="text-gray-400 hover:text-gray-600 cursor-pointer border-none bg-transparent"
-                            >
-                                <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                </svg>
-                            </button>
-                        </div>
-
+            <Modal
+                isOpen={showModal && !!selectedUser}
+                onClose={closeModal}
+                title={modalAction === 'delete' ? 'Delete User' : 'User Details'}
+                maxWidth="max-w-md"
+            >
+                {selectedUser && (
+                    <div className="p-6">
                         {modalAction === 'delete' ? (
                             <>
                                 <div className="mb-4">
@@ -508,8 +500,8 @@ const AdminUsers = () => {
                             </div>
                         )}
                     </div>
-                </div>
-            )}
+                )}
+            </Modal>
         </div>
     );
 };
