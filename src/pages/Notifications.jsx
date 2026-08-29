@@ -98,9 +98,6 @@ const Notifications = () => {
     };
 
     const handleNotificationClick = async (notification) => {
-        console.log('🔔 Notification clicked:', notification);
-        console.log('🔗 Notification link from database:', notification.link);
-
         // Mark as read if unread
         if (!notification.is_read) {
             await markAsRead(notification.id);
@@ -114,8 +111,6 @@ const Notifications = () => {
             const user = JSON.parse(localStorage.getItem('user') || '{}');
             const isAdmin = user?.role === 'admin';
             const data = notification.data || {};
-
-            console.log('👤 User role:', user?.role, 'isAdmin:', isAdmin);
 
             switch (notification.type) {
                 // Order related notifications - Admin goes to regular order details
@@ -161,7 +156,6 @@ const Notifications = () => {
                 link = `/app${link.startsWith('/') ? '' : '/'}${link}`;
             }
 
-            console.log('📍 Navigating to final link:', link);
             navigate(link);
         } else {
             console.warn('⚠️ No link found for notification');

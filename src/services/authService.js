@@ -33,25 +33,17 @@ export const authService = {
                 // framework treats as the PUT it's registered as.
                 data.append('_method', 'PUT');
 
-                // Log what we're sending for debugging
-                console.log('📤 Updating profile with FormData:');
-                for (let [key, value] of data.entries()) {
-                    console.log(`  ${key}:`, value instanceof File ? `File(${value.name}, ${value.size} bytes)` : value);
-                }
-
                 const response = await api.post('/user/profile', data, {
                     headers: {
                         'Content-Type': 'multipart/form-data',
                     },
                 });
 
-                console.log('✅ Profile updated successfully:', response.data);
                 return response.data;
             }
 
             // If it's a plain object, send as JSON
             const response = await api.put('/user/profile', data);
-            console.log('✅ Profile updated successfully:', response.data);
             return response.data;
         } catch (error) {
             console.error('❌ Profile update error:', error);

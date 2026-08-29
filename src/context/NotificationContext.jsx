@@ -30,7 +30,6 @@ export const NotificationProvider = ({ children }) => {
         // Check if user is authenticated before making request
         const token = localStorage.getItem('authToken');
         if (!token || !isAuthenticated) {
-            console.log('⏭️ Skipping notification fetch - user not authenticated');
             setNotifications([]);
             setUnreadCount(0);
             setLoading(false);
@@ -48,7 +47,6 @@ export const NotificationProvider = ({ children }) => {
                 params.is_read = 'true';
             }
             
-            console.log('📤 Fetching notifications for user:', user?.id);
             const response = await notificationService.getNotifications(params);
             
             if (response.success) {
@@ -190,7 +188,6 @@ export const NotificationProvider = ({ children }) => {
     const getUnreadCount = useCallback(async () => {
         const token = localStorage.getItem('authToken');
         if (!token || !isAuthenticated) {
-            console.log('⏭️ Skipping unread count fetch - user not authenticated');
             return 0;
         }
 
@@ -210,7 +207,6 @@ export const NotificationProvider = ({ children }) => {
     // Fetch notifications only when authenticated
     useEffect(() => {
         if (isAuthenticated && user) {
-            console.log('🔔 User authenticated, fetching notifications for:', user.id);
             fetchNotifications();
             
             // Set up polling for new notifications only when authenticated

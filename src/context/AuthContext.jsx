@@ -102,7 +102,6 @@ export const AuthProvider = ({ children }) => {
             
             if (updatedUser) {
                 setUser(updatedUser);
-                console.log('✅ User state updated:', updatedUser);
             } else {
                 await refreshUser();
             }

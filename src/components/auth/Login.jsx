@@ -27,8 +27,7 @@ export const Login = () => {
 
         try {
             const response = await login(formData);
-            console.log('Login successful:', response);
-            
+
             // Navigate based on role — AuthContext.login() returns the raw
             // backend body, {message, data: {user, token, token_type}}.
             if (response?.data?.user?.role === 'admin') {
@@ -43,10 +42,7 @@ export const Login = () => {
             if (error.response) {
                 const status = error.response.status;
                 const data = error.response.data;
-                
-                console.log('Error status:', status);
-                console.log('Error data:', data);
-                
+
                 // Handle validation errors (422)
                 if (status === 422) {
                     if (data.errors) {
