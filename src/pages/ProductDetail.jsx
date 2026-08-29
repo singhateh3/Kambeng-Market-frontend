@@ -199,11 +199,17 @@ const ProductDetail = () => {
                             </div>
 
                             <div className="flex items-center space-x-2">
-                                {product.average_rating > 0 && (
+                                {/* Backend's ProductResource currently has an internal name
+                                    mismatch (controller sets avg_rating, resource checks
+                                    average_rating) that omits this key from the response
+                                    entirely — checking both here is forward-compatible with
+                                    whichever name that gets fixed to, and matches the same
+                                    defensive pattern already used in Home.jsx/Dashboard.jsx. */}
+                                {Number(product.avg_rating ?? product.average_rating ?? 0) > 0 && (
                                     <div className="flex items-center">
                                         <span className="text-yellow-400">⭐</span>
                                         <span className="ml-1 text-gray-600 font-medium">
-                                            {Number(product.average_rating).toFixed(1)}
+                                            {Number(product.avg_rating ?? product.average_rating).toFixed(1)}
                                         </span>
                                     </div>
                                 )}

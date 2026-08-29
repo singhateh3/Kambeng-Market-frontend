@@ -59,8 +59,8 @@ const RegularDashboard = () => {
             if (user?.role === 'farmer') {
                 const [statsRes, ordersRes, productsRes] = await Promise.all([
                     api.get('/farmer/profile/statistics').catch(() => ({ data: { data: {} } })),
-                    api.get('/orders?limit=5').catch(() => ({ data: { data: [] } })),
-                    api.get('/my-products?limit=5').catch(() => ({ data: { data: [] } })),
+                    api.get('/orders?per_page=5').catch(() => ({ data: { data: [] } })),
+                    api.get('/my-products?per_page=5').catch(() => ({ data: { data: [] } })),
                 ]);
                 setStats({
                     total_products: statsRes.data.data?.total_products || 0,
@@ -79,7 +79,7 @@ const RegularDashboard = () => {
                 setRecentOrders(ordersRes.data.data || []);
                 setRecentProducts(productsRes.data.data || []);
             } else if (user?.role === 'buyer') {
-                const ordersRes = await api.get('/orders?limit=5').catch(() => ({ data: { data: [], meta: { total: 0 } } }));
+                const ordersRes = await api.get('/orders?per_page=5').catch(() => ({ data: { data: [], meta: { total: 0 } } }));
                 setStats({
                     total_products: 0, active_products: 0,
                     total_orders: ordersRes.data.meta?.total || 0,

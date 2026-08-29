@@ -206,7 +206,11 @@ export const NotificationBell = () => {
                     return `/app/orders/${data.order_id}`;
                 }
                 console.log('⚠️ No order_id in review notification data');
-                return isAdmin ? '/app/admin/orders' : '/app/orders';
+                // No dedicated /app/admin/orders page exists — OrderController::index()
+                // already returns every order (unfiltered) for admin accounts, and
+                // /app/orders has no role guard, so it's a real, working destination
+                // for admins too, not a fallback to a nonexistent route.
+                return '/app/orders';
             
             // Farmer verification notifications
             case 'farmer_verification_request':

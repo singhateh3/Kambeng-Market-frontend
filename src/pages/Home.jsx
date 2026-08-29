@@ -34,7 +34,7 @@ const Home = () => {
             // a single rejection (e.g. categories timing out) prevented
             // featuredProducts from rendering even though that call succeeded.
             const [productsRes, categoriesRes, statsRes] = await Promise.all([
-                api.get('/products?limit=8&sort_by=created_at&sort_order=desc')
+                api.get('/products?per_page=8&sort_by=created_at&sort_order=desc')
                     .catch((err) => { console.error('Error fetching products:', err); return { data: { data: [] } }; }),
                 api.get('/products/categories')
                     .catch((err) => { console.error('Error fetching categories:', err); return { data: { data: [] } }; }),

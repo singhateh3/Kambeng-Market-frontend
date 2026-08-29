@@ -29,6 +29,7 @@ export const OrderDetails = ({
     const deliveryMethod = order?.delivery_method || 'delivery';
     const pickupDate = order?.pickup_date || null;
     const deliveryDeadline = order?.delivery_deadline || null;
+    const deliveryAddress = order?.delivery_address || null;
     const specialInstructions = order?.special_instructions || '';
     
     // Safely access product properties
@@ -244,6 +245,14 @@ export const OrderDetails = ({
                                         <p className="text-sm text-gray-500">Delivery Deadline</p>
                                         <p className="font-medium text-gray-900">
                                             {deliveryDeadline ? formatDate(deliveryDeadline) : 'Not set'}
+                                        </p>
+                                    </div>
+                                )}
+                                {deliveryMethod !== 'pickup' && deliveryAddress && (
+                                    <div className="col-span-2">
+                                        <p className="text-sm text-gray-500">Delivery Address</p>
+                                        <p className="font-medium text-gray-900">
+                                            {deliveryAddress}
                                         </p>
                                     </div>
                                 )}

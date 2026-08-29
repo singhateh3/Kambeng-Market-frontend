@@ -32,12 +32,20 @@ export const Register = () => {
 
         try {
             await register(formData);
-            navigate('/home');
+            navigate('/app/dashboard');
         } catch (error) {
-            if (error.errors) {
-                setErrors(error.errors);
+            const backendErrors = error.response?.data?.errors;
+            if (backendErrors) {
+                // Laravel returns {field: [messages]} — extract the first
+                // message per field so it's a plain string the JSX can render.
+                const fieldErrors = {};
+                Object.keys(backendErrors).forEach((field) => {
+                    fieldErrors[field] = backendErrors[field][0];
+                });
+                setErrors(fieldErrors);
+                setGeneralError(error.response?.data?.message || 'Please fix the errors below.');
             } else {
-                setGeneralError(error.message || 'Registration failed. Please try again.');
+                setGeneralError(error.response?.data?.message || error.message || 'Registration failed. Please try again.');
             }
         } finally {
             setIsLoading(false);
