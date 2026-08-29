@@ -51,7 +51,6 @@ export const NotificationBell = () => {
         if (isOpen) {
             const token = localStorage.getItem('authToken');
             if (token) {
-                console.log('🔔 Fetching notifications on dropdown open');
                 fetchNotifications();
                 setIsFirstOpen(false);
             }
@@ -71,9 +70,6 @@ export const NotificationBell = () => {
 
     // Handle notification click
     const handleNotificationClick = async (notification) => {
-        console.log('🔔 Notification clicked:', notification);
-        console.log('🔗 Original link from database:', notification.link);
-        
         try {
             // Mark as read if unread
             if (!notification.is_read) {
@@ -94,10 +90,8 @@ export const NotificationBell = () => {
                 // Always navigate to order details for review notifications
                 if (data.order_id) {
                     finalLink = `/app/orders/${data.order_id}`;
-                    console.log('📍 Review notification -> Order details:', finalLink);
                 } else {
                     finalLink = '/app/orders';
-                    console.log('📍 Review notification -> Orders list');
                 }
             }
             // Check if the notification has a link from the database
@@ -131,8 +125,6 @@ export const NotificationBell = () => {
             if (!finalLink) {
                 finalLink = generateLinkFromNotification(notification);
             }
-            
-            console.log('📍 Final navigation link:', finalLink);
             
             // Navigate to the final link
             if (finalLink) {
@@ -182,10 +174,7 @@ export const NotificationBell = () => {
         const data = notification.data || {};
         const user = JSON.parse(localStorage.getItem('user') || '{}');
         const isAdmin = user?.role === 'admin';
-        
-        console.log('🔍 Generating link for type:', type, 'isAdmin:', isAdmin);
-        console.log('📦 Notification data:', data);
-        
+
         switch (type) {
             // Order related notifications
             case 'order_placed':
@@ -194,7 +183,6 @@ export const NotificationBell = () => {
             case 'order_delivered':
             case 'order_cancelled':
                 if (data.order_id) {
-                    console.log('✅ Generated order link: /app/orders/${data.order_id}');
                     return `/app/orders/${data.order_id}`;
                 }
                 return '/app/orders';
@@ -202,10 +190,8 @@ export const NotificationBell = () => {
             // Review notifications - FIXED: Navigate to order details
             case 'new_review':
                 if (data.order_id) {
-                    console.log('✅ Generated review link: /app/orders/${data.order_id}');
                     return `/app/orders/${data.order_id}`;
                 }
-                console.log('⚠️ No order_id in review notification data');
                 // No dedicated /app/admin/orders page exists — OrderController::index()
                 // already returns every order (unfiltered) for admin accounts, and
                 // /app/orders has no role guard, so it's a real, working destination

@@ -21,7 +21,6 @@ const AdminDashboard = () => {
     } = useCachedFetch('/admin/dashboard/statistics', {
         ttl: 2 * 60 * 1000, // 2 minutes
         onSuccess: (data) => {
-            console.log('📊 Stats data received:', data);
             // Handle different response formats
             if (data) {
                 let statsData = null;
@@ -65,7 +64,6 @@ const AdminDashboard = () => {
     useEffect(() => {
         // If cached stats exist, use them
         if (cachedStats) {
-            console.log('📦 Using cached stats:', cachedStats);
             let statsData = null;
 
             if (cachedStats.data) {

@@ -14,10 +14,7 @@ class CacheService {
     set(key, value, ttl = this.defaultTTL) {
         const expiry = Date.now() + ttl;
         this.cache.set(key, { value, expiry });
-        
-        // Log cache set
-        console.log(`📦 Cache set: ${key} (expires in ${ttl/1000}s)`);
-        
+
         // Auto-cleanup when cache gets too large
         if (this.cache.size > 100) {
             this.cleanup();
@@ -33,18 +30,15 @@ class CacheService {
         const item = this.cache.get(key);
         
         if (!item) {
-            console.log(`📦 Cache miss: ${key}`);
             return null;
         }
-        
+
         // Check if expired
         if (Date.now() > item.expiry) {
-            console.log(`📦 Cache expired: ${key}`);
             this.cache.delete(key);
             return null;
         }
-        
-        console.log(`📦 Cache hit: ${key}`);
+
         return item.value;
     }
 
@@ -66,7 +60,6 @@ class CacheService {
      */
     delete(key) {
         this.cache.delete(key);
-        console.log(`📦 Cache deleted: ${key}`);
     }
 
     /**
@@ -74,7 +67,6 @@ class CacheService {
      */
     clear() {
         this.cache.clear();
-        console.log('📦 Cache cleared');
     }
 
     /**
@@ -89,10 +81,6 @@ class CacheService {
                 this.cache.delete(key);
                 deleted++;
             }
-        }
-        
-        if (deleted > 0) {
-            console.log(`📦 Cache cleanup: removed ${deleted} expired entries`);
         }
     }
 

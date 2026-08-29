@@ -3,6 +3,7 @@ import { Suspense, lazy } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { Layout } from './components/Layout';
 import { ProtectedRoute } from './components/ProtectedRoute';
+import { PublicLayout } from './components/PublicLayout';
 import { ForgotPassword } from './components/auth/ForgotPassword';
 import { Login } from './components/auth/Login';
 import { Register } from './components/auth/Register';
@@ -39,7 +40,9 @@ export const App = () => {
                 <Suspense fallback={<LoadingScreen />}>
                     <Routes>
                         {/* PUBLIC ROUTES */}
-                        <Route path="/" element={<Home />} />
+                        <Route element={<PublicLayout />}>
+                            <Route path="/" element={<Home />} />
+                        </Route>
                         <Route path="/login" element={<Login />} />
                         <Route path="/register" element={<Register />} />
                         <Route path="/forgot-password" element={<ForgotPassword />} />

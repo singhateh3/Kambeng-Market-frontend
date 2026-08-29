@@ -302,50 +302,6 @@ const Home = () => {
                     )}
                 </div>
             </section>
-
-            {/* Footer */}
-            <footer className="bg-slate-900 px-6 pt-12 pb-8">
-                <div className="max-w-6xl mx-auto">
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-8 sm:gap-10 mb-10">
-                        <div className="col-span-2 sm:col-span-1">
-                            <div className="flex items-center gap-2 mb-3">
-                                <span className="text-lg">🌾</span>
-                                <span className="font-extrabold text-white">Kambeng Market</span>
-                            </div>
-                            <p className="text-slate-500 text-xs leading-relaxed max-w-[200px]">
-                                Connecting Gambian farmers directly with hotels, restaurants, and caterers.
-                            </p>
-                        </div>
-                        {[
-                            { title: 'Platform', links: [{ label: 'Browse products', to: isAuthenticated ? '/app/browse' : '/login' }, { label: 'About us', to: '/about' }, { label: 'Contact', to: '/contact' }] },
-                            { title: 'Farmers', links: [{ label: 'Join as farmer', to: '/register' }, { label: 'Farmer guide', to: '/help/farmer' }, { label: 'Pricing', to: '/help/pricing' }] },
-                        ].map((col, i) => (
-                            <div key={i}>
-                                <h4 className="text-white font-semibold text-xs uppercase tracking-wider mb-4">{col.title}</h4>
-                                <ul className="space-y-2.5 list-none p-0 m-0">
-                                    {col.links.map((l, j) => (
-                                        <li key={j}>
-                                            <Link to={l.to} className="text-slate-500 text-xs no-underline hover:text-slate-300 transition">{l.label}</Link>
-                                        </li>
-                                    ))}
-                                </ul>
-                            </div>
-                        ))}
-                        <div>
-                            <h4 className="text-white font-semibold text-xs uppercase tracking-wider mb-4">Contact</h4>
-                            <ul className="space-y-2.5 list-none p-0 m-0">
-                                {['📧 info@kambeng.com', '📞 +220 700 0000', '📍 Banjul, The Gambia'].map((item, i) => (
-                                    <li key={i} className="text-slate-500 text-xs">{item}</li>
-                                ))}
-                            </ul>
-                        </div>
-                    </div>
-                    <div className="border-t border-slate-800 pt-6 flex flex-col sm:flex-row items-center justify-between gap-2">
-                        <p className="text-slate-600 text-xs">© {new Date().getFullYear()} Kambeng Market. All rights reserved.</p>
-                        <p className="text-slate-600 text-xs">Made in 🇬🇲 The Gambia</p>
-                    </div>
-                </div>
-            </footer>
         </div>
     );
 };
@@ -469,32 +425,6 @@ const HomeSkeleton = () => {
                     </div>
                 </div>
             </section>
-
-            {/* Footer Skeleton */}
-            <footer className="bg-slate-900 px-6 pt-12 pb-8">
-                <div className="max-w-6xl mx-auto">
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-8 sm:gap-10 mb-10">
-                        <div className="col-span-2 sm:col-span-1">
-                            <Skeleton className="h-6 w-32 mb-3" />
-                            <Skeleton className="h-4 w-40" />
-                        </div>
-                        {[1, 2, 3].map((i) => (
-                            <div key={i}>
-                                <Skeleton className="h-4 w-24 mb-4" />
-                                <div className="space-y-2">
-                                    <Skeleton className="h-3 w-32" />
-                                    <Skeleton className="h-3 w-28" />
-                                    <Skeleton className="h-3 w-24" />
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                    <div className="border-t border-slate-800 pt-6 flex items-center justify-between">
-                        <Skeleton className="h-3 w-48" />
-                        <Skeleton className="h-3 w-32" />
-                    </div>
-                </div>
-            </footer>
         </div>
     );
 };

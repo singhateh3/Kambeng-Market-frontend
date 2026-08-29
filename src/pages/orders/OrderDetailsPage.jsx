@@ -29,13 +29,6 @@ const OrderDetailsPage = () => {
             const response = await api.get(`/orders/${orderId}`);
             const orderData = response.data?.data || null;
 
-            // Log review data for debugging
-            if (orderData && orderData.review) {
-                console.log('📝 Review found:', orderData.review);
-            } else {
-                console.log('📝 No review found for this order');
-            }
-
             setOrder(orderData);
         } catch (err) {
             console.error('Error fetching order:', err);

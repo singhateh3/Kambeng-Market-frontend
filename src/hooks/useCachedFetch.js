@@ -31,7 +31,6 @@ export const useCachedFetch = (url, options = {}) => {
         if (!skipCache) {
             const cachedData = cacheService.get(key);
             if (cachedData) {
-                console.log(`📦 Using cached data for: ${url}`);
                 setData(cachedData);
                 setIsCached(true);
                 setLoading(false);
@@ -45,9 +44,7 @@ export const useCachedFetch = (url, options = {}) => {
             setLoading(true);
             setError(null);
             setIsCached(false);
-            
-            console.log(`🌐 Fetching: ${url}`);
-            
+
             // Use the api service which already has the token and base URL configured
             const response = await api.get(url);
             
@@ -77,7 +74,6 @@ export const useCachedFetch = (url, options = {}) => {
         const key = getCacheKey();
         cacheService.delete(key);
         setIsCached(false);
-        console.log(`📦 Cache invalidated: ${key}`);
     }, [getCacheKey]);
 
     // Force refresh (bypass cache)
