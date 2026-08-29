@@ -100,23 +100,23 @@ const Notifications = () => {
     const handleNotificationClick = async (notification) => {
         console.log('🔔 Notification clicked:', notification);
         console.log('🔗 Notification link from database:', notification.link);
-        
+
         // Mark as read if unread
         if (!notification.is_read) {
             await markAsRead(notification.id);
         }
-        
+
         // Get the link from notification
         let link = notification.link;
-        
+
         // If no link, try to generate one from the type
         if (!link) {
             const user = JSON.parse(localStorage.getItem('user') || '{}');
             const isAdmin = user?.role === 'admin';
             const data = notification.data || {};
-            
+
             console.log('👤 User role:', user?.role, 'isAdmin:', isAdmin);
-            
+
             switch (notification.type) {
                 // Order related notifications - Admin goes to regular order details
                 case 'order_placed':
@@ -154,13 +154,13 @@ const Notifications = () => {
                     link = isAdmin ? '/app/admin/dashboard' : '/app/dashboard';
             }
         }
-        
+
         // Ensure the link is properly formatted
         if (link) {
             if (!link.startsWith('/app') && !link.startsWith('http')) {
                 link = `/app${link.startsWith('/') ? '' : '/'}${link}`;
             }
-            
+
             console.log('📍 Navigating to final link:', link);
             navigate(link);
         } else {
@@ -202,8 +202,8 @@ const Notifications = () => {
                 icon: '🗑️',
                 confirmText: 'Yes, Delete',
                 confirmColor: 'bg-red-600 hover:bg-red-700',
-                iconBg: 'bg-red-100',
-                iconColor: 'text-red-600',
+                iconBg: 'bg-red-100 dark:bg-red-900/40',
+                iconColor: 'text-red-600 dark:text-red-400',
             };
         } else if (confirmAction === 'deleteRead') {
             return {
@@ -212,8 +212,8 @@ const Notifications = () => {
                 icon: '🗑️',
                 confirmText: 'Yes, Delete All',
                 confirmColor: 'bg-red-600 hover:bg-red-700',
-                iconBg: 'bg-red-100',
-                iconColor: 'text-red-600',
+                iconBg: 'bg-red-100 dark:bg-red-900/40',
+                iconColor: 'text-red-600 dark:text-red-400',
             };
         }
         return {
@@ -222,8 +222,8 @@ const Notifications = () => {
             icon: '⚠️',
             confirmText: 'Confirm',
             confirmColor: 'bg-green-600 hover:bg-green-700',
-            iconBg: 'bg-yellow-100',
-            iconColor: 'text-yellow-600',
+            iconBg: 'bg-yellow-100 dark:bg-yellow-900/40',
+            iconColor: 'text-yellow-600 dark:text-yellow-400',
         };
     };
 
@@ -231,7 +231,7 @@ const Notifications = () => {
 
     // Loading skeleton component
     const NotificationSkeleton = () => (
-        <div className="divide-y divide-gray-200">
+        <div className="divide-y divide-gray-200 dark:divide-slate-700">
             {Array.from({ length: 5 }).map((_, i) => (
                 <div key={i} className="p-6">
                     <div className="flex items-start space-x-4">
@@ -258,8 +258,8 @@ const Notifications = () => {
     if (isInitialLoad && loading) {
         return (
             <div className="max-w-4xl mx-auto">
-                <div className="bg-white shadow rounded-lg overflow-hidden">
-                    <div className="p-6 border-b">
+                <div className="bg-white dark:bg-slate-800 shadow rounded-lg overflow-hidden">
+                    <div className="p-6 border-b border-gray-200 dark:border-slate-700">
                         <div className="flex justify-between items-center">
                             <div>
                                 <Skeleton className="h-8 w-48" />
@@ -271,15 +271,15 @@ const Notifications = () => {
                             </div>
                         </div>
                     </div>
-                    
-                    <div className="p-4 border-b bg-gray-50">
+
+                    <div className="p-4 border-b border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-900">
                         <div className="flex space-x-2">
                             <Skeleton className="h-10 w-20" />
                             <Skeleton className="h-10 w-24" />
                             <Skeleton className="h-10 w-20" />
                         </div>
                     </div>
-                    
+
                     <NotificationSkeleton />
                 </div>
             </div>
@@ -289,13 +289,13 @@ const Notifications = () => {
     if (loading && !isInitialLoad) {
         return (
             <div className="max-w-4xl mx-auto">
-                <div className="bg-white shadow rounded-lg overflow-hidden">
-                    <div className="p-6 border-b">
+                <div className="bg-white dark:bg-slate-800 shadow rounded-lg overflow-hidden">
+                    <div className="p-6 border-b border-gray-200 dark:border-slate-700">
                         <div className="flex flex-wrap justify-between items-center gap-4">
                             <div>
-                                <h1 className="text-2xl font-bold text-gray-900">Notifications</h1>
+                                <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100">Notifications</h1>
                                 {unreadCount > 0 && (
-                                    <p className="text-sm text-gray-500">
+                                    <p className="text-sm text-gray-500 dark:text-slate-400">
                                         {unreadCount} unread notification{unreadCount > 1 ? 's' : ''}
                                     </p>
                                 )}
@@ -306,9 +306,9 @@ const Notifications = () => {
                                         Mark All Read
                                     </Button>
                                 )}
-                                <Button 
-                                    size="sm" 
-                                    variant="danger" 
+                                <Button
+                                    size="sm"
+                                    variant="danger"
                                     onClick={() => openConfirmModal('deleteRead')}
                                 >
                                     Delete Read
@@ -319,8 +319,8 @@ const Notifications = () => {
 
                     <div className="flex items-center justify-center py-12">
                         <div className="flex flex-col items-center space-y-4">
-                            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
-                            <p className="text-gray-500">Loading notifications...</p>
+                            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 dark:border-primary-400"></div>
+                            <p className="text-gray-500 dark:text-slate-400">Loading notifications...</p>
                         </div>
                     </div>
                 </div>
@@ -330,13 +330,13 @@ const Notifications = () => {
 
     return (
         <div className="max-w-4xl mx-auto">
-            <div className="bg-white shadow rounded-lg overflow-hidden">
-                <div className="p-6 border-b">
+            <div className="bg-white dark:bg-slate-800 shadow rounded-lg overflow-hidden">
+                <div className="p-6 border-b border-gray-200 dark:border-slate-700">
                     <div className="flex flex-wrap justify-between items-center gap-4">
                         <div>
-                            <h1 className="text-2xl font-bold text-gray-900">Notifications</h1>
+                            <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100">Notifications</h1>
                             {unreadCount > 0 && (
-                                <p className="text-sm text-gray-500">
+                                <p className="text-sm text-gray-500 dark:text-slate-400">
                                     {unreadCount} unread notification{unreadCount > 1 ? 's' : ''}
                                 </p>
                             )}
@@ -347,9 +347,9 @@ const Notifications = () => {
                                     Mark All Read
                                 </Button>
                             )}
-                            <Button 
-                                size="sm" 
-                                variant="danger" 
+                            <Button
+                                size="sm"
+                                variant="danger"
                                 onClick={() => openConfirmModal('deleteRead')}
                             >
                                 Delete Read
@@ -361,13 +361,13 @@ const Notifications = () => {
                 {success && <Alert type="success" message={success} onClose={() => setSuccess(null)} />}
                 {error && <Alert type="error" message={error} onClose={() => setError(null)} />}
 
-                <div className="p-4 border-b bg-gray-50">
+                <div className="p-4 border-b border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-900">
                     <div className="flex flex-wrap gap-2">
                         <button
                             className={`px-4 py-2 text-sm rounded-lg transition-colors ${
                                 filter === 'all'
                                     ? 'bg-primary-600 text-white'
-                                    : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-300'
+                                    : 'bg-white dark:bg-slate-800 text-gray-600 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-700 border border-gray-300 dark:border-slate-600'
                             }`}
                             onClick={() => handleFilterChange('all')}
                         >
@@ -377,7 +377,7 @@ const Notifications = () => {
                             className={`px-4 py-2 text-sm rounded-lg transition-colors ${
                                 filter === 'unread'
                                     ? 'bg-primary-600 text-white'
-                                    : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-300'
+                                    : 'bg-white dark:bg-slate-800 text-gray-600 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-700 border border-gray-300 dark:border-slate-600'
                             }`}
                             onClick={() => handleFilterChange('unread')}
                         >
@@ -387,7 +387,7 @@ const Notifications = () => {
                             className={`px-4 py-2 text-sm rounded-lg transition-colors ${
                                 filter === 'read'
                                     ? 'bg-primary-600 text-white'
-                                    : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-300'
+                                    : 'bg-white dark:bg-slate-800 text-gray-600 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-700 border border-gray-300 dark:border-slate-600'
                             }`}
                             onClick={() => handleFilterChange('read')}
                         >
@@ -399,8 +399,8 @@ const Notifications = () => {
                 {notifications.length === 0 ? (
                     <div className="text-center py-12">
                         <div className="text-6xl mb-4">🔔</div>
-                        <h3 className="text-xl font-semibold text-gray-900 mb-2">No Notifications</h3>
-                        <p className="text-gray-500">
+                        <h3 className="text-xl font-semibold text-gray-900 dark:text-slate-100 mb-2">No Notifications</h3>
+                        <p className="text-gray-500 dark:text-slate-400">
                             {filter === 'all'
                                 ? "You don't have any notifications yet."
                                 : filter === 'unread'
@@ -410,15 +410,15 @@ const Notifications = () => {
                     </div>
                 ) : (
                     <>
-                        <div className="divide-y divide-gray-200">
+                        <div className="divide-y divide-gray-200 dark:divide-slate-700">
                             {notifications.map((notification) => (
                                 <div
                                     key={notification.id}
                                     className={`p-6 border-l-4 ${
-                                        notification.is_read 
-                                            ? 'bg-white border-gray-300' 
-                                            : 'bg-blue-50 border-blue-500'
-                                    } cursor-pointer hover:bg-gray-50 transition-all duration-200`}
+                                        notification.is_read
+                                            ? 'bg-white dark:bg-slate-800 border-gray-300 dark:border-slate-600'
+                                            : 'bg-blue-50 dark:bg-blue-900/20 border-blue-500 dark:border-blue-500'
+                                    } cursor-pointer hover:bg-gray-50 dark:hover:bg-slate-700 transition-all duration-200`}
                                     onClick={() => handleNotificationClick(notification)}
                                 >
                                     <div className="flex items-start justify-between gap-4">
@@ -429,25 +429,25 @@ const Notifications = () => {
                                                 </span>
                                                 <div className="flex-1">
                                                     <div className="flex items-center gap-2">
-                                                        <p className={`font-semibold ${notification.is_read ? 'text-gray-700' : 'text-gray-900'}`}>
+                                                        <p className={`font-semibold ${notification.is_read ? 'text-gray-700 dark:text-slate-300' : 'text-gray-900 dark:text-slate-100'}`}>
                                                             {notification.title}
                                                         </p>
                                                         {!notification.is_read && (
-                                                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-300">
                                                                 New
                                                             </span>
                                                         )}
                                                     </div>
-                                                    <p className="text-sm text-gray-600 mt-1">
+                                                    <p className="text-sm text-gray-600 dark:text-slate-400 mt-1">
                                                         {notification.message}
                                                     </p>
                                                     <div className="flex items-center space-x-4 mt-2">
-                                                        <span className="text-xs text-gray-400">
-                                                            {notification.time_ago || 
+                                                        <span className="text-xs text-gray-400 dark:text-slate-500">
+                                                            {notification.time_ago ||
                                                                 new Date(notification.created_at).toLocaleString()}
                                                         </span>
                                                         {notification.link && (
-                                                            <span className="text-xs text-blue-500">
+                                                            <span className="text-xs text-blue-500 dark:text-blue-400">
                                                                 Click to view →
                                                             </span>
                                                         )}
@@ -462,7 +462,7 @@ const Notifications = () => {
                                                         e.stopPropagation();
                                                         handleMarkAsRead(notification.id);
                                                     }}
-                                                    className="text-xs text-primary-600 hover:text-primary-700 font-medium"
+                                                    className="text-xs text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 font-medium"
                                                     title="Mark as read"
                                                 >
                                                     Mark read
@@ -473,7 +473,7 @@ const Notifications = () => {
                                                     e.stopPropagation();
                                                     openConfirmModal('delete', notification.id);
                                                 }}
-                                                className="text-gray-400 hover:text-red-600 transition-colors p-2 -m-2"
+                                                className="text-gray-400 dark:text-slate-500 hover:text-red-600 dark:hover:text-red-400 transition-colors p-2 -m-2"
                                                 title="Delete"
                                                 aria-label="Delete notification"
                                             >
@@ -488,8 +488,8 @@ const Notifications = () => {
                         </div>
 
                         {pagination.total > pagination.per_page && (
-                            <div className="px-6 py-4 border-t flex flex-wrap items-center justify-between gap-2">
-                                <div className="text-sm text-gray-700">
+                            <div className="px-6 py-4 border-t border-gray-200 dark:border-slate-700 flex flex-wrap items-center justify-between gap-2">
+                                <div className="text-sm text-gray-700 dark:text-slate-300">
                                     Showing {notifications.length} of {pagination.total} notifications
                                 </div>
                                 <div className="flex space-x-2">
@@ -501,7 +501,7 @@ const Notifications = () => {
                                     >
                                         Previous
                                     </Button>
-                                    <span className="px-3 py-1 text-sm text-gray-600">
+                                    <span className="px-3 py-1 text-sm text-gray-600 dark:text-slate-400">
                                         Page {currentPage} of {pagination.last_page}
                                     </span>
                                     <Button
@@ -530,7 +530,7 @@ const Notifications = () => {
                         <div className={`w-16 h-16 ${confirmationContent.iconBg} rounded-full flex items-center justify-center text-3xl mb-4`}>
                             {confirmationContent.icon}
                         </div>
-                        <p className="text-gray-600 text-sm leading-relaxed">
+                        <p className="text-gray-600 dark:text-slate-400 text-sm leading-relaxed">
                             {confirmationContent.message}
                         </p>
                     </div>
@@ -538,7 +538,7 @@ const Notifications = () => {
                     <div className="flex gap-3">
                         <button
                             onClick={closeConfirmModal}
-                            className="flex-1 px-4 py-2.5 text-sm font-semibold text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition border-none cursor-pointer"
+                            className="flex-1 px-4 py-2.5 text-sm font-semibold text-gray-600 dark:text-slate-300 bg-gray-100 dark:bg-slate-700 rounded-lg hover:bg-gray-200 dark:hover:bg-slate-600 transition border-none cursor-pointer"
                         >
                             Cancel
                         </button>

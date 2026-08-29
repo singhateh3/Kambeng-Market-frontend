@@ -51,9 +51,9 @@ import api from '../../services/api';
                 page: filters.page || 1,
                 per_page: filters.per_page || 20,
             });
-            
+
             const response = await api.get(`/admin/farmers?${params}`);
-            
+
             if (response.data && Array.isArray(response.data.data)) {
                 setFarmers(response.data.data);
                 setPagination(response.data.meta || {
@@ -95,10 +95,10 @@ import api from '../../services/api';
             setSelectedFarmers([]);
             setConfirmAction(null);
             setConfirmData(null);
-            
+
             // Refresh the current user's data if they are the one being approved
             await refreshUser();
-            
+
             fetchFarmers();
             fetchStats();
             setTimeout(() => setSuccess(null), 3000);
@@ -117,11 +117,11 @@ import api from '../../services/api';
             setTimeout(() => setError(null), 3000);
             return;
         }
-        
+
         try {
             setLoadingAction(true);
-            await api.post(`/admin/farmers/verification/${farmerId}/reject`, { 
-                reason: rejectionReason 
+            await api.post(`/admin/farmers/verification/${farmerId}/reject`, {
+                reason: rejectionReason
             });
             setSuccess('Farmer rejected successfully!');
             setShowModal(false);
@@ -131,10 +131,10 @@ import api from '../../services/api';
             setSelectedFarmers([]);
             setConfirmAction(null);
             setConfirmData(null);
-            
+
             // Refresh the current user's data if they are the one being rejected
             await refreshUser();
-            
+
             fetchFarmers();
             fetchStats();
             setTimeout(() => setSuccess(null), 3000);
@@ -159,23 +159,23 @@ import api from '../../services/api';
             setTimeout(() => setError(null), 3000);
             return;
         }
-        
+
         try {
             setLoadingAction(true);
             // Reject each selected farmer
             for (const farmerId of selectedFarmers) {
-                await api.post(`/admin/farmers/verification/${farmerId}/reject`, { 
-                    reason: bulkRejectionReason 
+                await api.post(`/admin/farmers/verification/${farmerId}/reject`, {
+                    reason: bulkRejectionReason
                 });
             }
             setSuccess(`${selectedFarmers.length} farmers rejected successfully!`);
             setSelectedFarmers([]);
             setBulkRejectionReason('');
             setShowBulkRejectModal(false);
-            
+
             // Refresh user data
             await refreshUser();
-            
+
             fetchFarmers();
             fetchStats();
             setTimeout(() => setSuccess(null), 3000);
@@ -194,7 +194,7 @@ import api from '../../services/api';
             setTimeout(() => setError(null), 3000);
             return;
         }
-        
+
         try {
             setLoadingAction(true);
             await api.post('/admin/farmers/verification/bulk-approve', {
@@ -205,10 +205,10 @@ import api from '../../services/api';
             setShowConfirmModal(false);
             setConfirmAction(null);
             setConfirmData(null);
-            
+
             // Refresh user data
             await refreshUser();
-            
+
             fetchFarmers();
             fetchStats();
             setTimeout(() => setSuccess(null), 3000);
@@ -235,7 +235,7 @@ import api from '../../services/api';
         const pendingFarmers = farmers.filter(f => f.verification_status === 'pending');
         const pendingIds = pendingFarmers.map(f => f.id);
         const allSelected = pendingIds.length > 0 && pendingIds.every(id => selectedFarmers.includes(id));
-        
+
         if (allSelected) {
             setSelectedFarmers(selectedFarmers.filter(id => !pendingIds.includes(id)));
         } else {
@@ -302,7 +302,7 @@ import api from '../../services/api';
     if (loading) {
         return (
             <div className="flex items-center justify-center h-64">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 dark:border-primary-400"></div>
             </div>
         );
     }
@@ -312,21 +312,21 @@ import api from '../../services/api';
             {/* Header */}
             <div className="flex flex-wrap justify-between items-center gap-4 mb-6">
                 <div>
-                    <h1 className="text-2xl font-bold text-gray-900">Farmer Verification</h1>
-                    <p className="text-sm text-gray-600">Review and verify farmer registrations</p>
+                    <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100">Farmer Verification</h1>
+                    <p className="text-sm text-gray-600 dark:text-slate-400">Review and verify farmer registrations</p>
                 </div>
                 <div className="flex gap-2">
                     {selectedFarmers.length > 0 && (
                         <>
-                            <Button 
-                                variant="primary" 
+                            <Button
+                                variant="primary"
                                 onClick={() => openConfirmModal('bulkApprove', { count: selectedFarmers.length })}
                                 isLoading={loadingAction}
                             >
                                 Approve Selected ({selectedFarmers.length})
                             </Button>
-                            <Button 
-                                variant="danger" 
+                            <Button
+                                variant="danger"
                                 onClick={() => setShowBulkRejectModal(true)}
                                 isLoading={loadingAction}
                             >
@@ -344,34 +344,34 @@ import api from '../../services/api';
             {/* Statistics Cards */}
             {stats && (
                 <div className="grid grid-cols-2 gap-4 sm:grid-cols-5 mb-6">
-                    <div className="bg-white shadow rounded-lg p-4">
-                        <p className="text-sm text-gray-600">Total Farmers</p>
-                        <p className="text-2xl font-bold text-gray-900">{stats.total_farmers || 0}</p>
+                    <div className="bg-white dark:bg-slate-800 shadow rounded-lg p-4">
+                        <p className="text-sm text-gray-600 dark:text-slate-400">Total Farmers</p>
+                        <p className="text-2xl font-bold text-gray-900 dark:text-slate-100">{stats.total_farmers || 0}</p>
                     </div>
-                    <div className="bg-yellow-50 shadow rounded-lg p-4 border-l-4 border-yellow-400">
-                        <p className="text-sm text-yellow-800">Pending</p>
-                        <p className="text-2xl font-bold text-yellow-600">{stats.pending || 0}</p>
+                    <div className="bg-yellow-50 dark:bg-yellow-900/20 shadow rounded-lg p-4 border-l-4 border-yellow-400 dark:border-yellow-600">
+                        <p className="text-sm text-yellow-800 dark:text-yellow-300">Pending</p>
+                        <p className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">{stats.pending || 0}</p>
                     </div>
-                    <div className="bg-green-50 shadow rounded-lg p-4 border-l-4 border-green-400">
-                        <p className="text-sm text-green-800">Approved</p>
-                        <p className="text-2xl font-bold text-green-600">{stats.approved || 0}</p>
+                    <div className="bg-green-50 dark:bg-green-900/20 shadow rounded-lg p-4 border-l-4 border-green-400 dark:border-green-600">
+                        <p className="text-sm text-green-800 dark:text-green-300">Approved</p>
+                        <p className="text-2xl font-bold text-green-600 dark:text-green-400">{stats.approved || 0}</p>
                     </div>
-                    <div className="bg-red-50 shadow rounded-lg p-4 border-l-4 border-red-400">
-                        <p className="text-sm text-red-800">Rejected</p>
-                        <p className="text-2xl font-bold text-red-600">{stats.rejected || 0}</p>
+                    <div className="bg-red-50 dark:bg-red-900/20 shadow rounded-lg p-4 border-l-4 border-red-400 dark:border-red-600">
+                        <p className="text-sm text-red-800 dark:text-red-300">Rejected</p>
+                        <p className="text-2xl font-bold text-red-600 dark:text-red-400">{stats.rejected || 0}</p>
                     </div>
-                    <div className="bg-gray-50 shadow rounded-lg p-4 border-l-4 border-gray-400">
-                        <p className="text-sm text-gray-800">Not Submitted</p>
-                        <p className="text-2xl font-bold text-gray-600">{stats.not_submitted || 0}</p>
+                    <div className="bg-gray-50 dark:bg-slate-800 shadow rounded-lg p-4 border-l-4 border-gray-400 dark:border-slate-600">
+                        <p className="text-sm text-gray-800 dark:text-slate-300">Not Submitted</p>
+                        <p className="text-2xl font-bold text-gray-600 dark:text-slate-300">{stats.not_submitted || 0}</p>
                     </div>
                 </div>
             )}
 
             {/* Filters */}
-            <div className="bg-white shadow rounded-lg p-4 mb-6">
+            <div className="bg-white dark:bg-slate-800 shadow rounded-lg p-4 mb-6">
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                     <select
-                        className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                        className="px-3 py-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-gray-900 dark:text-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                         value={filters.status}
                         onChange={(e) => setFilters({ ...filters, status: e.target.value, page: 1 })}
                     >
@@ -383,7 +383,7 @@ import api from '../../services/api';
                     <input
                         type="text"
                         placeholder="Search farmers..."
-                        className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                        className="px-3 py-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-gray-900 dark:text-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                         value={filters.search}
                         onChange={(e) => setFilters({ ...filters, search: e.target.value, page: 1 })}
                     />
@@ -394,17 +394,17 @@ import api from '../../services/api';
             </div>
 
             {/* Farmers Table */}
-            <div className="bg-white shadow rounded-lg overflow-hidden">
+            <div className="bg-white dark:bg-slate-800 shadow rounded-lg overflow-hidden">
                 {farmers.length === 0 ? (
                     <div className="text-center py-12">
                         <div className="text-4xl mb-4">👨‍🌾</div>
-                        <p className="text-gray-500">No farmers found</p>
+                        <p className="text-gray-500 dark:text-slate-400">No farmers found</p>
                     </div>
                 ) : (
                     <>
                         <div className="overflow-x-auto">
-                            <table className="min-w-full divide-y divide-gray-200">
-                                <thead className="bg-gray-50">
+                            <table className="min-w-full divide-y divide-gray-200 dark:divide-slate-700">
+                                <thead className="bg-gray-50 dark:bg-slate-900">
                                     <tr>
                                         <th className="px-4 py-3 text-left">
                                             <input
@@ -415,33 +415,33 @@ import api from '../../services/api';
                                                 disabled={pendingFarmers.length === 0}
                                             />
                                         </th>
-                                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wider">
                                             Farmer
                                         </th>
-                                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wider">
                                             Farm
                                         </th>
-                                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wider">
                                             Location
                                         </th>
-                                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wider">
                                             Status
                                         </th>
-                                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wider">
                                             Requested
                                         </th>
-                                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wider">
                                             Actions
                                         </th>
                                     </tr>
                                 </thead>
-                                <tbody className="bg-white divide-y divide-gray-200">
+                                <tbody className="bg-white dark:bg-slate-800 divide-y divide-gray-200 dark:divide-slate-700">
                                     {farmers.map((farmer) => {
                                         const isPending = farmer.verification_status === 'pending';
                                         const isChecked = selectedFarmers.includes(farmer.id);
-                                        
+
                                         return (
-                                            <tr key={farmer.id} className="hover:bg-gray-50">
+                                            <tr key={farmer.id} className="hover:bg-gray-50 dark:hover:bg-slate-700">
                                                 <td className="px-4 py-3 whitespace-nowrap">
                                                     <input
                                                         type="checkbox"
@@ -457,45 +457,45 @@ import api from '../../services/api';
                                                 </td>
                                                 <td className="px-4 py-3 whitespace-nowrap">
                                                     <div className="flex items-center">
-                                                        <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-sm font-medium text-gray-600">
+                                                        <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-slate-700 flex items-center justify-center text-sm font-medium text-gray-600 dark:text-slate-300">
                                                             {farmer.name?.[0]?.toUpperCase() || 'U'}
                                                         </div>
                                                         <div className="ml-3">
-                                                            <div className="text-sm font-medium text-gray-900">
+                                                            <div className="text-sm font-medium text-gray-900 dark:text-slate-100">
                                                                 {farmer.name}
                                                             </div>
-                                                            <div className="text-sm text-gray-500">
+                                                            <div className="text-sm text-gray-500 dark:text-slate-400">
                                                                 {farmer.email}
                                                             </div>
                                                         </div>
                                                     </div>
                                                 </td>
                                                 <td className="px-4 py-3 whitespace-nowrap">
-                                                    <div className="text-sm font-medium text-gray-900">
+                                                    <div className="text-sm font-medium text-gray-900 dark:text-slate-100">
                                                         {farmer.farmer_profile?.farm_name || '-'}
                                                     </div>
-                                                    <div className="text-xs text-gray-500">
+                                                    <div className="text-xs text-gray-500 dark:text-slate-400">
                                                         {farmer.farmer_profile?.farm_location || '-'}
                                                     </div>
                                                 </td>
-                                                <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
+                                                <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500 dark:text-slate-400">
                                                     {farmer.location || '-'}
                                                 </td>
                                                 <td className="px-4 py-3 whitespace-nowrap">
                                                     <span className={`px-2 py-1 text-xs rounded-full ${
-                                                        farmer.verification_status === 'approved' 
-                                                            ? 'bg-green-100 text-green-800' 
+                                                        farmer.verification_status === 'approved'
+                                                            ? 'bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-300'
                                                             : farmer.verification_status === 'pending'
-                                                            ? 'bg-yellow-100 text-yellow-800'
+                                                            ? 'bg-yellow-100 dark:bg-yellow-900/40 text-yellow-800 dark:text-yellow-300'
                                                             : farmer.verification_status === 'rejected'
-                                                            ? 'bg-red-100 text-red-800'
-                                                            : 'bg-gray-100 text-gray-800'
+                                                            ? 'bg-red-100 dark:bg-red-900/40 text-red-800 dark:text-red-300'
+                                                            : 'bg-gray-100 dark:bg-slate-700 text-gray-800 dark:text-slate-300'
                                                     }`}>
                                                         {farmer.verification_status_label || farmer.verification_status || 'Not Submitted'}
                                                     </span>
                                                 </td>
-                                                <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
-                                                    {farmer.verification_requested_at 
+                                                <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500 dark:text-slate-400">
+                                                    {farmer.verification_requested_at
                                                         ? new Date(farmer.verification_requested_at).toLocaleDateString()
                                                         : '-'}
                                                 </td>
@@ -503,7 +503,7 @@ import api from '../../services/api';
                                                     <div className="flex items-center space-x-2">
                                                         <button
                                                             onClick={() => openModal(farmer, 'view')}
-                                                            className="text-blue-600 hover:text-blue-900"
+                                                            className="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300"
                                                             title="View"
                                                         >
                                                             👁️
@@ -517,7 +517,7 @@ import api from '../../services/api';
                                                                         setNotes('');
                                                                         openConfirmModal('approve', { id: farmer.id });
                                                                     }}
-                                                                    className="text-green-600 hover:text-green-900"
+                                                                    className="text-green-600 dark:text-green-400 hover:text-green-900 dark:hover:text-green-300"
                                                                     title="Approve"
                                                                     disabled={loadingAction}
                                                                 >
@@ -530,7 +530,7 @@ import api from '../../services/api';
                                                                         setRejectionReason('');
                                                                         setShowModal(true);
                                                                     }}
-                                                                    className="text-red-600 hover:text-red-900"
+                                                                    className="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300"
                                                                     title="Reject"
                                                                     disabled={loadingAction}
                                                                 >
@@ -539,13 +539,13 @@ import api from '../../services/api';
                                                             </>
                                                         )}
                                                         {farmer.verification_status === 'approved' && (
-                                                            <span className="text-green-600 text-sm font-medium">Verified</span>
+                                                            <span className="text-green-600 dark:text-green-400 text-sm font-medium">Verified</span>
                                                         )}
                                                         {farmer.verification_status === 'rejected' && (
-                                                            <span className="text-red-600 text-sm font-medium">Rejected</span>
+                                                            <span className="text-red-600 dark:text-red-400 text-sm font-medium">Rejected</span>
                                                         )}
                                                         {!farmer.verification_status && (
-                                                            <span className="text-gray-400 text-sm">Not requested</span>
+                                                            <span className="text-gray-400 dark:text-slate-500 text-sm">Not requested</span>
                                                         )}
                                                     </div>
                                                 </td>
@@ -557,8 +557,8 @@ import api from '../../services/api';
                         </div>
 
                         {/* Pagination */}
-                        <div className="px-4 py-4 border-t border-gray-200 flex flex-wrap items-center justify-between gap-2">
-                            <div className="text-sm text-gray-700">
+                        <div className="px-4 py-4 border-t border-gray-200 dark:border-slate-700 flex flex-wrap items-center justify-between gap-2">
+                            <div className="text-sm text-gray-700 dark:text-slate-300">
                                 Showing {farmers.length} of {pagination.total} farmers
                             </div>
                             <div className="flex space-x-2">
@@ -570,7 +570,7 @@ import api from '../../services/api';
                                 >
                                     Previous
                                 </Button>
-                                <span className="px-3 py-1 text-sm text-gray-600">
+                                <span className="px-3 py-1 text-sm text-gray-600 dark:text-slate-400">
                                     Page {pagination.current_page} of {pagination.last_page}
                                 </span>
                                 <Button
@@ -606,7 +606,7 @@ import api from '../../services/api';
                 {selectedFarmer && (
                     <div className="p-6 space-y-5">
                         <div className="flex items-center gap-4 min-w-0">
-                            <div className="w-14 h-14 rounded-full bg-slate-200 flex items-center justify-center text-xl font-medium text-slate-600 flex-shrink-0 overflow-hidden">
+                            <div className="w-14 h-14 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-xl font-medium text-slate-600 dark:text-slate-300 flex-shrink-0 overflow-hidden">
                                 {selectedFarmer.avatar ? (
                                     <img
                                         src={selectedFarmer.avatar}
@@ -619,47 +619,47 @@ import api from '../../services/api';
                                 )}
                             </div>
                             <div className="min-w-0">
-                                <h3 className="font-semibold text-slate-900 break-words">{selectedFarmer.name}</h3>
-                                <p className="text-sm text-slate-500 break-words">{selectedFarmer.email}</p>
+                                <h3 className="font-semibold text-slate-900 dark:text-slate-100 break-words">{selectedFarmer.name}</h3>
+                                <p className="text-sm text-slate-500 dark:text-slate-400 break-words">{selectedFarmer.email}</p>
                             </div>
                         </div>
 
                         <span className={`inline-block px-2 py-1 text-xs rounded-full ${
                             selectedFarmer.verification_status === 'approved'
-                                ? 'bg-green-100 text-green-800'
+                                ? 'bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-300'
                                 : selectedFarmer.verification_status === 'pending'
-                                ? 'bg-yellow-100 text-yellow-800'
+                                ? 'bg-yellow-100 dark:bg-yellow-900/40 text-yellow-800 dark:text-yellow-300'
                                 : selectedFarmer.verification_status === 'rejected'
-                                ? 'bg-red-100 text-red-800'
-                                : 'bg-slate-100 text-slate-800'
+                                ? 'bg-red-100 dark:bg-red-900/40 text-red-800 dark:text-red-300'
+                                : 'bg-slate-100 dark:bg-slate-700 text-slate-800 dark:text-slate-300'
                         }`}>
                             {selectedFarmer.verification_status_label || selectedFarmer.verification_status || 'Not Submitted'}
                         </span>
 
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm border-t border-slate-100 pt-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm border-t border-slate-100 dark:border-slate-700 pt-4">
                             <div className="min-w-0">
-                                <p className="text-slate-500">Phone</p>
-                                <p className="text-slate-900 font-medium break-words">{selectedFarmer.phone || 'Not provided'}</p>
+                                <p className="text-slate-500 dark:text-slate-400">Phone</p>
+                                <p className="text-slate-900 dark:text-slate-100 font-medium break-words">{selectedFarmer.phone || 'Not provided'}</p>
                             </div>
                             <div className="min-w-0">
-                                <p className="text-slate-500">Location</p>
-                                <p className="text-slate-900 font-medium break-words">{selectedFarmer.location || 'Not provided'}</p>
+                                <p className="text-slate-500 dark:text-slate-400">Location</p>
+                                <p className="text-slate-900 dark:text-slate-100 font-medium break-words">{selectedFarmer.location || 'Not provided'}</p>
                             </div>
                             <div className="min-w-0">
-                                <p className="text-slate-500">Farm name</p>
-                                <p className="text-slate-900 font-medium break-words">{selectedFarmer.farmer_profile?.farm_name || 'Not provided'}</p>
+                                <p className="text-slate-500 dark:text-slate-400">Farm name</p>
+                                <p className="text-slate-900 dark:text-slate-100 font-medium break-words">{selectedFarmer.farmer_profile?.farm_name || 'Not provided'}</p>
                             </div>
                             <div className="min-w-0">
-                                <p className="text-slate-500">Farm location</p>
-                                <p className="text-slate-900 font-medium break-words">{selectedFarmer.farmer_profile?.farm_location || 'Not provided'}</p>
+                                <p className="text-slate-500 dark:text-slate-400">Farm location</p>
+                                <p className="text-slate-900 dark:text-slate-100 font-medium break-words">{selectedFarmer.farmer_profile?.farm_location || 'Not provided'}</p>
                             </div>
                             <div className="sm:col-span-2 min-w-0">
-                                <p className="text-slate-500">Bio</p>
-                                <p className="text-slate-900 font-medium break-words">{selectedFarmer.farmer_profile?.bio || 'No bio provided'}</p>
+                                <p className="text-slate-500 dark:text-slate-400">Bio</p>
+                                <p className="text-slate-900 dark:text-slate-100 font-medium break-words">{selectedFarmer.farmer_profile?.bio || 'No bio provided'}</p>
                             </div>
                             <div className="min-w-0">
-                                <p className="text-slate-500">Requested</p>
-                                <p className="text-slate-900 font-medium">
+                                <p className="text-slate-500 dark:text-slate-400">Requested</p>
+                                <p className="text-slate-900 dark:text-slate-100 font-medium">
                                     {selectedFarmer.verification_requested_at
                                         ? new Date(selectedFarmer.verification_requested_at).toLocaleDateString()
                                         : '-'}
@@ -667,16 +667,16 @@ import api from '../../services/api';
                             </div>
                             {selectedFarmer.verified_at && (
                                 <div className="min-w-0">
-                                    <p className="text-slate-500">Verified</p>
-                                    <p className="text-slate-900 font-medium">
+                                    <p className="text-slate-500 dark:text-slate-400">Verified</p>
+                                    <p className="text-slate-900 dark:text-slate-100 font-medium">
                                         {new Date(selectedFarmer.verified_at).toLocaleDateString()}
                                     </p>
                                 </div>
                             )}
                             {selectedFarmer.farmer_profile?.rejected_at && (
                                 <div className="min-w-0">
-                                    <p className="text-slate-500">Rejected</p>
-                                    <p className="text-slate-900 font-medium">
+                                    <p className="text-slate-500 dark:text-slate-400">Rejected</p>
+                                    <p className="text-slate-900 dark:text-slate-100 font-medium">
                                         {new Date(selectedFarmer.farmer_profile.rejected_at).toLocaleDateString()}
                                     </p>
                                 </div>
@@ -684,19 +684,19 @@ import api from '../../services/api';
                         </div>
 
                         {selectedFarmer.farmer_profile?.verification_notes && (
-                            <div className="bg-slate-50 rounded-xl p-4 border border-slate-100 min-w-0">
-                                <p className="text-xs text-slate-500 mb-1">Verification notes</p>
-                                <p className="text-sm text-slate-700 break-words">{selectedFarmer.farmer_profile.verification_notes}</p>
+                            <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-4 border border-slate-100 dark:border-slate-700 min-w-0">
+                                <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Verification notes</p>
+                                <p className="text-sm text-slate-700 dark:text-slate-300 break-words">{selectedFarmer.farmer_profile.verification_notes}</p>
                             </div>
                         )}
                         {selectedFarmer.farmer_profile?.rejection_reason && (
-                            <div className="bg-red-50 rounded-xl p-4 border border-red-100 min-w-0">
-                                <p className="text-xs text-red-500 mb-1">Rejection reason</p>
-                                <p className="text-sm text-red-700 break-words">{selectedFarmer.farmer_profile.rejection_reason}</p>
+                            <div className="bg-red-50 dark:bg-red-900/20 rounded-xl p-4 border border-red-100 dark:border-red-800 min-w-0">
+                                <p className="text-xs text-red-500 dark:text-red-400 mb-1">Rejection reason</p>
+                                <p className="text-sm text-red-700 dark:text-red-300 break-words">{selectedFarmer.farmer_profile.rejection_reason}</p>
                             </div>
                         )}
 
-                        <div className="flex justify-end pt-2 border-t border-slate-100">
+                        <div className="flex justify-end pt-2 border-t border-slate-100 dark:border-slate-700">
                             <Button variant="secondary" onClick={closeModal}>
                                 Close
                             </Button>
@@ -716,22 +716,22 @@ import api from '../../services/api';
                     <div className="p-6">
                         <div className="mb-4">
                             <div className="flex items-center mb-4 min-w-0">
-                                <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center text-lg font-medium text-gray-600 flex-shrink-0">
+                                <div className="w-12 h-12 rounded-full bg-gray-200 dark:bg-slate-700 flex items-center justify-center text-lg font-medium text-gray-600 dark:text-slate-300 flex-shrink-0">
                                     {selectedFarmer.name?.[0]?.toUpperCase() || 'U'}
                                 </div>
                                 <div className="ml-4 min-w-0">
-                                    <h3 className="font-semibold text-gray-900 break-words">{selectedFarmer.name}</h3>
-                                    <p className="text-sm text-gray-500 break-words">{selectedFarmer.farmer_profile?.farm_name || 'No farm name'}</p>
+                                    <h3 className="font-semibold text-gray-900 dark:text-slate-100 break-words">{selectedFarmer.name}</h3>
+                                    <p className="text-sm text-gray-500 dark:text-slate-400 break-words">{selectedFarmer.farmer_profile?.farm_name || 'No farm name'}</p>
                                 </div>
                             </div>
                         </div>
 
                         <div className="mb-4">
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                            <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">
                                 Rejection Reason *
                             </label>
                             <textarea
-                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                                className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-gray-900 dark:text-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
                                 rows="3"
                                 value={rejectionReason}
                                 onChange={(e) => setRejectionReason(e.target.value)}
@@ -769,22 +769,22 @@ import api from '../../services/api';
                 <div className="p-6">
                     <div className="mb-4">
                         <div className="flex items-center mb-4">
-                            <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center text-2xl">
+                            <div className="w-12 h-12 bg-red-100 dark:bg-red-900/40 rounded-full flex items-center justify-center text-2xl">
                                 ❌
                             </div>
                             <div className="ml-4">
-                                <h3 className="font-semibold text-gray-900">Reject {selectedFarmers.length} Farmers</h3>
-                                <p className="text-sm text-gray-500">Provide a reason for rejecting these farmers</p>
+                                <h3 className="font-semibold text-gray-900 dark:text-slate-100">Reject {selectedFarmers.length} Farmers</h3>
+                                <p className="text-sm text-gray-500 dark:text-slate-400">Provide a reason for rejecting these farmers</p>
                             </div>
                         </div>
                     </div>
 
                     <div className="mb-4">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">
                             Rejection Reason *
                         </label>
                         <textarea
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                            className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-gray-900 dark:text-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
                             rows="3"
                             value={bulkRejectionReason}
                             onChange={(e) => setBulkRejectionReason(e.target.value)}
@@ -820,18 +820,18 @@ import api from '../../services/api';
                                 {confirmAction === 'approve' && (
                                     <>
                                         <div className="flex items-center justify-center mb-4">
-                                            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center text-3xl">
+                                            <div className="w-16 h-16 bg-green-100 dark:bg-green-900/40 rounded-full flex items-center justify-center text-3xl">
                                                 ✅
                                             </div>
                                         </div>
-                                        <h3 className="text-lg font-semibold text-gray-900 text-center mb-2">
+                                        <h3 className="text-lg font-semibold text-gray-900 dark:text-slate-100 text-center mb-2">
                                             Approve Farmer
                                         </h3>
-                                        <p className="text-gray-600 text-center">
+                                        <p className="text-gray-600 dark:text-slate-300 text-center">
                                             Are you sure you want to approve <strong>{selectedFarmer?.name}</strong>?
                                         </p>
                                         {notes && (
-                                            <p className="text-sm text-gray-500 mt-2 text-center">
+                                            <p className="text-sm text-gray-500 dark:text-slate-400 mt-2 text-center">
                                                 Notes: {notes}
                                             </p>
                                         )}
@@ -840,18 +840,18 @@ import api from '../../services/api';
                                 {confirmAction === 'reject' && (
                                     <>
                                         <div className="flex items-center justify-center mb-4">
-                                            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center text-3xl">
+                                            <div className="w-16 h-16 bg-red-100 dark:bg-red-900/40 rounded-full flex items-center justify-center text-3xl">
                                                 ❌
                                             </div>
                                         </div>
-                                        <h3 className="text-lg font-semibold text-gray-900 text-center mb-2">
+                                        <h3 className="text-lg font-semibold text-gray-900 dark:text-slate-100 text-center mb-2">
                                             Reject Farmer
                                         </h3>
-                                        <p className="text-gray-600 text-center">
+                                        <p className="text-gray-600 dark:text-slate-300 text-center">
                                             Are you sure you want to reject <strong>{selectedFarmer?.name}</strong>?
                                         </p>
                                         {rejectionReason && (
-                                            <p className="text-sm text-red-600 mt-2 text-center">
+                                            <p className="text-sm text-red-600 dark:text-red-400 mt-2 text-center">
                                                 Reason: {rejectionReason}
                                             </p>
                                         )}
@@ -860,14 +860,14 @@ import api from '../../services/api';
                                 {confirmAction === 'bulkApprove' && (
                                     <>
                                         <div className="flex items-center justify-center mb-4">
-                                            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center text-3xl">
+                                            <div className="w-16 h-16 bg-green-100 dark:bg-green-900/40 rounded-full flex items-center justify-center text-3xl">
                                                 ✅
                                             </div>
                                         </div>
-                                        <h3 className="text-lg font-semibold text-gray-900 text-center mb-2">
+                                        <h3 className="text-lg font-semibold text-gray-900 dark:text-slate-100 text-center mb-2">
                                             Bulk Approve Farmers
                                         </h3>
-                                        <p className="text-gray-600 text-center">
+                                        <p className="text-gray-600 dark:text-slate-300 text-center">
                                             Are you sure you want to approve <strong>{confirmData?.count}</strong> farmers?
                                         </p>
                                     </>
@@ -878,15 +878,15 @@ import api from '../../services/api';
                                 <Button variant="secondary" onClick={closeConfirmModal}>
                                     Cancel
                                 </Button>
-                                <Button 
+                                <Button
                                     variant={confirmAction === 'reject' ? 'danger' : 'primary'}
                                     onClick={handleConfirmAction}
                                     isLoading={loadingAction}
                                     disabled={loadingAction}
                                 >
-                                    {confirmAction === 'approve' ? 'Approve' : 
-                                     confirmAction === 'reject' ? 'Reject' : 
-                                     'Approve'} 
+                                    {confirmAction === 'approve' ? 'Approve' :
+                                     confirmAction === 'reject' ? 'Reject' :
+                                     'Approve'}
                                     {confirmAction === 'bulkApprove' && ' All'}
                                 </Button>
                             </div>

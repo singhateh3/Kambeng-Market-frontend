@@ -4,6 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { Alert } from '../common/Alert';
 import { Button } from '../common/Button';
+import { ThemeToggle } from '../ThemeToggle';
 
 export const Login = () => {
     const { login } = useAuth();
@@ -117,19 +118,22 @@ export const Login = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+        <div className="min-h-screen bg-gray-50 dark:bg-slate-950 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 relative">
+            <div className="absolute top-4 right-4">
+                <ThemeToggle />
+            </div>
             <div className="max-w-md w-full">
                 {/* Logo / Brand */}
                 <div className="text-center mb-8">
                     <Link to="/" className="inline-block">
                         <span className="text-4xl">🌾</span>
-                        <h1 className="text-2xl font-bold text-green-600 mt-2">Kambeng Market</h1>
+                        <h1 className="text-2xl font-bold text-green-600 dark:text-green-400 mt-2">Kambeng Market</h1>
                     </Link>
-                    <h2 className="mt-6 text-2xl font-bold text-gray-900">Welcome back</h2>
-                    <p className="mt-1 text-sm text-gray-500">Sign in to your account</p>
+                    <h2 className="mt-6 text-2xl font-bold text-gray-900 dark:text-slate-100">Welcome back</h2>
+                    <p className="mt-1 text-sm text-gray-500 dark:text-slate-400">Sign in to your account</p>
                 </div>
 
-                <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8">
+                <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-lg border border-gray-100 dark:border-slate-700 p-8">
                     <form className="space-y-6" onSubmit={handleSubmit}>
                         {/* General Error */}
                         {generalError && (
@@ -143,7 +147,7 @@ export const Login = () => {
                         <div className="space-y-4">
                             {/* Email */}
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">
                                     Email Address
                                 </label>
                                 <input
@@ -152,19 +156,19 @@ export const Login = () => {
                                     placeholder="Enter your email"
                                     value={formData.email}
                                     onChange={handleChange}
-                                    className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition ${
-                                        fieldErrors.email ? 'border-red-500' : 'border-gray-200'
+                                    className={`w-full px-4 py-3 border rounded-xl bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 placeholder:text-gray-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition ${
+                                        fieldErrors.email ? 'border-red-500 dark:border-red-500' : 'border-gray-200 dark:border-slate-600'
                                     }`}
                                     required
                                 />
                                 {fieldErrors.email && (
-                                    <p className="mt-1 text-sm text-red-600">{fieldErrors.email}</p>
+                                    <p className="mt-1 text-sm text-red-600 dark:text-red-400">{fieldErrors.email}</p>
                                 )}
                             </div>
 
                             {/* Password with Show/Hide */}
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">
                                     Password
                                 </label>
                                 <div className="relative">
@@ -174,15 +178,15 @@ export const Login = () => {
                                         placeholder="Enter your password"
                                         value={formData.password}
                                         onChange={handleChange}
-                                        className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition ${
-                                            fieldErrors.password ? 'border-red-500' : 'border-gray-200'
+                                        className={`w-full px-4 py-3 border rounded-xl bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 placeholder:text-gray-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition ${
+                                            fieldErrors.password ? 'border-red-500 dark:border-red-500' : 'border-gray-200 dark:border-slate-600'
                                         }`}
                                         required
                                     />
                                     <button
                                         type="button"
                                         onClick={toggleShowPassword}
-                                        className="absolute right-1.5 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 transition p-2"
+                                        className="absolute right-1.5 top-1/2 -translate-y-1/2 text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200 transition p-2"
                                         aria-label={showPassword ? 'Hide password' : 'Show password'}
                                     >
                                         {showPassword ? (
@@ -200,7 +204,7 @@ export const Login = () => {
                                     </button>
                                 </div>
                                 {fieldErrors.password && (
-                                    <p className="mt-1 text-sm text-red-600">{fieldErrors.password}</p>
+                                    <p className="mt-1 text-sm text-red-600 dark:text-red-400">{fieldErrors.password}</p>
                                 )}
                             </div>
 
@@ -211,18 +215,18 @@ export const Login = () => {
                                         id="remember"
                                         type="checkbox"
                                         name="remember"
-                                        className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
+                                        className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 dark:border-slate-600 dark:bg-slate-800 rounded"
                                         checked={formData.remember}
                                         onChange={handleChange}
                                     />
-                                    <label htmlFor="remember" className="ml-2 block text-sm text-gray-700">
+                                    <label htmlFor="remember" className="ml-2 block text-sm text-gray-700 dark:text-slate-300">
                                         Remember me
                                     </label>
                                 </div>
 
                                 <Link
                                     to="/forgot-password"
-                                    className="text-sm font-medium text-green-600 hover:text-green-700 transition"
+                                    className="text-sm font-medium text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300 transition"
                                 >
                                     Forgot password?
                                 </Link>
@@ -240,11 +244,11 @@ export const Login = () => {
                         </Button>
 
                         <div className="text-center">
-                            <p className="text-sm text-gray-600">
+                            <p className="text-sm text-gray-600 dark:text-slate-400">
                                 Don't have an account?{' '}
                                 <Link
                                     to="/register"
-                                    className="font-medium text-green-600 hover:text-green-700 transition"
+                                    className="font-medium text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300 transition"
                                 >
                                     Sign up
                                 </Link>
@@ -255,7 +259,7 @@ export const Login = () => {
 
                 {/* Decorative Footer */}
                 <div className="mt-6 text-center">
-                    <p className="text-xs text-gray-400">
+                    <p className="text-xs text-gray-400 dark:text-slate-500">
                         By continuing, you agree to our Terms of Service and Privacy Policy
                     </p>
                 </div>

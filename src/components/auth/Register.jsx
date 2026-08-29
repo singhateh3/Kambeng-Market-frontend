@@ -4,6 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { Alert } from '../common/Alert';
 import { Button } from '../common/Button';
+import { ThemeToggle } from '../ThemeToggle';
 
 export const Register = () => {
     const { register } = useAuth();
@@ -52,20 +53,30 @@ export const Register = () => {
         }
     };
 
+    const inputClass = (field) =>
+        `w-full px-4 py-3 border rounded-xl bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 placeholder:text-gray-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition ${
+            errors[field] ? 'border-red-500 dark:border-red-500' : 'border-gray-200 dark:border-slate-600'
+        }`;
+    const labelClass = 'block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1';
+    const errorClass = 'mt-1 text-sm text-red-600 dark:text-red-400';
+
     return (
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+        <div className="min-h-screen bg-gray-50 dark:bg-slate-950 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 relative">
+            <div className="absolute top-4 right-4">
+                <ThemeToggle />
+            </div>
             <div className="max-w-2xl w-full">
                 {/* Logo / Brand */}
                 <div className="text-center mb-8">
                     <Link to="/" className="inline-block">
                         <span className="text-4xl">🌾</span>
-                        <h1 className="text-2xl font-bold text-green-600 mt-2">Kambeng Market</h1>
+                        <h1 className="text-2xl font-bold text-green-600 dark:text-green-400 mt-2">Kambeng Market</h1>
                     </Link>
-                    <h2 className="mt-6 text-3xl font-bold text-gray-900">Create your account</h2>
-                    <p className="mt-2 text-sm text-gray-500">Join Kambeng Market today</p>
+                    <h2 className="mt-6 text-3xl font-bold text-gray-900 dark:text-slate-100">Create your account</h2>
+                    <p className="mt-2 text-sm text-gray-500 dark:text-slate-400">Join Kambeng Market today</p>
                 </div>
 
-                <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8">
+                <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-lg border border-gray-100 dark:border-slate-700 p-8">
                     <form className="space-y-6" onSubmit={handleSubmit}>
                         {generalError && (
                             <Alert type="error" message={generalError} />
@@ -75,7 +86,7 @@ export const Register = () => {
                             {/* Name & Email */}
                             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    <label className={labelClass}>
                                         Full Name *
                                     </label>
                                     <input
@@ -83,18 +94,16 @@ export const Register = () => {
                                         placeholder="Enter your full name"
                                         value={formData.name}
                                         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                        className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition ${
-                                            errors.name ? 'border-red-500' : 'border-gray-200'
-                                        }`}
+                                        className={inputClass('name')}
                                         required
                                     />
                                     {errors.name && (
-                                        <p className="mt-1 text-sm text-red-600">{errors.name}</p>
+                                        <p className={errorClass}>{errors.name}</p>
                                     )}
                                 </div>
 
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    <label className={labelClass}>
                                         Email Address *
                                     </label>
                                     <input
@@ -102,13 +111,11 @@ export const Register = () => {
                                         placeholder="Enter your email"
                                         value={formData.email}
                                         onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                                        className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition ${
-                                            errors.email ? 'border-red-500' : 'border-gray-200'
-                                        }`}
+                                        className={inputClass('email')}
                                         required
                                     />
                                     {errors.email && (
-                                        <p className="mt-1 text-sm text-red-600">{errors.email}</p>
+                                        <p className={errorClass}>{errors.email}</p>
                                     )}
                                 </div>
                             </div>
@@ -116,7 +123,7 @@ export const Register = () => {
                             {/* Phone & Location */}
                             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    <label className={labelClass}>
                                         Phone Number *
                                     </label>
                                     <input
@@ -124,18 +131,16 @@ export const Register = () => {
                                         placeholder="Enter your phone number"
                                         value={formData.phone}
                                         onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                                        className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition ${
-                                            errors.phone ? 'border-red-500' : 'border-gray-200'
-                                        }`}
+                                        className={inputClass('phone')}
                                         required
                                     />
                                     {errors.phone && (
-                                        <p className="mt-1 text-sm text-red-600">{errors.phone}</p>
+                                        <p className={errorClass}>{errors.phone}</p>
                                     )}
                                 </div>
 
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    <label className={labelClass}>
                                         Location *
                                     </label>
                                     <input
@@ -143,20 +148,18 @@ export const Register = () => {
                                         placeholder="Enter your location"
                                         value={formData.location}
                                         onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                                        className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition ${
-                                            errors.location ? 'border-red-500' : 'border-gray-200'
-                                        }`}
+                                        className={inputClass('location')}
                                         required
                                     />
                                     {errors.location && (
-                                        <p className="mt-1 text-sm text-red-600">{errors.location}</p>
+                                        <p className={errorClass}>{errors.location}</p>
                                     )}
                                 </div>
                             </div>
 
                             {/* Role Selection */}
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">
                                     I am a *
                                 </label>
                                 <div className="grid grid-cols-2 gap-4">
@@ -164,41 +167,41 @@ export const Register = () => {
                                         type="button"
                                         className={`p-4 border-2 rounded-xl text-center transition-all ${
                                             formData.role === 'buyer'
-                                                ? 'border-green-500 bg-green-50 text-green-700 shadow-sm'
-                                                : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                                                ? 'border-green-500 bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-300 shadow-sm'
+                                                : 'border-gray-200 dark:border-slate-600 hover:border-gray-300 dark:hover:border-slate-500 hover:bg-gray-50 dark:hover:bg-slate-800 text-gray-900 dark:text-slate-100'
                                         }`}
                                         onClick={() => setFormData({ ...formData, role: 'buyer', farm_name: '', farm_location: '' })}
                                     >
                                         <span className="block text-3xl mb-1">🛒</span>
                                         <span className="font-semibold">Buyer</span>
-                                        <span className="text-xs text-gray-500 block mt-1">Buy fresh produce</span>
+                                        <span className="text-xs text-gray-500 dark:text-slate-400 block mt-1">Buy fresh produce</span>
                                     </button>
                                     <button
                                         type="button"
                                         className={`p-4 border-2 rounded-xl text-center transition-all ${
                                             formData.role === 'farmer'
-                                                ? 'border-green-500 bg-green-50 text-green-700 shadow-sm'
-                                                : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                                                ? 'border-green-500 bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-300 shadow-sm'
+                                                : 'border-gray-200 dark:border-slate-600 hover:border-gray-300 dark:hover:border-slate-500 hover:bg-gray-50 dark:hover:bg-slate-800 text-gray-900 dark:text-slate-100'
                                         }`}
                                         onClick={() => setFormData({ ...formData, role: 'farmer' })}
                                     >
                                         <span className="block text-3xl mb-1">🌾</span>
                                         <span className="font-semibold">Farmer</span>
-                                        <span className="text-xs text-gray-500 block mt-1">Sell your produce</span>
+                                        <span className="text-xs text-gray-500 dark:text-slate-400 block mt-1">Sell your produce</span>
                                     </button>
                                 </div>
                                 {errors.role && (
-                                    <p className="mt-2 text-sm text-red-600">{errors.role}</p>
+                                    <p className={`mt-2 ${errorClass}`}>{errors.role}</p>
                                 )}
                             </div>
 
                             {/* Farmer Fields */}
                             {formData.role === 'farmer' && (
-                                <div className="bg-green-50 rounded-xl p-4 border border-green-100 space-y-4">
-                                    <p className="text-sm font-medium text-green-800">🌾 Farm Details</p>
+                                <div className="bg-green-50 dark:bg-green-900/20 rounded-xl p-4 border border-green-100 dark:border-green-800 space-y-4">
+                                    <p className="text-sm font-medium text-green-800 dark:text-green-300">🌾 Farm Details</p>
                                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                                         <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            <label className={labelClass}>
                                                 Farm Name *
                                             </label>
                                             <input
@@ -206,18 +209,16 @@ export const Register = () => {
                                                 placeholder="Enter your farm name"
                                                 value={formData.farm_name}
                                                 onChange={(e) => setFormData({ ...formData, farm_name: e.target.value })}
-                                                className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition ${
-                                                    errors.farm_name ? 'border-red-500' : 'border-gray-200'
-                                                }`}
+                                                className={inputClass('farm_name')}
                                                 required
                                             />
                                             {errors.farm_name && (
-                                                <p className="mt-1 text-sm text-red-600">{errors.farm_name}</p>
+                                                <p className={errorClass}>{errors.farm_name}</p>
                                             )}
                                         </div>
 
                                         <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            <label className={labelClass}>
                                                 Farm Location *
                                             </label>
                                             <input
@@ -225,18 +226,16 @@ export const Register = () => {
                                                 placeholder="Enter farm location"
                                                 value={formData.farm_location}
                                                 onChange={(e) => setFormData({ ...formData, farm_location: e.target.value })}
-                                                className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition ${
-                                                    errors.farm_location ? 'border-red-500' : 'border-gray-200'
-                                                }`}
+                                                className={inputClass('farm_location')}
                                                 required
                                             />
                                             {errors.farm_location && (
-                                                <p className="mt-1 text-sm text-red-600">{errors.farm_location}</p>
+                                                <p className={errorClass}>{errors.farm_location}</p>
                                             )}
                                         </div>
 
                                         <div className="sm:col-span-2">
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            <label className={labelClass}>
                                                 Farm Bio (Optional)
                                             </label>
                                             <textarea
@@ -244,12 +243,10 @@ export const Register = () => {
                                                 placeholder="Tell buyers about your farm..."
                                                 value={formData.bio}
                                                 onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
-                                                className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition ${
-                                                    errors.bio ? 'border-red-500' : 'border-gray-200'
-                                                }`}
+                                                className={inputClass('bio')}
                                             />
                                             {errors.bio && (
-                                                <p className="mt-1 text-sm text-red-600">{errors.bio}</p>
+                                                <p className={errorClass}>{errors.bio}</p>
                                             )}
                                         </div>
                                     </div>
@@ -259,7 +256,7 @@ export const Register = () => {
                             {/* Password */}
                             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    <label className={labelClass}>
                                         Password *
                                     </label>
                                     <input
@@ -267,18 +264,16 @@ export const Register = () => {
                                         placeholder="Create a password"
                                         value={formData.password}
                                         onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                                        className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition ${
-                                            errors.password ? 'border-red-500' : 'border-gray-200'
-                                        }`}
+                                        className={inputClass('password')}
                                         required
                                     />
                                     {errors.password && (
-                                        <p className="mt-1 text-sm text-red-600">{errors.password}</p>
+                                        <p className={errorClass}>{errors.password}</p>
                                     )}
                                 </div>
 
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    <label className={labelClass}>
                                         Confirm Password *
                                     </label>
                                     <input
@@ -286,13 +281,11 @@ export const Register = () => {
                                         placeholder="Confirm your password"
                                         value={formData.password_confirmation}
                                         onChange={(e) => setFormData({ ...formData, password_confirmation: e.target.value })}
-                                        className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition ${
-                                            errors.password_confirmation ? 'border-red-500' : 'border-gray-200'
-                                        }`}
+                                        className={inputClass('password_confirmation')}
                                         required
                                     />
                                     {errors.password_confirmation && (
-                                        <p className="mt-1 text-sm text-red-600">{errors.password_confirmation}</p>
+                                        <p className={errorClass}>{errors.password_confirmation}</p>
                                     )}
                                 </div>
                             </div>
@@ -309,11 +302,11 @@ export const Register = () => {
                         </Button>
 
                         <div className="text-center">
-                            <p className="text-sm text-gray-600">
+                            <p className="text-sm text-gray-600 dark:text-slate-400">
                                 Already have an account?{' '}
                                 <Link
                                     to="/login"
-                                    className="font-medium text-green-600 hover:text-green-700 transition"
+                                    className="font-medium text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300 transition"
                                 >
                                     Sign in
                                 </Link>

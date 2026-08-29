@@ -2,8 +2,8 @@
 import { Skeleton } from './Skeleton';
 
 export const AdminDashboardSkeleton = () => (
-    <div className="bg-slate-50 min-h-screen">
-        <div className="bg-white border-b border-slate-200">
+    <div className="bg-slate-50 dark:bg-slate-950 min-h-screen">
+        <div className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800">
             <div className="max-w-6xl mx-auto px-6 py-5">
                 <Skeleton className="h-7 w-48 mb-2" />
                 <Skeleton className="h-4 w-36" />
@@ -14,7 +14,7 @@ export const AdminDashboardSkeleton = () => (
             {/* Stat cards */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
                 {[1,2,3,4].map(i => (
-                    <div key={i} className="bg-white border border-slate-200 rounded-xl p-5">
+                    <div key={i} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-5">
                         <Skeleton className="h-7 w-7 mb-3" />
                         <Skeleton className="h-8 w-20 mb-1" />
                         <Skeleton className="h-3 w-28" />
@@ -27,7 +27,7 @@ export const AdminDashboardSkeleton = () => (
                 layout jump when the skeleton resolves to real content. */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
                 {[1,2,3].map(i => (
-                    <div key={i} className="bg-white border border-slate-200 rounded-xl p-5">
+                    <div key={i} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-5">
                         <div className="flex items-center justify-between">
                             <div>
                                 <Skeleton className="h-7 w-12 mb-2" />
@@ -43,7 +43,7 @@ export const AdminDashboardSkeleton = () => (
             {/* Chart panels */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
                 {[1,2].map(i => (
-                    <div key={i} className="bg-white border border-slate-200 rounded-xl p-5">
+                    <div key={i} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-5">
                         <Skeleton className="h-5 w-32 mb-4" />
                         <div className="space-y-3">
                             {[1,2,3,4,5].map(j => (
@@ -63,7 +63,7 @@ export const AdminDashboardSkeleton = () => (
                 <Skeleton className="h-5 w-28 mb-3" />
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                     {[1,2,3,4].map(i => (
-                        <div key={i} className="bg-white border border-slate-200 rounded-xl px-4 py-4 flex items-center gap-3">
+                        <div key={i} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-4 flex items-center gap-3">
                             <Skeleton className="w-9 h-9 rounded-lg flex-shrink-0" />
                             <div>
                                 <Skeleton className="h-4 w-20 mb-1" />
@@ -75,10 +75,10 @@ export const AdminDashboardSkeleton = () => (
             </div>
 
             {/* Recent orders */}
-            <div className="bg-white border border-slate-200 rounded-xl p-5">
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-5">
                 <Skeleton className="h-5 w-32 mb-4" />
                 {[1,2,3,4,5].map(i => (
-                    <div key={i} className="flex items-center justify-between py-2.5 border-b border-slate-50 last:border-0">
+                    <div key={i} className="flex items-center justify-between py-2.5 border-b border-slate-50 dark:border-slate-800 last:border-0">
                         <div className="flex gap-2">
                             <Skeleton className="h-4 w-28" />
                             <Skeleton className="h-4 w-36" />

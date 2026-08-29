@@ -4,6 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { ImageWithFallback } from '../components/common/ImageWithFallback';
 import { Skeleton } from "../components/common/skeletons/Skeleton";
 import ReviewStars from '../components/ReviewStars';
+import { ThemeToggle } from '../components/ThemeToggle';
 import { useAuth } from '../hooks/useAuth';
 import api from '../services/api';
 import { getImageUrl } from '../utils/imageUtils';
@@ -63,19 +64,19 @@ const Home = () => {
     }
 
     return (
-        <div className="bg-slate-50 min-h-screen">
+        <div className="bg-slate-50 dark:bg-slate-950 min-h-screen">
             {/* Navbar */}
-            <nav className="bg-white border-b border-slate-200 sticky top-0 z-50">
+            <nav className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 sticky top-0 z-50">
                 <div className="max-w-6xl mx-auto px-6 flex items-center gap-6" style={{ height: 60 }}>
                     <Link to="/" className="flex items-center gap-2 no-underline flex-shrink-0">
                         <span className="text-xl">🌾</span>
-                        <span className="font-extrabold text-green-700 tracking-tight">Kambeng</span>
-                        <span className="font-normal text-slate-400 hidden sm:inline">Market</span>
+                        <span className="font-extrabold text-green-700 dark:text-green-400 tracking-tight">Kambeng</span>
+                        <span className="font-normal text-slate-400 dark:text-slate-500 hidden sm:inline">Market</span>
                     </Link>
 
                     <form onSubmit={handleSearch} className="flex-1 max-w-md hidden sm:block">
                         <div className="relative">
-                            <svg className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                             </svg>
                             <input
@@ -83,7 +84,7 @@ const Home = () => {
                                 placeholder="Search produce, farmers..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-lg text-sm bg-slate-50 text-slate-900 outline-none focus:border-green-400 focus:bg-white transition"
+                                className="w-full pl-9 pr-4 py-2 border border-slate-200 dark:border-slate-700 rounded-lg text-sm bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 outline-none focus:border-green-400 dark:focus:border-green-500 focus:bg-white dark:focus:bg-slate-800 transition"
                             />
                         </div>
                     </form>
@@ -91,23 +92,30 @@ const Home = () => {
                     <div className="ml-auto flex items-center gap-3 flex-shrink-0">
                         {!isAuthenticated ? (
                             <>
-                                <Link to="/login" className="text-sm font-medium text-slate-600 no-underline hover:text-green-700 transition">Sign in</Link>
+                                <Link to="/login" className="text-sm font-medium text-slate-600 dark:text-slate-300 no-underline hover:text-green-700 dark:hover:text-green-400 transition">Sign in</Link>
                                 <Link to="/register" className="bg-green-600 text-white text-sm font-semibold px-4 py-2 rounded-lg no-underline hover:bg-green-700 transition">
                                     Get started
                                 </Link>
                             </>
                         ) : (
-                            <Link to="/app/dashboard" className="bg-green-50 text-green-700 border border-green-200 text-sm font-semibold px-4 py-2 rounded-lg no-underline hover:bg-green-100 transition">
+                            <Link to="/app/dashboard" className="bg-green-50 dark:bg-green-900/40 text-green-700 dark:text-green-300 border border-green-200 dark:border-green-800 text-sm font-semibold px-4 py-2 rounded-lg no-underline hover:bg-green-100 dark:hover:bg-green-900/60 transition">
                                 Dashboard
                             </Link>
                         )}
+                        {/* hidden below sm — the unauthenticated mobile row is already
+                            tight (logo + sign-in/get-started); the toggle stays
+                            reachable from any authenticated page's mobile panel,
+                            and the theme persists site-wide either way. */}
+                        <div className="hidden sm:block">
+                            <ThemeToggle />
+                        </div>
                     </div>
                 </div>
                 {/* Search on its own row on small screens, where it's hidden above */}
                 <div className="sm:hidden px-6 pb-3">
                     <form onSubmit={handleSearch}>
                         <div className="relative">
-                            <svg className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                             </svg>
                             <input
@@ -115,7 +123,7 @@ const Home = () => {
                                 placeholder="Search produce, farmers..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-lg text-sm bg-slate-50 text-slate-900 outline-none focus:border-green-400 focus:bg-white transition"
+                                className="w-full pl-9 pr-4 py-2 border border-slate-200 dark:border-slate-700 rounded-lg text-sm bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 outline-none focus:border-green-400 dark:focus:border-green-500 focus:bg-white dark:focus:bg-slate-800 transition"
                             />
                         </div>
                     </form>
@@ -123,18 +131,18 @@ const Home = () => {
             </nav>
 
             {/* Hero */}
-            <section className="bg-white border-b border-slate-100">
+            <section className="bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800">
                 <div className="max-w-6xl mx-auto px-6 py-10 sm:py-16 grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-16 items-center">
                     <div>
-                        <div className="inline-flex items-center gap-1.5 bg-green-50 text-green-700 border border-green-200 text-xs font-semibold px-3 py-1 rounded-full mb-5">
+                        <div className="inline-flex items-center gap-1.5 bg-green-50 dark:bg-green-900/40 text-green-700 dark:text-green-300 border border-green-200 dark:border-green-800 text-xs font-semibold px-3 py-1 rounded-full mb-5">
                             <span className="w-1.5 h-1.5 bg-green-600 rounded-full" />
                             Fresh from Gambian farms
                         </div>
-                        <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-slate-900 leading-tight tracking-tight mb-4">
+                        <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-slate-900 dark:text-slate-50 leading-tight tracking-tight mb-4">
                             Farm-fresh produce,<br />
-                            <span className="text-green-600">no middlemen.</span>
+                            <span className="text-green-600 dark:text-green-400">no middlemen.</span>
                         </h1>
-                        <p className="text-base sm:text-lg text-slate-500 leading-relaxed mb-8 max-w-md">
+                        <p className="text-base sm:text-lg text-slate-500 dark:text-slate-400 leading-relaxed mb-8 max-w-md">
                             Order directly from verified Gambian farmers. Fair prices for buyers, fair pay for farmers.
                         </p>
 
@@ -144,7 +152,7 @@ const Home = () => {
                                     <button onClick={() => navigate('/register')} className="bg-green-600 text-white font-bold px-7 py-3 rounded-lg hover:bg-green-700 transition cursor-pointer border-none text-sm">
                                         Start buying
                                     </button>
-                                    <button onClick={() => navigate('/login')} className="bg-slate-50 text-slate-700 font-semibold px-7 py-3 rounded-lg border border-slate-200 hover:bg-slate-100 transition cursor-pointer text-sm">
+                                    <button onClick={() => navigate('/login')} className="bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-semibold px-7 py-3 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 transition cursor-pointer text-sm">
                                         Sign in
                                     </button>
                                 </>
@@ -155,8 +163,8 @@ const Home = () => {
                             )}
                         </div>
 
-                        <p className="mt-6 text-sm text-slate-500 flex items-center gap-2">
-                            🚚 Free delivery on orders over <strong className="text-slate-800">GMD 500</strong>
+                        <p className="mt-6 text-sm text-slate-500 dark:text-slate-400 flex items-center gap-2">
+                            🚚 Free delivery on orders over <strong className="text-slate-800 dark:text-slate-200">GMD 500</strong>
                         </p>
                     </div>
 
@@ -168,10 +176,10 @@ const Home = () => {
                             { emoji: '📦', label: 'Orders placed', value: stats?.orders?.total ?? '100+' },
                             { emoji: '⭐', label: 'Avg. rating', value: stats?.reviews?.average_rating ? Number(stats.reviews.average_rating).toFixed(1) : '4.8' },
                         ].map((s, i) => (
-                            <div key={i} className="bg-slate-50 border border-slate-200 rounded-xl p-5">
+                            <div key={i} className="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-5">
                                 <div className="text-3xl mb-2">{s.emoji}</div>
-                                <div className="text-2xl font-extrabold text-slate-900 tracking-tight">{s.value}</div>
-                                <div className="text-xs text-slate-500 mt-0.5">{s.label}</div>
+                                <div className="text-2xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight">{s.value}</div>
+                                <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{s.label}</div>
                             </div>
                         ))}
                     </div>
@@ -180,11 +188,11 @@ const Home = () => {
 
             {/* Categories */}
             {categories.length > 0 && (
-                <section className="bg-white border-b border-slate-100 py-6">
+                <section className="bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800 py-6">
                     <div className="max-w-6xl mx-auto px-6">
                         <div className="flex items-center justify-between mb-4">
-                            <h2 className="text-sm font-bold text-slate-900">Shop by category</h2>
-                            <Link to={isAuthenticated ? '/app/browse' : '/login'} className="text-xs font-semibold text-green-600 no-underline hover:text-green-700">
+                            <h2 className="text-sm font-bold text-slate-900 dark:text-slate-100">Shop by category</h2>
+                            <Link to={isAuthenticated ? '/app/browse' : '/login'} className="text-xs font-semibold text-green-600 dark:text-green-400 no-underline hover:text-green-700 dark:hover:text-green-300">
                                 All categories →
                             </Link>
                         </div>
@@ -193,7 +201,7 @@ const Home = () => {
                                 <Link
                                     key={i}
                                     to={isAuthenticated ? `/app/browse?category=${encodeURIComponent(cat)}` : '/login'}
-                                    className="flex-shrink-0 flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-slate-200 bg-slate-50 text-slate-700 text-xs font-medium no-underline hover:bg-green-50 hover:border-green-400 hover:text-green-700 transition"
+                                    className="flex-shrink-0 flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-xs font-medium no-underline hover:bg-green-50 dark:hover:bg-green-900/40 hover:border-green-400 dark:hover:border-green-700 hover:text-green-700 dark:hover:text-green-300 transition"
                                 >
                                     <span>{getCategoryIcon(cat)}</span>
                                     <span>{cat}</span>
@@ -209,10 +217,10 @@ const Home = () => {
                 <div className="max-w-6xl mx-auto px-6">
                     <div className="flex items-center justify-between mb-5">
                         <div>
-                            <h2 className="text-lg font-extrabold text-slate-900 tracking-tight">Featured products</h2>
-                            <p className="text-xs text-slate-500 mt-0.5">Freshly listed by farmers near you</p>
+                            <h2 className="text-lg font-extrabold text-slate-900 dark:text-slate-100 tracking-tight">Featured products</h2>
+                            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Freshly listed by farmers near you</p>
                         </div>
-                        <Link to={isAuthenticated ? '/app/browse' : '/login'} className="text-xs font-semibold text-green-600 no-underline hover:text-green-700">
+                        <Link to={isAuthenticated ? '/app/browse' : '/login'} className="text-xs font-semibold text-green-600 dark:text-green-400 no-underline hover:text-green-700 dark:hover:text-green-300">
                             View all →
                         </Link>
                     </div>
@@ -224,11 +232,11 @@ const Home = () => {
                             ))}
                         </div>
                     ) : (
-                        <div className="text-center py-16 bg-white rounded-xl border border-dashed border-slate-200">
+                        <div className="text-center py-16 bg-white dark:bg-slate-900 rounded-xl border border-dashed border-slate-200 dark:border-slate-700">
                             <div className="text-5xl mb-3">🌾</div>
-                            <p className="text-slate-500 text-sm">No products listed yet.</p>
+                            <p className="text-slate-500 dark:text-slate-400 text-sm">No products listed yet.</p>
                             {isAuthenticated && user?.role === 'farmer' && (
-                                <Link to="/app/products/create" className="text-green-600 text-sm font-semibold no-underline hover:text-green-700 mt-2 inline-block">
+                                <Link to="/app/products/create" className="text-green-600 dark:text-green-400 text-sm font-semibold no-underline hover:text-green-700 dark:hover:text-green-300 mt-2 inline-block">
                                     List your first product →
                                 </Link>
                             )}
@@ -238,19 +246,19 @@ const Home = () => {
             </section>
 
             {/* Why Kambeng */}
-            <section className="bg-white border-t border-slate-100 py-14">
+            <section className="bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800 py-14">
                 <div className="max-w-6xl mx-auto px-6">
-                    <h2 className="text-lg font-extrabold text-slate-900 tracking-tight mb-8">Why Kambeng Market?</h2>
+                    <h2 className="text-lg font-extrabold text-slate-900 dark:text-slate-100 tracking-tight mb-8">Why Kambeng Market?</h2>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
                         {[
                             { icon: '🌱', title: 'Straight from the farm', desc: 'No cold storage, no middlemen. Produce moves from farm to you within 24 hours.' },
                             { icon: '💰', title: 'Farmers earn more', desc: 'Farmers set their own prices and keep the majority of every sale.' },
                             { icon: '✅', title: 'Verified listings', desc: 'Every farmer is verified. Every product listing is reviewed before going live.' },
                         ].map((item, i) => (
-                            <div key={i} className="bg-slate-50 border border-slate-200 rounded-xl p-6">
+                            <div key={i} className="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-6">
                                 <div className="text-3xl mb-3">{item.icon}</div>
-                                <h3 className="text-sm font-bold text-slate-900 mb-2">{item.title}</h3>
-                                <p className="text-xs text-slate-500 leading-relaxed">{item.desc}</p>
+                                <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 mb-2">{item.title}</h3>
+                                <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">{item.desc}</p>
                             </div>
                         ))}
                     </div>
@@ -345,9 +353,9 @@ const Home = () => {
 // Separate Skeleton Component
 const HomeSkeleton = () => {
     return (
-        <div className="bg-slate-50 min-h-screen">
+        <div className="bg-slate-50 dark:bg-slate-950 min-h-screen">
             {/* Navbar Skeleton */}
-            <nav className="bg-white border-b border-slate-200 sticky top-0 z-50">
+            <nav className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 sticky top-0 z-50">
                 <div className="max-w-6xl mx-auto px-6 flex items-center gap-6" style={{ height: 60 }}>
                     <div className="flex items-center gap-2 flex-shrink-0">
                         <Skeleton className="w-6 h-6 rounded-full" />
@@ -364,7 +372,7 @@ const HomeSkeleton = () => {
             </nav>
 
             {/* Hero Skeleton */}
-            <section className="bg-white border-b border-slate-100">
+            <section className="bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800">
                 <div className="max-w-6xl mx-auto px-6 py-10 sm:py-16 grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-16 items-center">
                     <div>
                         <Skeleton className="h-6 w-40 rounded-full mb-5" />
@@ -379,7 +387,7 @@ const HomeSkeleton = () => {
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                         {[1, 2, 3, 4].map((i) => (
-                            <div key={i} className="bg-slate-50 border border-slate-200 rounded-xl p-5">
+                            <div key={i} className="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-5">
                                 <Skeleton className="h-8 w-8 mb-2" />
                                 <Skeleton className="h-8 w-16 mb-1" />
                                 <Skeleton className="h-4 w-16" />
@@ -390,7 +398,7 @@ const HomeSkeleton = () => {
             </section>
 
             {/* Categories Skeleton */}
-            <section className="bg-white border-b border-slate-100 py-6">
+            <section className="bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800 py-6">
                 <div className="max-w-6xl mx-auto px-6">
                     <div className="flex items-center justify-between mb-4">
                         <Skeleton className="h-6 w-40" />
@@ -416,7 +424,7 @@ const HomeSkeleton = () => {
                     </div>
                     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
                         {[1, 2, 3, 4].map((i) => (
-                            <div key={i} className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+                            <div key={i} className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
                                 <Skeleton className="w-full h-36" />
                                 <div className="p-3 space-y-2">
                                     <Skeleton className="h-3 w-24" />
@@ -434,12 +442,12 @@ const HomeSkeleton = () => {
             </section>
 
             {/* Why Kambeng Skeleton */}
-            <section className="bg-white border-t border-slate-100 py-14">
+            <section className="bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800 py-14">
                 <div className="max-w-6xl mx-auto px-6">
                     <Skeleton className="h-7 w-48 mb-8" />
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
                         {[1, 2, 3].map((i) => (
-                            <div key={i} className="bg-slate-50 border border-slate-200 rounded-xl p-6">
+                            <div key={i} className="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-6">
                                 <Skeleton className="h-10 w-10 mb-3" />
                                 <Skeleton className="h-5 w-32 mb-2" />
                                 <Skeleton className="h-4 w-full" />
@@ -510,9 +518,9 @@ const ProductCard = ({ product }) => {
     return (
         <div
             onClick={handleClick}
-            className="bg-white rounded-xl border border-slate-200 overflow-hidden cursor-pointer hover:-translate-y-0.5 hover:shadow-lg transition-all group"
+            className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden cursor-pointer hover:-translate-y-0.5 hover:shadow-lg transition-all group"
         >
-            <div className="relative h-36 bg-slate-100">
+            <div className="relative h-36 bg-slate-100 dark:bg-slate-800">
                 <ImageWithFallback
                     src={product.photos?.length > 0 ? getImageUrl(product.photos[0]) : null}
                     alt={product.name}
@@ -537,27 +545,27 @@ const ProductCard = ({ product }) => {
                 )}
             </div>
             <div className="p-3">
-                <p className="text-[11px] text-slate-400 font-medium mb-0.5 truncate">
+                <p className="text-[11px] text-slate-400 dark:text-slate-500 font-medium mb-0.5 truncate">
                     {product.farmer?.name || 'Unknown Farmer'}
                 </p>
-                <h3 className="text-sm font-bold text-slate-900 truncate mb-1.5 group-hover:text-green-700 transition-colors">
+                <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 truncate mb-1.5 group-hover:text-green-700 dark:group-hover:text-green-400 transition-colors">
                     {product.name}
                 </h3>
 
                 <div className="flex items-center gap-1.5 mb-2">
                     <ReviewStars rating={averageRating} size="sm" />
                     {reviewCount > 0 && (
-                        <span className="text-[10px] text-slate-400">
+                        <span className="text-[10px] text-slate-400 dark:text-slate-500">
                             ({reviewCount})
                         </span>
                     )}
                 </div>
 
                 <div className="flex items-center justify-between mb-2.5">
-                    <span className="text-base font-extrabold text-green-600">
+                    <span className="text-base font-extrabold text-green-600 dark:text-green-400">
                         {product.price_formatted || `GMD ${product.price}`}
                     </span>
-                    <span className="text-[11px] text-slate-400">{product.quantity} {product.unit}</span>
+                    <span className="text-[11px] text-slate-400 dark:text-slate-500">{product.quantity} {product.unit}</span>
                 </div>
                 <button
                     onClick={handleOrder}

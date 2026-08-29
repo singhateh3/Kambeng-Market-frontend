@@ -48,7 +48,7 @@ import React from 'react';
                         className={`${sizes[size]} ${
                             index < displayRating
                                 ? 'text-yellow-400 fill-current'
-                                : 'text-gray-300 fill-current'
+                                : 'text-gray-300 dark:text-slate-600 fill-current'
                         } transition-colors`}
                         viewBox="0 0 20 20"
                         xmlns="http://www.w3.org/2000/svg"

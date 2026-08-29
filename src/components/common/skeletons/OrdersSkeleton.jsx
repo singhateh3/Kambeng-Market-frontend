@@ -9,7 +9,7 @@ import { Skeleton } from './Skeleton';
 export const OrdersSkeleton = () => (
     <div className="space-y-3">
         {[1, 2, 3, 4, 5].map((i) => (
-            <div key={i} className="bg-white border border-slate-200 rounded-xl p-4">
+            <div key={i} className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-4">
                 <div className="flex flex-wrap items-start justify-between gap-4">
                     <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-3 mb-2">

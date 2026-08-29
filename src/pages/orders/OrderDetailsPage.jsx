@@ -28,14 +28,14 @@ const OrderDetailsPage = () => {
             setLoading(true);
             const response = await api.get(`/orders/${orderId}`);
             const orderData = response.data?.data || null;
-            
+
             // Log review data for debugging
             if (orderData && orderData.review) {
                 console.log('📝 Review found:', orderData.review);
             } else {
                 console.log('📝 No review found for this order');
             }
-            
+
             setOrder(orderData);
         } catch (err) {
             console.error('Error fetching order:', err);
@@ -104,15 +104,18 @@ const OrderDetailsPage = () => {
         }
     };
 
+    // Same dark-tint-+-light-text pattern as OrderStatusBadge.jsx — kept in
+    // sync manually since this page hand-rolls its own status badge instead
+    // of reusing that component.
     const getStatusColor = (status) => {
         const colors = {
-            pending: 'bg-yellow-100 text-yellow-800',
-            confirmed: 'bg-blue-100 text-blue-800',
-            shipped: 'bg-purple-100 text-purple-800',
-            delivered: 'bg-green-100 text-green-800',
-            cancelled: 'bg-red-100 text-red-800',
+            pending: 'bg-yellow-100 dark:bg-yellow-900/40 text-yellow-800 dark:text-yellow-300',
+            confirmed: 'bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-300',
+            shipped: 'bg-purple-100 dark:bg-purple-900/40 text-purple-800 dark:text-purple-300',
+            delivered: 'bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-300',
+            cancelled: 'bg-red-100 dark:bg-red-900/40 text-red-800 dark:text-red-300',
         };
-        return colors[status] || 'bg-gray-100 text-gray-800';
+        return colors[status] || 'bg-gray-100 dark:bg-slate-700 text-gray-800 dark:text-slate-300';
     };
 
     const getStatusIcon = (status) => {
@@ -141,39 +144,39 @@ const OrderDetailsPage = () => {
         const contents = {
             confirm: {
                 icon: '✅',
-                iconBg: 'bg-blue-100',
+                iconBg: 'bg-blue-100 dark:bg-blue-900/40',
                 title: 'Confirm Order',
                 message: 'Are you sure you want to confirm this order? This will notify the buyer that you have accepted their order.',
                 confirmText: 'Yes, Confirm Order',
                 confirmColor: 'bg-blue-600 hover:bg-blue-700',
-                iconColor: 'text-blue-600',
+                iconColor: 'text-blue-600 dark:text-blue-400',
             },
             ship: {
                 icon: '🚚',
-                iconBg: 'bg-purple-100',
+                iconBg: 'bg-purple-100 dark:bg-purple-900/40',
                 title: 'Mark as Shipped',
                 message: 'Are you sure you want to mark this order as shipped? The buyer will be notified that their order is on the way.',
                 confirmText: 'Yes, Mark as Shipped',
                 confirmColor: 'bg-purple-600 hover:bg-purple-700',
-                iconColor: 'text-purple-600',
+                iconColor: 'text-purple-600 dark:text-purple-400',
             },
             deliver: {
                 icon: '📦',
-                iconBg: 'bg-green-100',
+                iconBg: 'bg-green-100 dark:bg-green-900/40',
                 title: 'Mark as Delivered',
                 message: 'Are you sure you want to mark this order as delivered? The buyer will be notified that their order has arrived.',
                 confirmText: 'Yes, Mark as Delivered',
                 confirmColor: 'bg-green-600 hover:bg-green-700',
-                iconColor: 'text-green-600',
+                iconColor: 'text-green-600 dark:text-green-400',
             },
             cancel: {
                 icon: '❌',
-                iconBg: 'bg-red-100',
+                iconBg: 'bg-red-100 dark:bg-red-900/40',
                 title: 'Cancel Order',
                 message: 'Are you sure you want to cancel this order? This action cannot be undone and will notify both the buyer and farmer.',
                 confirmText: 'Yes, Cancel Order',
                 confirmColor: 'bg-red-600 hover:bg-red-700',
-                iconColor: 'text-red-600',
+                iconColor: 'text-red-600 dark:text-red-400',
             },
         };
         return contents[confirmAction] || contents.confirm;
@@ -211,17 +214,17 @@ const OrderDetailsPage = () => {
     if (loading) {
         return (
             <div className="flex items-center justify-center h-64">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 dark:border-green-400"></div>
             </div>
         );
     }
 
     if (!canViewOrder()) {
         return (
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-12 text-center">
+            <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-100 dark:border-slate-700 p-12 text-center">
                 <div className="text-6xl mb-4">🔒</div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">Access Denied</h3>
-                <p className="text-gray-500">You don't have permission to view this order.</p>
+                <h3 className="text-xl font-semibold text-gray-900 dark:text-slate-100 mb-2">Access Denied</h3>
+                <p className="text-gray-500 dark:text-slate-400">You don't have permission to view this order.</p>
                 <Button className="mt-4" onClick={() => navigate('/app/orders')}>
                     Back to Orders
                 </Button>
@@ -231,10 +234,10 @@ const OrderDetailsPage = () => {
 
     if (!order) {
         return (
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-12 text-center">
+            <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-100 dark:border-slate-700 p-12 text-center">
                 <div className="text-6xl mb-4">❌</div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">Order Not Found</h3>
-                <p className="text-gray-500">The order you're looking for doesn't exist.</p>
+                <h3 className="text-xl font-semibold text-gray-900 dark:text-slate-100 mb-2">Order Not Found</h3>
+                <p className="text-gray-500 dark:text-slate-400">The order you're looking for doesn't exist.</p>
                 <Button className="mt-4" onClick={() => navigate('/app/orders')}>
                     Back to Orders
                 </Button>
@@ -252,24 +255,24 @@ const OrderDetailsPage = () => {
 
     return (
         <div className="max-w-4xl mx-auto">
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+            <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-100 dark:border-slate-700 overflow-hidden">
                 {/* Header */}
-                <div className="p-6 border-b border-gray-100">
+                <div className="p-6 border-b border-gray-100 dark:border-slate-700">
                     <div className="flex flex-wrap justify-between items-center gap-4">
                         <div>
                             <button
                                 onClick={() => navigate(-1)}
-                                className="text-gray-600 hover:text-gray-900 flex items-center mb-2 transition"
+                                className="text-gray-600 dark:text-slate-300 hover:text-gray-900 dark:hover:text-slate-100 flex items-center mb-2 transition"
                             >
                                 <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                                 </svg>
                                 Back
                             </button>
-                            <h1 className="text-2xl font-bold text-gray-900">
+                            <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100">
                                 Order #{order?.id || 'N/A'}
                             </h1>
-                            <p className="text-sm text-gray-500">
+                            <p className="text-sm text-gray-500 dark:text-slate-400">
                                 Placed on {formatDate(orderDate)}
                             </p>
                         </div>
@@ -278,7 +281,7 @@ const OrderDetailsPage = () => {
                                 {getStatusIcon(order?.status)} {getStatusLabel(order?.status)}
                             </span>
                             {review && (
-                                <span className="px-3 py-1 rounded-full text-sm font-medium bg-purple-100 text-purple-800">
+                                <span className="px-3 py-1 rounded-full text-sm font-medium bg-purple-100 dark:bg-purple-900/40 text-purple-800 dark:text-purple-300">
                                     ⭐ Reviewed
                                 </span>
                             )}
@@ -292,22 +295,22 @@ const OrderDetailsPage = () => {
                 <div className="p-6 space-y-6">
                     {/* Order Items */}
                     <div>
-                        <h3 className="font-semibold text-gray-900 mb-3">Order Items</h3>
-                        <div className="border rounded-lg overflow-hidden">
-                            <div className="bg-gray-50 px-4 py-2 grid grid-cols-12 gap-2 text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <h3 className="font-semibold text-gray-900 dark:text-slate-100 mb-3">Order Items</h3>
+                        <div className="border dark:border-slate-700 rounded-lg overflow-hidden">
+                            <div className="bg-gray-50 dark:bg-slate-900 px-4 py-2 grid grid-cols-12 gap-2 text-xs font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wider">
                                 <div className="col-span-5">Product</div>
                                 <div className="col-span-2">Quantity</div>
                                 <div className="col-span-2">Unit Price</div>
                                 <div className="col-span-3 text-right">Total</div>
                             </div>
-                            <div className="px-4 py-3 grid grid-cols-12 gap-2 items-center hover:bg-gray-50">
+                            <div className="px-4 py-3 grid grid-cols-12 gap-2 items-center hover:bg-gray-50 dark:hover:bg-slate-900">
                                 <div className="col-span-5">
-                                    <Link to={`/app/products/${order?.product_id}`} className="flex items-center hover:text-green-600 transition">
-                                        <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center mr-3">
+                                    <Link to={`/app/products/${order?.product_id}`} className="flex items-center hover:text-green-600 dark:hover:text-green-400 transition">
+                                        <div className="w-12 h-12 bg-gray-100 dark:bg-slate-700 rounded-lg flex items-center justify-center mr-3">
                                             {product?.photos && product.photos.length > 0 ? (
-                                                <img 
-                                                    src={product.photos[0]} 
-                                                    alt={product?.name || 'Product'} 
+                                                <img
+                                                    src={product.photos[0]}
+                                                    alt={product?.name || 'Product'}
                                                     className="w-12 h-12 object-cover rounded-lg"
                                                 />
                                             ) : (
@@ -315,11 +318,11 @@ const OrderDetailsPage = () => {
                                             )}
                                         </div>
                                         <div>
-                                            <p className="font-medium text-gray-900">
+                                            <p className="font-medium text-gray-900 dark:text-slate-100">
                                                 {product?.name || 'Unknown Product'}
                                             </p>
                                             {product?.category && (
-                                                <p className="text-xs text-gray-500">
+                                                <p className="text-xs text-gray-500 dark:text-slate-400">
                                                     {product.category}
                                                 </p>
                                             )}
@@ -327,21 +330,21 @@ const OrderDetailsPage = () => {
                                     </Link>
                                 </div>
                                 <div className="col-span-2">
-                                    <span className="font-medium text-gray-900">
+                                    <span className="font-medium text-gray-900 dark:text-slate-100">
                                         {order?.quantity || 0}
                                     </span>
                                     {product?.unit && (
-                                        <span className="text-xs text-gray-500 ml-1">
+                                        <span className="text-xs text-gray-500 dark:text-slate-400 ml-1">
                                             {product.unit}
                                         </span>
                                     )}
                                 </div>
                                 <div className="col-span-2">
-                                    <span className="text-gray-900">
+                                    <span className="text-gray-900 dark:text-slate-100">
                                         {product?.price_formatted || `GMD ${product?.price || 0}`}
                                     </span>
                                 </div>
-                                <div className="col-span-3 text-right font-bold text-gray-900">
+                                <div className="col-span-3 text-right font-bold text-gray-900 dark:text-slate-100">
                                     {order?.total_price_formatted || `GMD ${order?.total_price || 0}`}
                                 </div>
                             </div>
@@ -350,41 +353,41 @@ const OrderDetailsPage = () => {
 
                     {/* Delivery Details */}
                     <div>
-                        <h3 className="font-semibold text-gray-900 mb-3">Delivery Details</h3>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-gray-50 rounded-lg p-4">
+                        <h3 className="font-semibold text-gray-900 dark:text-slate-100 mb-3">Delivery Details</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-gray-50 dark:bg-slate-900 rounded-lg p-4">
                             <div>
-                                <p className="text-sm text-gray-500">Delivery Method</p>
-                                <p className="font-medium text-gray-900 capitalize">
+                                <p className="text-sm text-gray-500 dark:text-slate-400">Delivery Method</p>
+                                <p className="font-medium text-gray-900 dark:text-slate-100 capitalize">
                                     {order?.delivery_method === 'pickup' ? '📍 Pickup from Farm' : '🚚 Farmer Delivery'}
                                 </p>
                             </div>
                             {order?.delivery_method === 'pickup' ? (
                                 <div>
-                                    <p className="text-sm text-gray-500">Pickup Date</p>
-                                    <p className="font-medium text-gray-900">
+                                    <p className="text-sm text-gray-500 dark:text-slate-400">Pickup Date</p>
+                                    <p className="font-medium text-gray-900 dark:text-slate-100">
                                         {order?.pickup_date ? formatDate(order.pickup_date) : 'Not set'}
                                     </p>
                                 </div>
                             ) : (
                                 <div>
-                                    <p className="text-sm text-gray-500">Delivery Deadline</p>
-                                    <p className="font-medium text-gray-900">
+                                    <p className="text-sm text-gray-500 dark:text-slate-400">Delivery Deadline</p>
+                                    <p className="font-medium text-gray-900 dark:text-slate-100">
                                         {order?.delivery_deadline ? formatDate(order.delivery_deadline) : 'Not set'}
                                     </p>
                                 </div>
                             )}
                             {order?.delivery_method !== 'pickup' && order?.delivery_address && (
                                 <div className="col-span-2">
-                                    <p className="text-sm text-gray-500">Delivery Address</p>
-                                    <p className="font-medium text-gray-900">
+                                    <p className="text-sm text-gray-500 dark:text-slate-400">Delivery Address</p>
+                                    <p className="font-medium text-gray-900 dark:text-slate-100">
                                         {order.delivery_address}
                                     </p>
                                 </div>
                             )}
                             {order?.special_instructions && (
                                 <div className="col-span-2">
-                                    <p className="text-sm text-gray-500">Special Instructions</p>
-                                    <p className="font-medium text-gray-900">
+                                    <p className="text-sm text-gray-500 dark:text-slate-400">Special Instructions</p>
+                                    <p className="font-medium text-gray-900 dark:text-slate-100">
                                         {order.special_instructions}
                                     </p>
                                 </div>
@@ -395,28 +398,28 @@ const OrderDetailsPage = () => {
                     {/* Buyer Information (for farmers) */}
                     {(isFarmer || isAdmin) && buyer && (
                         <div>
-                            <h3 className="font-semibold text-gray-900 mb-3">Buyer Information</h3>
-                            <div className="bg-gray-50 rounded-lg p-4">
+                            <h3 className="font-semibold text-gray-900 dark:text-slate-100 mb-3">Buyer Information</h3>
+                            <div className="bg-gray-50 dark:bg-slate-900 rounded-lg p-4">
                                 <div className="flex items-start space-x-4">
-                                    <div className="w-12 h-12 rounded-full bg-gray-300 flex items-center justify-center text-lg font-medium text-gray-600">
+                                    <div className="w-12 h-12 rounded-full bg-gray-300 dark:bg-slate-700 flex items-center justify-center text-lg font-medium text-gray-600 dark:text-slate-300">
                                         {buyer?.name?.[0]?.toUpperCase() || 'U'}
                                     </div>
                                     <div className="flex-1">
-                                        <p className="font-medium text-gray-900">
+                                        <p className="font-medium text-gray-900 dark:text-slate-100">
                                             {buyer?.name || 'Unknown Buyer'}
                                         </p>
                                         {buyer?.email && (
-                                            <p className="text-sm text-gray-500">
+                                            <p className="text-sm text-gray-500 dark:text-slate-400">
                                                 📧 {buyer.email}
                                             </p>
                                         )}
                                         {buyer?.location && (
-                                            <p className="text-sm text-gray-500">
+                                            <p className="text-sm text-gray-500 dark:text-slate-400">
                                                 📍 {buyer.location}
                                             </p>
                                         )}
                                         {buyer?.phone && (
-                                            <p className="text-sm text-gray-500">
+                                            <p className="text-sm text-gray-500 dark:text-slate-400">
                                                 📞 {buyer.phone}
                                             </p>
                                         )}
@@ -429,23 +432,23 @@ const OrderDetailsPage = () => {
                     {/* Farmer Information (for buyers) */}
                     {(isBuyer || isAdmin) && farmer && (
                         <div>
-                            <h3 className="font-semibold text-gray-900 mb-3">Farmer Information</h3>
-                            <div className="bg-gray-50 rounded-lg p-4">
+                            <h3 className="font-semibold text-gray-900 dark:text-slate-100 mb-3">Farmer Information</h3>
+                            <div className="bg-gray-50 dark:bg-slate-900 rounded-lg p-4">
                                 <div className="flex items-start space-x-4">
-                                    <div className="w-12 h-12 rounded-full bg-gray-300 flex items-center justify-center text-lg font-medium text-gray-600">
+                                    <div className="w-12 h-12 rounded-full bg-gray-300 dark:bg-slate-700 flex items-center justify-center text-lg font-medium text-gray-600 dark:text-slate-300">
                                         {farmer?.name?.[0]?.toUpperCase() || 'F'}
                                     </div>
                                     <div className="flex-1">
-                                        <p className="font-medium text-gray-900">
+                                        <p className="font-medium text-gray-900 dark:text-slate-100">
                                             {farmer?.name || 'Unknown Farmer'}
                                         </p>
                                         {farmer?.location && (
-                                            <p className="text-sm text-gray-500">
+                                            <p className="text-sm text-gray-500 dark:text-slate-400">
                                                 📍 {farmer.location}
                                             </p>
                                         )}
                                         {farmer?.phone && (
-                                            <p className="text-sm text-gray-500">
+                                            <p className="text-sm text-gray-500 dark:text-slate-400">
                                                 📞 {farmer.phone}
                                             </p>
                                         )}
@@ -458,29 +461,29 @@ const OrderDetailsPage = () => {
                     {/* ========== REVIEW SECTION ========== */}
                     {review && (
                         <div>
-                            <h3 className="font-semibold text-gray-900 mb-3">
+                            <h3 className="font-semibold text-gray-900 dark:text-slate-100 mb-3">
                                 {isAdmin ? 'Buyer\'s Review' : isFarmer ? 'Buyer\'s Review' : 'Your Review'}
                             </h3>
-                            <div className="bg-purple-50 rounded-xl p-4 border border-purple-200">
+                            <div className="bg-purple-50 dark:bg-purple-900/20 rounded-xl p-4 border border-purple-200 dark:border-purple-800">
                                 <div className="flex items-start justify-between">
                                     <div>
                                         <div className="flex items-center space-x-2">
                                             <ReviewStars rating={review.rating} size="md" />
-                                            <span className="text-sm font-medium text-gray-900">
+                                            <span className="text-sm font-medium text-gray-900 dark:text-slate-100">
                                                 {review.rating}.0
                                             </span>
                                         </div>
                                         {review.comment && (
-                                            <p className="mt-2 text-gray-700 text-sm">
+                                            <p className="mt-2 text-gray-700 dark:text-slate-300 text-sm">
                                                 "{review.comment}"
                                             </p>
                                         )}
                                         <div className="flex items-center gap-3 mt-1">
-                                            <p className="text-xs text-gray-400">
+                                            <p className="text-xs text-gray-400 dark:text-slate-500">
                                                 Reviewed on {formatDate(review.created_at)}
                                             </p>
                                             {(isAdmin || isFarmer) && review.user && (
-                                                <p className="text-xs text-gray-400">
+                                                <p className="text-xs text-gray-400 dark:text-slate-500">
                                                     By: {review.user.name}
                                                 </p>
                                             )}
@@ -494,12 +497,12 @@ const OrderDetailsPage = () => {
                     {/* ========== END REVIEW SECTION ========== */}
 
                     {/* Actions */}
-                    <div className="flex flex-wrap gap-2 pt-4 border-t">
+                    <div className="flex flex-wrap gap-2 pt-4 border-t dark:border-slate-700">
                         <Button variant="secondary" onClick={() => navigate('/app/orders')}>
                             Back to Orders
                         </Button>
                         {isFarmer && order?.status === 'pending' && (
-                            <Button 
+                            <Button
                                 variant="primary"
                                 onClick={() => openConfirmModal('confirm')}
                                 isLoading={loadingAction}
@@ -508,7 +511,7 @@ const OrderDetailsPage = () => {
                             </Button>
                         )}
                         {isFarmer && order?.status === 'confirmed' && (
-                            <Button 
+                            <Button
                                 variant="primary"
                                 onClick={() => openConfirmModal('ship')}
                                 isLoading={loadingAction}
@@ -517,7 +520,7 @@ const OrderDetailsPage = () => {
                             </Button>
                         )}
                         {isFarmer && order?.status === 'shipped' && (
-                            <Button 
+                            <Button
                                 variant="primary"
                                 onClick={() => openConfirmModal('deliver')}
                                 isLoading={loadingAction}
@@ -526,7 +529,7 @@ const OrderDetailsPage = () => {
                             </Button>
                         )}
                         {isBuyer && order?.status === 'pending' && (
-                            <Button 
+                            <Button
                                 variant="danger"
                                 onClick={() => openConfirmModal('cancel')}
                                 isLoading={loadingAction}
@@ -536,13 +539,13 @@ const OrderDetailsPage = () => {
                         )}
                         {isBuyer && order?.status === 'delivered' && !order?.review && (
                             <Link to={`/app/orders/${orderId}/review`}>
-                                <Button variant="outline" className="bg-green-50 text-green-600 hover:bg-green-100 border-green-200">
+                                <Button variant="outline" className="bg-green-50 dark:bg-green-900/40 text-green-600 dark:text-green-300 hover:bg-green-100 dark:hover:bg-green-900/60 border-green-200 dark:border-green-800">
                                     ⭐ Write Review
                                 </Button>
                             </Link>
                         )}
                         {isAdmin && order?.status === 'delivered' && !order?.review && (
-                            <div className="text-sm text-gray-500 italic">
+                            <div className="text-sm text-gray-500 dark:text-slate-400 italic">
                                 Buyer has not reviewed this order yet.
                             </div>
                         )}
@@ -553,12 +556,12 @@ const OrderDetailsPage = () => {
             {/* Confirmation Modal */}
             {showConfirmModal && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
-                    <div className="bg-white rounded-xl max-w-md w-full shadow-xl animate-in zoom-in-95 duration-200">
-                        <div className="flex justify-between items-center p-6 border-b border-gray-100">
-                            <h2 className="text-xl font-bold text-gray-900">Confirm Action</h2>
+                    <div className="bg-white dark:bg-slate-800 rounded-xl max-w-md w-full shadow-xl animate-in zoom-in-95 duration-200">
+                        <div className="flex justify-between items-center p-6 border-b border-gray-100 dark:border-slate-700">
+                            <h2 className="text-xl font-bold text-gray-900 dark:text-slate-100">Confirm Action</h2>
                             <button
                                 onClick={closeConfirmModal}
-                                className="text-gray-400 hover:text-gray-600 transition"
+                                className="text-gray-400 dark:text-slate-500 hover:text-gray-600 dark:hover:text-slate-300 transition"
                             >
                                 <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -571,10 +574,10 @@ const OrderDetailsPage = () => {
                                 <div className={`w-16 h-16 ${confirmationContent.iconBg} rounded-full flex items-center justify-center text-3xl mb-4`}>
                                     {confirmationContent.icon}
                                 </div>
-                                <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                                <h3 className="text-lg font-semibold text-gray-900 dark:text-slate-100 mb-2">
                                     {confirmationContent.title}
                                 </h3>
-                                <p className="text-gray-600 text-sm leading-relaxed">
+                                <p className="text-gray-600 dark:text-slate-400 text-sm leading-relaxed">
                                     {confirmationContent.message}
                                 </p>
                             </div>
@@ -582,7 +585,7 @@ const OrderDetailsPage = () => {
                             <div className="flex gap-3">
                                 <button
                                     onClick={closeConfirmModal}
-                                    className="flex-1 px-4 py-2.5 text-sm font-semibold text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition border-none cursor-pointer"
+                                    className="flex-1 px-4 py-2.5 text-sm font-semibold text-gray-600 dark:text-slate-300 bg-gray-100 dark:bg-slate-700 rounded-lg hover:bg-gray-200 dark:hover:bg-slate-600 transition border-none cursor-pointer"
                                     disabled={loadingAction}
                                 >
                                     Cancel

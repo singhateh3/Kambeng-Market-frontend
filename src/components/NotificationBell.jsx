@@ -6,7 +6,7 @@ import { Skeleton } from './common/skeletons/Skeleton';
 
 // Notification Skeleton Component
 const NotificationSkeleton = () => (
-    <div className="p-4 border-b border-gray-100">
+    <div className="p-4 border-b border-gray-100 dark:border-slate-700">
         <div className="flex items-start space-x-3">
             <Skeleton className="w-10 h-10 rounded-full flex-shrink-0" />
             <div className="flex-1 space-y-2">
@@ -26,8 +26,8 @@ const NotificationSkeleton = () => (
 const EmptyState = () => (
     <div className="text-center py-8">
         <div className="text-4xl mb-3">🔔</div>
-        <p className="text-gray-500 text-sm">No notifications yet</p>
-        <p className="text-gray-400 text-xs mt-1">We'll notify you when something arrives</p>
+        <p className="text-gray-500 dark:text-slate-400 text-sm">No notifications yet</p>
+        <p className="text-gray-400 dark:text-slate-500 text-xs mt-1">We'll notify you when something arrives</p>
     </div>
 );
 
@@ -236,20 +236,20 @@ export const NotificationBell = () => {
     // Get notification color based on type
     const getNotificationColor = (type) => {
         const colors = {
-            order_placed: 'border-l-4 border-blue-500 hover:bg-blue-50',
-            order_confirmed: 'border-l-4 border-green-500 hover:bg-green-50',
-            order_shipped: 'border-l-4 border-purple-500 hover:bg-purple-50',
-            order_delivered: 'border-l-4 border-green-500 hover:bg-green-50',
-            order_cancelled: 'border-l-4 border-red-500 hover:bg-red-50',
-            farmer_verified: 'border-l-4 border-green-500 hover:bg-green-50',
-            farmer_rejected: 'border-l-4 border-red-500 hover:bg-red-50',
-            farmer_verification_request: 'border-l-4 border-yellow-500 hover:bg-yellow-50',
-            new_product: 'border-l-4 border-yellow-500 hover:bg-yellow-50',
-            low_stock: 'border-l-4 border-orange-500 hover:bg-orange-50',
-            new_review: 'border-l-4 border-purple-500 hover:bg-purple-50',
-            user_registered: 'border-l-4 border-indigo-500 hover:bg-indigo-50',
+            order_placed: 'border-l-4 border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-950/40',
+            order_confirmed: 'border-l-4 border-green-500 hover:bg-green-50 dark:hover:bg-green-950/40',
+            order_shipped: 'border-l-4 border-purple-500 hover:bg-purple-50 dark:hover:bg-purple-950/40',
+            order_delivered: 'border-l-4 border-green-500 hover:bg-green-50 dark:hover:bg-green-950/40',
+            order_cancelled: 'border-l-4 border-red-500 hover:bg-red-50 dark:hover:bg-red-950/40',
+            farmer_verified: 'border-l-4 border-green-500 hover:bg-green-50 dark:hover:bg-green-950/40',
+            farmer_rejected: 'border-l-4 border-red-500 hover:bg-red-50 dark:hover:bg-red-950/40',
+            farmer_verification_request: 'border-l-4 border-yellow-500 hover:bg-yellow-50 dark:hover:bg-yellow-950/40',
+            new_product: 'border-l-4 border-yellow-500 hover:bg-yellow-50 dark:hover:bg-yellow-950/40',
+            low_stock: 'border-l-4 border-orange-500 hover:bg-orange-50 dark:hover:bg-orange-950/40',
+            new_review: 'border-l-4 border-purple-500 hover:bg-purple-50 dark:hover:bg-purple-950/40',
+            user_registered: 'border-l-4 border-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-950/40',
         };
-        return colors[type] || 'border-l-4 border-gray-500 hover:bg-gray-50';
+        return colors[type] || 'border-l-4 border-gray-500 hover:bg-gray-50 dark:hover:bg-slate-700';
     };
 
     // Get notification icon based on type
@@ -314,14 +314,14 @@ export const NotificationBell = () => {
 
             {/* Dropdown */}
             {isOpen && (
-                <div className="absolute right-0 mt-2 w-[calc(100vw-2rem)] max-w-96 bg-white rounded-xl shadow-lg border border-gray-200 z-50 max-h-[500px] flex flex-col overflow-hidden">
+                <div className="absolute right-0 mt-2 w-[calc(100vw-2rem)] max-w-96 bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-gray-200 dark:border-slate-700 z-50 max-h-[500px] flex flex-col overflow-hidden">
                     {/* Header */}
-                    <div className="flex items-center justify-between p-4 border-b border-gray-100 bg-gray-50 flex-shrink-0">
-                        <h3 className="font-semibold text-gray-900 text-sm flex items-center gap-2">
+                    <div className="flex items-center justify-between p-4 border-b border-gray-100 dark:border-slate-700 bg-gray-50 dark:bg-slate-900 flex-shrink-0">
+                        <h3 className="font-semibold text-gray-900 dark:text-slate-100 text-sm flex items-center gap-2">
                             <span>🔔</span>
                             Notifications
                             {unreadCount > 0 && (
-                                <span className="text-xs bg-red-100 text-red-700 px-2 py-0.5 rounded-full">
+                                <span className="text-xs bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 px-2 py-0.5 rounded-full">
                                     {unreadCount} new
                                 </span>
                             )}
@@ -332,14 +332,14 @@ export const NotificationBell = () => {
                                     onClick={() => {
                                         markAllAsRead();
                                     }}
-                                    className="text-xs text-green-600 hover:text-green-700 transition font-medium"
+                                    className="text-xs text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300 transition font-medium"
                                 >
                                     Mark all read
                                 </button>
                             )}
                             <button
                                 onClick={() => setIsOpen(false)}
-                                className="text-gray-400 hover:text-gray-600 transition"
+                                className="text-gray-400 dark:text-slate-500 hover:text-gray-600 dark:hover:text-slate-300 transition"
                             >
                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -357,7 +357,7 @@ export const NotificationBell = () => {
                                 {notifications.map((notification) => (
                                     <div
                                         key={notification.id}
-                                        className={`p-4 border-b border-gray-100 cursor-pointer transition-colors ${getNotificationColor(notification.type)} ${
+                                        className={`p-4 border-b border-gray-100 dark:border-slate-700 cursor-pointer transition-colors ${getNotificationColor(notification.type)} ${
                                             notification.is_read ? 'opacity-75' : ''
                                         }`}
                                         onClick={() => handleNotificationClick(notification)}
@@ -368,22 +368,22 @@ export const NotificationBell = () => {
                                             </span>
                                             <div className="flex-1 min-w-0">
                                                 <div className="flex items-center justify-between">
-                                                    <p className="font-medium text-gray-900 text-sm truncate">
+                                                    <p className="font-medium text-gray-900 dark:text-slate-100 text-sm truncate">
                                                         {notification.title}
                                                     </p>
                                                     {!notification.is_read && (
                                                         <span className="flex-shrink-0 w-2 h-2 bg-blue-600 rounded-full ml-2"></span>
                                                     )}
                                                 </div>
-                                                <p className="text-sm text-gray-600 mt-1 line-clamp-2">
+                                                <p className="text-sm text-gray-600 dark:text-slate-400 mt-1 line-clamp-2">
                                                     {notification.message}
                                                 </p>
                                                 <div className="flex items-center justify-between mt-1">
-                                                    <span className="text-xs text-gray-400">
+                                                    <span className="text-xs text-gray-400 dark:text-slate-500">
                                                         {notification.time_ago || getTimeAgo(notification.created_at)}
                                                     </span>
                                                     {notification.link && (
-                                                        <span className="text-xs text-blue-500">
+                                                        <span className="text-xs text-blue-500 dark:text-blue-400">
                                                             Click to view →
                                                         </span>
                                                     )}
@@ -392,7 +392,7 @@ export const NotificationBell = () => {
                                         </div>
                                     </div>
                                 ))}
-                                <div className="absolute inset-0 bg-white/50 backdrop-blur-sm flex items-center justify-center">
+                                <div className="absolute inset-0 bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm flex items-center justify-center">
                                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
                                 </div>
                             </div>
@@ -402,7 +402,7 @@ export const NotificationBell = () => {
                             notifications.map((notification) => (
                                 <div
                                     key={notification.id}
-                                    className={`p-4 border-b border-gray-100 cursor-pointer transition-colors ${getNotificationColor(notification.type)} ${
+                                    className={`p-4 border-b border-gray-100 dark:border-slate-700 cursor-pointer transition-colors ${getNotificationColor(notification.type)} ${
                                         notification.is_read ? 'opacity-75' : ''
                                     }`}
                                     onClick={() => handleNotificationClick(notification)}
@@ -413,18 +413,18 @@ export const NotificationBell = () => {
                                         </span>
                                         <div className="flex-1 min-w-0">
                                             <div className="flex items-center justify-between">
-                                                <p className="font-medium text-gray-900 text-sm truncate">
+                                                <p className="font-medium text-gray-900 dark:text-slate-100 text-sm truncate">
                                                     {notification.title}
                                                 </p>
                                                 {!notification.is_read && (
                                                     <span className="flex-shrink-0 w-2 h-2 bg-blue-600 rounded-full ml-2"></span>
                                                 )}
                                             </div>
-                                            <p className="text-sm text-gray-600 mt-1 line-clamp-2">
+                                            <p className="text-sm text-gray-600 dark:text-slate-400 mt-1 line-clamp-2">
                                                 {notification.message}
                                             </p>
                                             <div className="flex items-center justify-between mt-1">
-                                                <span className="text-xs text-gray-400">
+                                                <span className="text-xs text-gray-400 dark:text-slate-500">
                                                     {notification.time_ago || getTimeAgo(notification.created_at)}
                                                 </span>
                                                 <div className="flex items-center space-x-2">
@@ -434,7 +434,7 @@ export const NotificationBell = () => {
                                                                 e.stopPropagation();
                                                                 markAsRead(notification.id);
                                                             }}
-                                                            className="text-xs text-blue-600 hover:text-blue-700 font-medium"
+                                                            className="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium"
                                                         >
                                                             Mark read
                                                         </button>
@@ -464,10 +464,10 @@ export const NotificationBell = () => {
                     </div>
 
                     {/* Footer */}
-                    <div className="p-3 border-t border-gray-100 text-center bg-gray-50 flex-shrink-0">
+                    <div className="p-3 border-t border-gray-100 dark:border-slate-700 text-center bg-gray-50 dark:bg-slate-900 flex-shrink-0">
                         <Link
                             to="/app/notifications"
-                            className="text-sm text-green-600 hover:text-green-700 transition font-medium"
+                            className="text-sm text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300 transition font-medium"
                             onClick={() => setIsOpen(false)}
                         >
                             View All Notifications →

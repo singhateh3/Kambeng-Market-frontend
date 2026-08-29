@@ -39,17 +39,17 @@ import api from '../../services/api';
     if (loading) {
         return (
             <div className="flex items-center justify-center h-64">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 dark:border-green-400"></div>
             </div>
         );
     }
 
     if (!order) {
         return (
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-12 text-center">
+            <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-100 dark:border-slate-700 p-12 text-center">
                 <div className="text-6xl mb-4">❌</div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">Order Not Found</h3>
-                <button onClick={() => navigate('/app/orders')} className="text-green-600 hover:text-green-700">
+                <h3 className="text-xl font-semibold text-gray-900 dark:text-slate-100 mb-2">Order Not Found</h3>
+                <button onClick={() => navigate('/app/orders')} className="text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300">
                     Back to Orders
                 </button>
             </div>
@@ -61,7 +61,7 @@ import api from '../../services/api';
             <div className="mb-6">
                 <button
                     onClick={() => navigate(`/app/orders/${orderId}`)}
-                    className="text-gray-600 hover:text-gray-900 flex items-center"
+                    className="text-gray-600 dark:text-slate-300 hover:text-gray-900 dark:hover:text-slate-100 flex items-center"
                 >
                     ← Back to Order
                 </button>
