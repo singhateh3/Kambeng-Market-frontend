@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '../../components/common/Button';
+import { Modal } from '../../components/Modal';
 import ReviewStars from '../../components/ReviewStars';
 import { OrderStatusBadge } from './OrderStatusBadge';
 
@@ -127,22 +128,7 @@ export const OrderDetails = ({
     return (
         <>
             {/* Main Modal */}
-            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-                <div className="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-xl">
-                    <div className="flex justify-between items-center p-6 border-b border-gray-100">
-                        <h2 className="text-xl font-bold text-gray-900">
-                            Order Details #{orderId}
-                        </h2>
-                        <button
-                            onClick={onClose}
-                            className="text-gray-400 hover:text-gray-600 transition"
-                        >
-                            <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                            </svg>
-                        </button>
-                    </div>
-
+            <Modal isOpen onClose={onClose} title={`Order Details #${orderId}`} maxWidth="max-w-2xl">
                     <div className="p-6 space-y-6">
                         {/* Order Status */}
                         <div className="flex items-center justify-between bg-gray-50 rounded-xl p-4 border border-gray-100">
@@ -416,43 +402,39 @@ export const OrderDetails = ({
                             )}
                         </div>
                     </div>
-                </div>
-            </div>
+            </Modal>
 
-            {/* Confirmation Modal */}
-            {showConfirmModal && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60] p-4 animate-in fade-in duration-200">
-                    <div className="bg-white rounded-xl max-w-md w-full shadow-xl animate-in zoom-in-95 duration-200">
-                        <div className="p-6">
-                            <div className="flex items-center justify-center mb-4">
-                                <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center text-3xl">
-                                    {confirmData.icon}
-                                </div>
-                            </div>
-                            <h3 className="text-xl font-bold text-gray-900 text-center mb-2">
-                                {confirmData.title}
-                            </h3>
-                            <p className="text-gray-600 text-center mb-6">
-                                {confirmData.message}
-                            </p>
-                            <div className="flex gap-3">
-                                <button
-                                    onClick={handleCancel}
-                                    className="flex-1 px-4 py-2.5 text-sm font-semibold text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition border-none cursor-pointer"
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    onClick={handleConfirmAction}
-                                    className={`flex-1 px-4 py-2.5 text-sm font-semibold text-white rounded-lg transition border-none cursor-pointer ${confirmData.confirmColor}`}
-                                >
-                                    {confirmData.confirmText}
-                                </button>
-                            </div>
+            {/* Confirmation Modal — stacked above the details modal, so it uses a
+                higher z-index the same way the original z-[60] overlay did. */}
+            <Modal isOpen={showConfirmModal} onClose={handleCancel} maxWidth="max-w-md" zIndex="z-[60]">
+                <div className="p-6">
+                    <div className="flex items-center justify-center mb-4">
+                        <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center text-3xl">
+                            {confirmData.icon}
                         </div>
                     </div>
+                    <h3 className="text-xl font-bold text-gray-900 text-center mb-2">
+                        {confirmData.title}
+                    </h3>
+                    <p className="text-gray-600 text-center mb-6">
+                        {confirmData.message}
+                    </p>
+                    <div className="flex gap-3">
+                        <button
+                            onClick={handleCancel}
+                            className="flex-1 px-4 py-2.5 text-sm font-semibold text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition border-none cursor-pointer"
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            onClick={handleConfirmAction}
+                            className={`flex-1 px-4 py-2.5 text-sm font-semibold text-white rounded-lg transition border-none cursor-pointer ${confirmData.confirmColor}`}
+                        >
+                            {confirmData.confirmText}
+                        </button>
+                    </div>
                 </div>
-            )}
+            </Modal>
         </>
     );
 };

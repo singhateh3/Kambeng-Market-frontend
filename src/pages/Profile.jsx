@@ -296,7 +296,7 @@ const Profile = () => {
                     </div>
                 )}
 
-                <div className="grid grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     {/* Sidebar */}
                     <div className="space-y-4">
                         {/* Avatar card */}
@@ -338,13 +338,13 @@ const Profile = () => {
                     </div>
 
                     {/* Main content */}
-                    <div className="col-span-2 space-y-4">
+                    <div className="lg:col-span-2 space-y-4">
                         {isEditing ? (
                             <form onSubmit={handleSubmit} className="space-y-4">
                                 {/* Personal info */}
                                 <div className="bg-white border border-slate-200 rounded-xl p-6">
                                     <h3 className="text-sm font-bold text-slate-900 mb-5">Personal information</h3>
-                                    <div className="grid grid-cols-2 gap-4">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                         <div>
                                             <label className={labelClass}>
                                                 Full name <span className="text-red-500">*</span>
@@ -380,7 +380,7 @@ const Profile = () => {
                                                 </p>
                                             )}
                                         </div>
-                                        <div className="col-span-2">
+                                        <div className="sm:col-span-2">
                                             <label className={labelClass}>Location</label>
                                             <input 
                                                 name="location" 
@@ -396,7 +396,7 @@ const Profile = () => {
                                                 </p>
                                             )}
                                         </div>
-                                        <div className="col-span-2">
+                                        <div className="sm:col-span-2">
                                             <label className={labelClass}>Profile picture</label>
                                             <input 
                                                 type="file" 
@@ -426,7 +426,7 @@ const Profile = () => {
                                 {isFarmer && (
                                     <div className="bg-white border border-slate-200 rounded-xl p-6">
                                         <h3 className="text-sm font-bold text-slate-900 mb-5">Farm details</h3>
-                                        <div className="grid grid-cols-2 gap-4">
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                             <div>
                                                 <label className={labelClass}>Farm name</label>
                                                 <input 
@@ -459,7 +459,7 @@ const Profile = () => {
                                                     </p>
                                                 )}
                                             </div>
-                                            <div className="col-span-2">
+                                            <div className="sm:col-span-2">
                                                 <label className={labelClass}>Bio</label>
                                                 <textarea 
                                                     name="bio" 
@@ -510,7 +510,7 @@ const Profile = () => {
                                 {/* Personal info view */}
                                 <div className="bg-white border border-slate-200 rounded-xl p-6">
                                     <h3 className="text-sm font-bold text-slate-900 mb-5">Personal information</h3>
-                                    <div className="grid grid-cols-2 gap-5">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                                         {[
                                             { label: 'Email',    value: user?.email },
                                             { label: 'Phone',    value: user?.phone    || 'Not set' },
@@ -529,7 +529,7 @@ const Profile = () => {
                                 {isFarmer && user?.farmer_profile && (
                                     <div className="bg-white border border-slate-200 rounded-xl p-6">
                                         <h3 className="text-sm font-bold text-slate-900 mb-5">Farm details</h3>
-                                        <div className="grid grid-cols-2 gap-5">
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                                             <div>
                                                 <p className={labelClass}>Farm name</p>
                                                 <p className="text-sm text-slate-900 font-medium">{user.farmer_profile.farm_name || 'Not set'}</p>
@@ -538,7 +538,7 @@ const Profile = () => {
                                                 <p className={labelClass}>Farm location</p>
                                                 <p className="text-sm text-slate-900 font-medium">{user.farmer_profile.farm_location || 'Not set'}</p>
                                             </div>
-                                            <div className="col-span-2">
+                                            <div className="sm:col-span-2">
                                                 <p className={labelClass}>Bio</p>
                                                 <p className="text-sm text-slate-900 font-medium leading-relaxed">{user.farmer_profile.bio || 'No bio provided'}</p>
                                             </div>

@@ -1,6 +1,7 @@
 // src/pages/farmer/Products.jsx
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { Modal } from '../../components/Modal';
 import { ProductsSkeleton } from '../../components/common/skeletons/ProductsSkeleton';
 import { useAuth } from '../../hooks/useAuth';
 import { useDebounce } from '../../hooks/useDebounce';
@@ -542,15 +543,9 @@ const Products = () => {
             </div>
 
             {/* Modal */}
-            {showModal && selectedProduct && (
-                <div
-                    className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 animate-in fade-in duration-200"
-                    onClick={closeModal}
-                >
-                    <div
-                        className="bg-white rounded-2xl max-w-md w-full overflow-hidden shadow-2xl border border-slate-100 animate-in zoom-in-95 duration-200"
-                        onClick={(e) => e.stopPropagation()}
-                    >
+            <Modal isOpen={showModal && !!selectedProduct} onClose={closeModal} maxWidth="max-w-md">
+                {selectedProduct && (
+                    <>
                         {modalAction === 'delete' ? (
                             <div className="p-6">
                                 <div className="flex items-start justify-between mb-4">
@@ -662,9 +657,9 @@ const Products = () => {
                                 </div>
                             </>
                         )}
-                    </div>
-                </div>
-            )}
+                    </>
+                )}
+            </Modal>
         </div>
     );
 };
