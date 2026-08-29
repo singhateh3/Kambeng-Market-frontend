@@ -24,6 +24,7 @@ const Browse = () => {
     const [products, setProducts] = useState([]);
     const [isInitialLoad, setIsInitialLoad] = useState(true);
     const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
     const [categories, setCategories] = useState([]);
     
     // Controlled text input string
@@ -41,28 +42,47 @@ const Browse = () => {
     // request instead of firing once with the stale page (e.g. page 3 of
     // the old filter set) and again a render later with the corrected page.
     const prevFiltersRef = useRef({ category, search: searchValue });
+    // Holds the AbortController for whichever request is currently in
+    // flight, so a fast filter/category change (fired before the previous
+    // request resolves) cancels it instead of racing it — otherwise an
+    // older, slower response could land after a newer one and overwrite
+    // correct results with stale ones.
+    const abortControllerRef = useRef(null);
 
     // Debounce processing
     const debouncedSearch = useDebounce(searchValue, 300);
 
     // Primary data fetcher
     const fetchProducts = useCallback(async () => {
+        abortControllerRef.current?.abort();
+        const controller = new AbortController();
+        abortControllerRef.current = controller;
+
         try {
             setLoading(true);
+            setError(null);
             const params = new URLSearchParams({
                 category: String(category ?? ''),
                 search: String(debouncedSearch ?? ''),
                 page: String(page),
                 per_page: '20',
             });
-            const response = await api.get(`/products?${params}`);
+            const response = await api.get(`/products?${params}`, { signal: controller.signal });
             setProducts(response.data.data || []);
             setPagination(response.data.meta || { current_page: 1, last_page: 1, per_page: 20, total: 0 });
         } catch (err) {
+            if (err.code === 'ERR_CANCELED') return; // superseded by a newer request
             console.error('Error fetching products:', err);
+            setError('Failed to load products. Please try again.');
+            setProducts([]);
         } finally {
-            setLoading(false);
-            setIsInitialLoad(false);
+            // Only the request that's still current should clear the
+            // loading flag — an aborted request's finally still runs, and
+            // must not flip loading off while its replacement is pending.
+            if (abortControllerRef.current === controller) {
+                setLoading(false);
+                setIsInitialLoad(false);
+            }
         }
     }, [category, debouncedSearch, page]);
 
@@ -82,6 +102,11 @@ const Browse = () => {
 
         fetchProducts();
     }, [category, debouncedSearch, page, fetchProducts]);
+
+    // Cancel any in-flight request if the page is left mid-fetch.
+    useEffect(() => {
+        return () => abortControllerRef.current?.abort();
+    }, []);
 
     // Isolated runtime category fetcher
     useEffect(() => {
@@ -127,12 +152,28 @@ const Browse = () => {
                         <input
                             ref={searchInputRef}
                             type="text"
+                            aria-label="Search products or farmers"
                             placeholder="Search products or farmers..."
                             value={searchValue}
                             onChange={(e) => setSearchValue(e.target.value)}
-                            className="w-full pl-9 pr-4 py-2 border border-slate-200 dark:border-slate-700 rounded-lg text-sm bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 outline-none focus:border-green-400 dark:focus:border-green-500 focus:bg-white dark:focus:bg-slate-800 transition"
+                            className="w-full pl-9 pr-9 py-2 border border-slate-200 dark:border-slate-700 rounded-lg text-sm bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 outline-none focus:border-green-400 dark:focus:border-green-500 focus:bg-white dark:focus:bg-slate-800 transition"
                             autoComplete="off"
                         />
+                        {searchValue && (
+                            <button
+                                type="button"
+                                aria-label="Clear search"
+                                onClick={() => {
+                                    setSearchValue('');
+                                    searchInputRef.current?.focus();
+                                }}
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-green-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900 rounded"
+                            >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        )}
                     </div>
                     <select
                         value={category}
@@ -200,7 +241,19 @@ const Browse = () => {
 
                 {/* Products grid container with smooth opacity transitions */}
                 <div className={`transition-opacity duration-200 ${loading ? 'opacity-60 pointer-events-none' : 'opacity-100'}`}>
-                    {products.length === 0 ? (
+                    {error ? (
+                        <div className="bg-white dark:bg-slate-900 border border-red-200 dark:border-red-800 rounded-xl text-center py-20">
+                            <div className="text-5xl mb-3">⚠️</div>
+                            <h3 className="text-base font-bold text-slate-900 dark:text-slate-100 mb-1">Something went wrong</h3>
+                            <p className="text-sm text-slate-400 dark:text-slate-500 mb-5">{error}</p>
+                            <button
+                                onClick={fetchProducts}
+                                className="bg-green-600 text-white text-sm font-semibold px-5 py-2.5 rounded-lg hover:bg-green-700 transition border-none cursor-pointer"
+                            >
+                                Try again
+                            </button>
+                        </div>
+                    ) : products.length === 0 ? (
                         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-center py-20">
                             <div className="text-5xl mb-3">🔍</div>
                             <h3 className="text-base font-bold text-slate-900 dark:text-slate-100 mb-1">No products found</h3>
