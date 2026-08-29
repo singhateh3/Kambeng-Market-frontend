@@ -302,8 +302,8 @@ const Profile = () => {
                         {/* Avatar card */}
                         <div className="bg-white border border-slate-200 rounded-xl p-6 text-center">
                             <div className="w-20 h-20 rounded-full bg-green-100 text-green-700 flex items-center justify-center text-3xl font-bold mx-auto mb-4 overflow-hidden">
-                                {user?.avatar_url
-                                    ? <img src={user.avatar_url} alt={user.name} className="w-full h-full object-cover" />
+                                {user?.avatar
+                                    ? <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" />
                                     : user?.name?.charAt(0)?.toUpperCase() || 'U'}
                             </div>
                             <h2 className="text-base font-bold text-slate-900 mb-0.5">{user?.name}</h2>

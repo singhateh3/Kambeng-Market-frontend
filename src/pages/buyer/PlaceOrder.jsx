@@ -198,8 +198,17 @@ const PlaceOrder = () => {
             setSuccess('Order placed successfully!');
             setShowSuccessOverlay(true);
         } catch (err) {
-            if (err.errors) setFieldErrors(err.errors);
-            else setError(err.message || 'Failed to place order');
+            const backendErrors = err.response?.data?.errors;
+            if (backendErrors) {
+                const errors = {};
+                Object.keys(backendErrors).forEach((field) => {
+                    errors[field] = backendErrors[field][0];
+                });
+                setFieldErrors(errors);
+                setError(err.response?.data?.message || 'Please fix the errors below.');
+            } else {
+                setError(err.response?.data?.message || err.message || 'Failed to place order');
+            }
             setSubmitting(false);
         }
     };

@@ -1,15 +1,16 @@
 // src/utils/imageUtils.js
+import { API_ORIGIN } from '../services/api';
 
 export const getImageUrl = (photo) => {
     if (!photo) return null;
-    
+
     // If it's already a full URL, return it
     if (photo.startsWith('http://') || photo.startsWith('https://')) {
         return photo;
     }
-    
-    const baseUrl = 'https://kambeng-market.onrender.com';
-    
+
+    const baseUrl = API_ORIGIN;
+
     // Clean the photo path
     let cleanPhoto = photo;
     

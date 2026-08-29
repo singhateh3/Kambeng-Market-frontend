@@ -51,7 +51,9 @@ const Orders = () => {
             await api.patch(`/orders/${orderId}/status`, { status });
             flash('success', `Order status updated to ${status}`);
             await fetchOrders();
-        } catch { flash('error', 'Failed to update order status'); }
+        } catch (err) {
+            flash('error', err.response?.data?.message || 'Failed to update order status');
+        }
         finally { setLoadingAction(false); }
     };
 
@@ -62,9 +64,9 @@ const Orders = () => {
             await api.post(`/orders/${orderId}/cancel`);
             flash('success', 'Order cancelled successfully');
             await fetchOrders();
-        } catch { 
-            flash('error', 'Failed to cancel order'); 
-        } finally { 
+        } catch (err) {
+            flash('error', err.response?.data?.message || 'Failed to cancel order');
+        } finally {
             setLoadingAction(false); 
         }
     };

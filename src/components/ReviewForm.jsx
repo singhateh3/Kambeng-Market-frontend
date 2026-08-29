@@ -25,7 +25,7 @@ export const ReviewForm = ({ orderId, productName, onSuccess, onCancel }) => {
         setError(null);
 
         try {
-            const response = await api.post(`/orders/${orderId}/review`, {
+            await api.post(`/orders/${orderId}/review`, {
                 rating,
                 comment,
             });
@@ -35,7 +35,7 @@ export const ReviewForm = ({ orderId, productName, onSuccess, onCancel }) => {
                 if (onSuccess) onSuccess();
             }, 2000);
         } catch (err) {
-            setError(err.message || 'Failed to submit review');
+            setError(err.response?.data?.message || err.message || 'Failed to submit review');
         } finally {
             setLoading(false);
         }

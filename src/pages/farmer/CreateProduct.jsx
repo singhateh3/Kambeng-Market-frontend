@@ -74,8 +74,19 @@ const CreateProduct = () => {
             setTimeout(() => navigate('/app/products'), 1500);
         } catch (err) {
             console.error('Error creating product:', err);
-            if (err.errors) setFieldErrors(err.errors);
-            else setError(err.message || 'Failed to create product');
+            const backendErrors = err.response?.data?.errors;
+            if (backendErrors) {
+                // Laravel returns {field: [messages]} — extract the first
+                // message per field so it's a plain string the JSX can render.
+                const errors = {};
+                Object.keys(backendErrors).forEach((field) => {
+                    errors[field] = backendErrors[field][0];
+                });
+                setFieldErrors(errors);
+                setError(err.response?.data?.message || 'Please fix the errors below.');
+            } else {
+                setError(err.response?.data?.message || err.message || 'Failed to create product');
+            }
         } finally {
             setLoading(false);
         }

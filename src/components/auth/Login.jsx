@@ -28,8 +28,9 @@ export const Login = () => {
             const response = await login(formData);
             console.log('Login successful:', response);
             
-            // Navigate based on role
-            if (response?.user?.role === 'admin') {
+            // Navigate based on role — AuthContext.login() returns the raw
+            // backend body, {message, data: {user, token, token_type}}.
+            if (response?.data?.user?.role === 'admin') {
                 navigate('/app/admin/dashboard');
             } else {
                 navigate('/app/dashboard');

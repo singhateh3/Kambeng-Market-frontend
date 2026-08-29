@@ -4,6 +4,11 @@ import axios from 'axios';
 // Vite uses import.meta.env instead of process.env
 const API_URL = import.meta.env.VITE_API_URL || 'https://kambeng-market.onrender.com/api';
 
+// Origin (no trailing /api) that the backend serves images/storage from —
+// derived from the same env-driven API_URL so asset URLs always match
+// whatever host the API calls are actually going to.
+export const API_ORIGIN = API_URL.replace(/\/api\/?$/, '');
+
 const api = axios.create({
     baseURL: API_URL,
     headers: {

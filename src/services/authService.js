@@ -26,18 +26,25 @@ export const authService = {
         try {
             // Check if data is FormData
             if (data instanceof FormData) {
+                // PHP does not parse multipart/form-data bodies on PUT (or any
+                // non-POST verb) — $request->validate()/hasFile() would see an
+                // empty body server-side. Laravel's standard workaround is to
+                // send a real POST with a spoofed _method field, which the
+                // framework treats as the PUT it's registered as.
+                data.append('_method', 'PUT');
+
                 // Log what we're sending for debugging
                 console.log('📤 Updating profile with FormData:');
                 for (let [key, value] of data.entries()) {
                     console.log(`  ${key}:`, value instanceof File ? `File(${value.name}, ${value.size} bytes)` : value);
                 }
 
-                const response = await api.put('/user/profile', data, {
+                const response = await api.post('/user/profile', data, {
                     headers: {
                         'Content-Type': 'multipart/form-data',
                     },
                 });
-                
+
                 console.log('✅ Profile updated successfully:', response.data);
                 return response.data;
             }

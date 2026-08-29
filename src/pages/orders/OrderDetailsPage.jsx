@@ -57,7 +57,7 @@ const OrderDetailsPage = () => {
             setTimeout(() => setSuccess(null), 3000);
         } catch (err) {
             console.error('Error updating order status:', err);
-            setError('Failed to update order status');
+            setError(err.response?.data?.message || 'Failed to update order status');
             setTimeout(() => setError(null), 3000);
         } finally {
             setLoadingAction(false);
@@ -75,7 +75,7 @@ const OrderDetailsPage = () => {
             setTimeout(() => setSuccess(null), 3000);
         } catch (err) {
             console.error('Error cancelling order:', err);
-            setError('Failed to cancel order');
+            setError(err.response?.data?.message || 'Failed to cancel order');
             setTimeout(() => setError(null), 3000);
         } finally {
             setLoadingAction(false);
@@ -370,6 +370,14 @@ const OrderDetailsPage = () => {
                                     <p className="text-sm text-gray-500">Delivery Deadline</p>
                                     <p className="font-medium text-gray-900">
                                         {order?.delivery_deadline ? formatDate(order.delivery_deadline) : 'Not set'}
+                                    </p>
+                                </div>
+                            )}
+                            {order?.delivery_method !== 'pickup' && order?.delivery_address && (
+                                <div className="col-span-2">
+                                    <p className="text-sm text-gray-500">Delivery Address</p>
+                                    <p className="font-medium text-gray-900">
+                                        {order.delivery_address}
                                     </p>
                                 </div>
                             )}

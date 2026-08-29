@@ -37,9 +37,14 @@ const AdminDashboard = () => {
                 
                 if (statsData) {
                     setStats(statsData);
-                    
-                    // Try to get pending verifications from stats
-                    if (statsData.pending_verifications !== undefined) {
+
+                    // Try to get pending verifications from stats.
+                    // AdminDashboardController::statistics() actually returns
+                    // users.unverified_farmers — check that first, keeping the
+                    // other shapes as fallbacks in case the backend adds them later.
+                    if (statsData.users?.unverified_farmers !== undefined) {
+                        setPendingVerifications(statsData.users.unverified_farmers);
+                    } else if (statsData.pending_verifications !== undefined) {
                         setPendingVerifications(statsData.pending_verifications);
                     } else if (statsData.farmer_verifications?.pending !== undefined) {
                         setPendingVerifications(statsData.farmer_verifications.pending);
@@ -71,9 +76,13 @@ const AdminDashboard = () => {
             
             if (statsData) {
                 setStats(statsData);
-                
-                // Try to get pending verifications from cached stats
-                if (statsData.pending_verifications !== undefined) {
+
+                // Try to get pending verifications from cached stats (see the
+                // matching onSuccess handler above for why unverified_farmers
+                // is checked first).
+                if (statsData.users?.unverified_farmers !== undefined) {
+                    setPendingVerifications(statsData.users.unverified_farmers);
+                } else if (statsData.pending_verifications !== undefined) {
                     setPendingVerifications(statsData.pending_verifications);
                 } else if (statsData.farmer_verifications?.pending !== undefined) {
                     setPendingVerifications(statsData.farmer_verifications.pending);
