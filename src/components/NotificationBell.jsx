@@ -294,10 +294,12 @@ export const NotificationBell = () => {
 
     return (
         <div className="relative" ref={dropdownRef}>
-            {/* Bell Icon */}
+            {/* Bell Icon — only the always-visible trigger gets a dark treatment
+                here; the dropdown's own content is unstyled page-scale work,
+                out of scope for the shell-level fix this button is part of. */}
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className="relative p-2 text-gray-600 hover:text-gray-900 focus:outline-none transition-colors rounded-lg hover:bg-gray-100"
+                className="relative p-2 text-gray-600 dark:text-slate-300 hover:text-gray-900 dark:hover:text-slate-100 focus:outline-none transition-colors rounded-lg hover:bg-gray-100 dark:hover:bg-slate-700"
                 aria-label="Notifications"
             >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
