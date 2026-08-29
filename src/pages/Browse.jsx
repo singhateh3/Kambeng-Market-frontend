@@ -1,6 +1,7 @@
 // src/pages/Browse.jsx
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { Footer } from '../components/Footer';
 import { ImageWithFallback } from '../components/common/ImageWithFallback';
 import { BrowseSkeleton } from '../components/common/skeletons/BrowseSkeleton';
 import { useAuth } from '../hooks/useAuth';
@@ -35,14 +36,14 @@ const Browse = () => {
     });
 
     const searchInputRef = useRef(null);
+    // Tracks the last category/search combo actually fetched, so a filter
+    // change and the page-1 reset it triggers collapse into a single
+    // request instead of firing once with the stale page (e.g. page 3 of
+    // the old filter set) and again a render later with the corrected page.
+    const prevFiltersRef = useRef({ category, search: searchValue });
 
     // Debounce processing
     const debouncedSearch = useDebounce(searchValue, 300);
-
-    // Reset pagination cleanly back to page 1 whenever search terms or categories alter
-    useEffect(() => {
-        setPage(1);
-    }, [debouncedSearch, category]);
 
     // Primary data fetcher
     const fetchProducts = useCallback(async () => {
@@ -65,9 +66,22 @@ const Browse = () => {
         }
     }, [category, debouncedSearch, page]);
 
+    // Reset pagination back to page 1 whenever search terms or category
+    // change, then fetch exactly once with the correct page for the new
+    // filters (see prevFiltersRef above).
     useEffect(() => {
+        const filtersChanged =
+            prevFiltersRef.current.category !== category ||
+            prevFiltersRef.current.search !== debouncedSearch;
+        prevFiltersRef.current = { category, search: debouncedSearch };
+
+        if (filtersChanged && page !== 1) {
+            setPage(1);
+            return;
+        }
+
         fetchProducts();
-    }, [fetchProducts]);
+    }, [category, debouncedSearch, page, fetchProducts]);
 
     // Isolated runtime category fetcher
     useEffect(() => {
@@ -208,31 +222,40 @@ const Browse = () => {
 
                             {/* Pagination */}
                             {pagination.last_page > 1 && (
-                                <div className="mt-5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-5 py-3.5 flex items-center justify-between flex-wrap gap-3">
+                                <nav
+                                    aria-label="Product results pagination"
+                                    className="mt-5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-5 py-3.5 flex items-center justify-between flex-wrap gap-3"
+                                >
                                     <span className="text-xs text-slate-500 dark:text-slate-400">
                                         Showing {products.length} of {pagination.total} products
                                     </span>
                                     <div className="flex items-center gap-2">
                                         <button
-                                            disabled={pagination.current_page <= 1}
+                                            type="button"
+                                            aria-label="Go to previous page"
+                                            disabled={loading || pagination.current_page <= 1}
                                             onClick={() => setPage(pagination.current_page - 1)}
-                                            className="px-3.5 py-1.5 text-xs font-semibold rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition cursor-pointer"
+                                            className="px-3.5 py-1.5 text-xs font-semibold rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-green-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900"
                                         >← Previous</button>
-                                        <span className="text-xs text-slate-500 dark:text-slate-400 px-1">
-                                            {pagination.current_page} / {pagination.last_page}
+                                        <span aria-live="polite" className="text-xs text-slate-500 dark:text-slate-400 px-1">
+                                            Page {pagination.current_page} of {pagination.last_page}
                                         </span>
                                         <button
-                                            disabled={pagination.current_page >= pagination.last_page}
+                                            type="button"
+                                            aria-label="Go to next page"
+                                            disabled={loading || pagination.current_page >= pagination.last_page}
                                             onClick={() => setPage(pagination.current_page + 1)}
-                                            className="px-3.5 py-1.5 text-xs font-semibold rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition cursor-pointer"
+                                            className="px-3.5 py-1.5 text-xs font-semibold rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-green-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900"
                                         >Next →</button>
                                     </div>
-                                </div>
+                                </nav>
                             )}
                         </>
                     )}
                 </div>
             </div>
+
+            <Footer />
         </div>
     );
 };
