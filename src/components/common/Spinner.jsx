@@ -14,14 +14,16 @@ export const Spinner = ({
         xl: 'w-24 h-24 border-4',
     };
 
+    // Brightened a step in dark mode so the ring stays visible against a
+    // dark surface instead of reading as a dim, low-contrast smudge.
     const colors = {
-        primary: 'border-primary-600',
+        primary: 'border-primary-600 dark:border-primary-400',
         white: 'border-white',
-        gray: 'border-gray-600',
-        green: 'border-green-600',
-        blue: 'border-blue-600',
-        purple: 'border-purple-600',
-        red: 'border-red-600',
+        gray: 'border-gray-600 dark:border-slate-400',
+        green: 'border-green-600 dark:border-green-400',
+        blue: 'border-blue-600 dark:border-blue-400',
+        purple: 'border-purple-600 dark:border-purple-400',
+        red: 'border-red-600 dark:border-red-400',
     };
 
     const sizeClasses = sizes[size] || sizes.md;
@@ -51,7 +53,7 @@ export const Spinner = ({
                 />
             </div>
             {label && (
-                <p className={`mt-3 text-sm font-medium text-gray-600 animate-pulse`}>
+                <p className={`mt-3 text-sm font-medium text-slate-600 dark:text-slate-300 animate-pulse`}>
                     {label}
                 </p>
             )}
@@ -60,7 +62,7 @@ export const Spinner = ({
 
     if (fullScreen) {
         return (
-            <div className="fixed inset-0 bg-white bg-opacity-80 backdrop-blur-sm flex items-center justify-center z-50">
+            <div className="fixed inset-0 bg-white dark:bg-slate-900 bg-opacity-80 dark:bg-opacity-80 backdrop-blur-sm flex items-center justify-center z-50">
                 {spinner}
             </div>
         );
@@ -78,7 +80,7 @@ export const LoadingOverlay = ({ loading, children }) => {
             <div className="opacity-50 pointer-events-none">
                 {children}
             </div>
-            <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-60 rounded-lg">
+            <div className="absolute inset-0 flex items-center justify-center bg-white dark:bg-slate-900 bg-opacity-60 dark:bg-opacity-60 rounded-lg">
                 <Spinner size="md" label="Loading..." />
             </div>
         </div>
@@ -90,16 +92,16 @@ export const ProductSkeleton = ({ count = 4 }) => {
     return (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {Array.from({ length: count }).map((_, index) => (
-                <div key={index} className="bg-white rounded-lg shadow overflow-hidden animate-pulse">
-                    <div className="h-48 bg-gray-200" />
+                <div key={index} className="bg-white dark:bg-slate-800 rounded-lg shadow overflow-hidden animate-pulse">
+                    <div className="h-48 bg-gray-200 dark:bg-slate-700" />
                     <div className="p-4 space-y-3">
-                        <div className="h-4 bg-gray-200 rounded w-3/4" />
-                        <div className="h-3 bg-gray-200 rounded w-1/2" />
+                        <div className="h-4 bg-gray-200 dark:bg-slate-700 rounded w-3/4" />
+                        <div className="h-3 bg-gray-200 dark:bg-slate-700 rounded w-1/2" />
                         <div className="flex justify-between">
-                            <div className="h-4 bg-gray-200 rounded w-1/3" />
-                            <div className="h-4 bg-gray-200 rounded w-1/4" />
+                            <div className="h-4 bg-gray-200 dark:bg-slate-700 rounded w-1/3" />
+                            <div className="h-4 bg-gray-200 dark:bg-slate-700 rounded w-1/4" />
                         </div>
-                        <div className="h-8 bg-gray-200 rounded w-full" />
+                        <div className="h-8 bg-gray-200 dark:bg-slate-700 rounded w-full" />
                     </div>
                 </div>
             ))}

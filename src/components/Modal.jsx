@@ -48,16 +48,16 @@ export const Modal = ({
                 aria-modal="true"
                 aria-labelledby={title ? titleId : undefined}
                 onClick={(e) => e.stopPropagation()}
-                className={`bg-white rounded-xl shadow-xl w-full ${maxWidth} max-h-[90vh] overflow-y-auto animate-in zoom-in-95 duration-200`}
+                className={`bg-white dark:bg-slate-800 rounded-xl shadow-xl w-full ${maxWidth} max-h-[90vh] overflow-y-auto animate-in zoom-in-95 duration-200`}
             >
                 {title && (
-                    <div className="flex justify-between items-center p-6 border-b border-gray-100">
-                        <h2 id={titleId} className="text-xl font-bold text-gray-900">{title}</h2>
+                    <div className="flex justify-between items-center p-6 border-b border-slate-100 dark:border-slate-700">
+                        <h2 id={titleId} className="text-xl font-bold text-slate-900 dark:text-slate-100">{title}</h2>
                         <button
                             type="button"
                             onClick={onClose}
                             aria-label="Close"
-                            className="text-gray-400 hover:text-gray-600 transition bg-transparent border-none cursor-pointer"
+                            className="text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300 transition bg-transparent border-none cursor-pointer"
                         >
                             <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />

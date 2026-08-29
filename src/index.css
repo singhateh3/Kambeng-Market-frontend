@@ -4,6 +4,29 @@
 @tailwind utilities;
 
 /* ============================================
+   THEME FOUNDATION
+   ============================================
+   Theme is toggled via a `dark` class on <html> — see
+   src/context/ThemeContext.jsx and tailwind.config.js's `darkMode: 'class'`.
+   The existing "Smooth transitions" rule below (transition-property:
+   background-color, color, ...) already makes this fade instead of snap.
+
+   Radius/elevation convention for new and shared-component work (not yet
+   swept across existing pages):
+     - rounded-lg  → buttons, inputs, compact controls
+     - rounded-xl  → cards, panels, modals
+     - shadow-xl   → modals/overlays only
+     - shadow-sm or a plain border → normal cards needing light elevation
+     - avoid rounded-md and shadow-2xl going forward; they're one-off
+       outliers rather than part of the app's actual scale */
+
+@layer base {
+    body {
+        @apply bg-white text-slate-900 dark:bg-slate-900 dark:text-slate-100;
+    }
+}
+
+/* ============================================
    CUSTOM ANIMATIONS
    ============================================ */
 
