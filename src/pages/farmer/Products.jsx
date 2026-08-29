@@ -541,11 +541,127 @@ const Products = () => {
                 )}
             </div>
 
-            {/* Modal - Keep the same */}
+            {/* Modal */}
             {showModal && selectedProduct && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
-                    <div className="bg-white rounded-2xl max-w-md w-full overflow-hidden shadow-2xl border border-slate-100 animate-in zoom-in-95 duration-200">
-                        {/* ... modal content ... */}
+                <div
+                    className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 animate-in fade-in duration-200"
+                    onClick={closeModal}
+                >
+                    <div
+                        className="bg-white rounded-2xl max-w-md w-full overflow-hidden shadow-2xl border border-slate-100 animate-in zoom-in-95 duration-200"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        {modalAction === 'delete' ? (
+                            <div className="p-6">
+                                <div className="flex items-start justify-between mb-4">
+                                    <h3 className="text-lg font-bold text-slate-900">Delete product</h3>
+                                    <button
+                                        onClick={closeModal}
+                                        className="text-slate-400 hover:text-slate-600 bg-transparent border-none cursor-pointer text-xl leading-none"
+                                    >
+                                        ×
+                                    </button>
+                                </div>
+                                <p className="text-sm text-slate-600 mb-1">
+                                    Are you sure you want to delete <span className="font-semibold text-slate-900">{selectedProduct.name}</span>?
+                                </p>
+                                <p className="text-xs text-slate-400 mb-6">This action cannot be undone.</p>
+                                <div className="flex gap-2">
+                                    <button
+                                        onClick={closeModal}
+                                        disabled={loadingAction}
+                                        className="flex-1 text-sm font-semibold text-slate-600 bg-slate-100 py-2.5 rounded-lg hover:bg-slate-200 transition border-none cursor-pointer disabled:opacity-50"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        onClick={() => handleDelete(selectedProduct.id)}
+                                        disabled={loadingAction}
+                                        className="flex-1 text-sm font-semibold text-white bg-red-600 py-2.5 rounded-lg hover:bg-red-700 transition border-none cursor-pointer disabled:opacity-50"
+                                    >
+                                        {loadingAction ? 'Deleting...' : 'Delete'}
+                                    </button>
+                                </div>
+                            </div>
+                        ) : (
+                            <>
+                                <div className="relative h-56 bg-slate-100">
+                                    {selectedProduct.photos?.length > 0 ? (
+                                        <img
+                                            src={getImageUrl(selectedProduct.photos[0])}
+                                            alt={selectedProduct.name}
+                                            className="w-full h-full object-cover"
+                                            onError={(e) => { e.target.style.display = 'none'; }}
+                                        />
+                                    ) : (
+                                        <div className="w-full h-full flex items-center justify-center text-5xl">🌾</div>
+                                    )}
+                                    <button
+                                        onClick={closeModal}
+                                        className="absolute top-3 right-3 w-8 h-8 flex items-center justify-center bg-white/90 hover:bg-white rounded-full text-slate-600 text-lg leading-none border-none cursor-pointer shadow-sm"
+                                    >
+                                        ×
+                                    </button>
+                                    <span className={`absolute top-3 left-3 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide ${getStatusBadge(selectedProduct).color}`}>
+                                        {getStatusBadge(selectedProduct).label}
+                                    </span>
+                                </div>
+                                <div className="p-5">
+                                    <p className="text-[10px] text-slate-400 font-medium uppercase tracking-wide mb-0.5">
+                                        {selectedProduct.category}
+                                        {selectedProduct.variety && ` · ${selectedProduct.variety}`}
+                                    </p>
+                                    <h3 className="text-lg font-bold text-slate-900 mb-2">{selectedProduct.name}</h3>
+
+                                    <div className="flex items-center justify-between mb-4">
+                                        <span className="text-xl font-extrabold text-green-600">
+                                            {selectedProduct.price_formatted || `GMD ${selectedProduct.price}`}
+                                        </span>
+                                        <span className="text-sm text-slate-500">
+                                            per {selectedProduct.unit_display || selectedProduct.unit}
+                                        </span>
+                                    </div>
+
+                                    {selectedProduct.description && (
+                                        <p className="text-sm text-slate-600 mb-4 leading-relaxed">
+                                            {selectedProduct.description}
+                                        </p>
+                                    )}
+
+                                    <div className="grid grid-cols-2 gap-3 text-sm border-t border-slate-100 pt-4">
+                                        <div>
+                                            <p className="text-xs text-slate-400">Quantity</p>
+                                            <p className="font-medium text-slate-900">
+                                                {selectedProduct.quantity} {selectedProduct.unit}
+                                            </p>
+                                        </div>
+                                        <div>
+                                            <p className="text-xs text-slate-400">Orders</p>
+                                            <p className="font-medium text-slate-900">{selectedProduct.orders_count || 0}</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-xs text-slate-400">Harvested</p>
+                                            <p className="font-medium text-slate-900">
+                                                {selectedProduct.harvest_date_display || '-'}
+                                            </p>
+                                        </div>
+                                        <div>
+                                            <p className="text-xs text-slate-400">Expires</p>
+                                            <p className="font-medium text-slate-900">
+                                                {selectedProduct.expiry_date_display || '-'}
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <button
+                                        onClick={closeModal}
+                                        className="w-full mt-5 text-sm font-semibold text-slate-600 bg-slate-100 py-2.5 rounded-lg hover:bg-slate-200 transition border-none cursor-pointer"
+                                    >
+                                        Close
+                                    </button>
+                                </div>
+                            </>
+                        )}
                     </div>
                 </div>
             )}
