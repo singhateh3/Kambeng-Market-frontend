@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { Button } from '../components/common/Button';
+import { ImageWithFallback } from '../components/common/ImageWithFallback';
 import { useAuth } from '../hooks/useAuth';
 import api from '../services/api';
 
@@ -17,7 +18,6 @@ const ProductDetail = () => {
 
     useEffect(() => {
         if (productId) {
-            console.log('🔍 Fetching product ID:', productId);
             fetchProduct();
         }
     }, [productId]);
@@ -26,38 +26,31 @@ const ProductDetail = () => {
         try {
             setLoading(true);
             setError(null);
-            
-            console.log('📡 API Request: /products/' + productId);
+
             const response = await api.get(`/products/${productId}`);
-            console.log('📦 API Response:', response.data);
-            
+
             // Handle different response formats
             let productData = null;
-            
+
             if (response.data && response.data.data) {
                 // Standard Laravel Resource response
                 productData = response.data.data;
-                console.log('✅ Product loaded from response.data.data');
             } else if (response.data && response.data.id) {
                 // Direct product data
                 productData = response.data;
-                console.log('✅ Product loaded from response.data directly');
             } else if (response.data) {
                 // Fallback
                 productData = response.data;
-                console.log('✅ Product loaded from response.data (fallback)');
             }
-            
+
             if (productData && productData.id) {
                 setProduct(productData);
-                console.log('✅ Product set:', productData.name, '(ID:', productData.id, ')');
             } else {
-                console.error('❌ No product data found in response');
+                console.error('No product data found in response');
                 setError('Product not found');
             }
         } catch (err) {
-            console.error('❌ Error fetching product:', err);
-            console.error('❌ Error response:', err.response?.data);
+            console.error('Error fetching product:', err);
             setError(err.response?.data?.message || 'Failed to load product details');
         } finally {
             setLoading(false);
@@ -132,20 +125,12 @@ const ProductDetail = () => {
                         {/* Product Image */}
                         <div>
                             <div className="bg-gray-50 rounded-xl overflow-hidden relative">
-                                {product.photos && product.photos.length > 0 ? (
-                                    <img
-                                        src={product.photos[activeImage]}
-                                        alt={product.name}
-                                        className="w-full h-96 object-cover"
-                                        onError={(e) => {
-                                            e.target.style.display = 'none';
-                                        }}
-                                    />
-                                ) : (
-                                    <div className="w-full h-96 flex items-center justify-center text-6xl bg-gray-100">
-                                        🌾
-                                    </div>
-                                )}
+                                <ImageWithFallback
+                                    src={product.photos?.[activeImage]}
+                                    alt={product.name}
+                                    className="w-full h-64 sm:h-80 md:h-96 object-cover"
+                                    iconClassName="text-6xl"
+                                />
                                 {isExpired && (
                                     <span className="absolute top-4 right-4 bg-red-500 text-white px-3 py-1 rounded-full text-sm font-medium">
                                         Expired
@@ -167,19 +152,17 @@ const ProductDetail = () => {
                             {product.photos && product.photos.length > 1 && (
                                 <div className="flex gap-2 mt-4 overflow-x-auto pb-2">
                                     {product.photos.map((photo, index) => (
-                                        <img
+                                        <ImageWithFallback
                                             key={index}
                                             src={photo}
                                             alt={`${product.name} ${index + 1}`}
-                                            className={`w-20 h-20 object-cover rounded-lg border-2 cursor-pointer transition-all ${
-                                                activeImage === index 
-                                                    ? 'border-green-500 shadow-md' 
+                                            className={`w-20 h-20 object-cover rounded-lg border-2 cursor-pointer transition-all flex-shrink-0 ${
+                                                activeImage === index
+                                                    ? 'border-green-500 shadow-md'
                                                     : 'border-gray-200 hover:border-green-300'
                                             }`}
+                                            iconClassName="text-2xl"
                                             onClick={() => setActiveImage(index)}
-                                            onError={(e) => {
-                                                e.target.style.display = 'none';
-                                            }}
                                         />
                                     ))}
                                 </div>

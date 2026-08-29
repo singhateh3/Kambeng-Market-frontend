@@ -48,77 +48,77 @@ export const OrderCard = ({
     };
 
     return (
-        <div className="bg-white shadow rounded-lg p-4 hover:shadow-md transition-shadow">
+        <div className="bg-white border border-slate-200 rounded-xl p-4 hover:shadow-sm transition-shadow">
             <div className="flex flex-wrap items-start justify-between gap-4">
                 {/* Left: Order Info */}
                 <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-3 mb-2">
-                        <span className="text-sm font-semibold text-gray-900">
+                        <span className="text-sm font-semibold text-slate-900">
                             Order #{orderId}
                         </span>
                         <OrderStatusBadge status={status} />
                     </div>
                     
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
-                        <div>
-                            <span className="text-gray-500">Product:</span>
-                            <span className="ml-1 font-medium text-gray-900">
+                        <div className="min-w-0">
+                            <span className="text-slate-500">Product:</span>
+                            <span className="ml-1 font-medium text-slate-900 break-words">
                                 {productName}
                             </span>
                         </div>
                         <div>
-                            <span className="text-gray-500">Quantity:</span>
-                            <span className="ml-1 font-medium text-gray-900">
+                            <span className="text-slate-500">Quantity:</span>
+                            <span className="ml-1 font-medium text-slate-900">
                                 {quantity} {productUnit}
                             </span>
                         </div>
                         <div>
-                            <span className="text-gray-500">Total:</span>
-                            <span className="ml-1 font-medium text-gray-900">
+                            <span className="text-slate-500">Total:</span>
+                            <span className="ml-1 font-medium text-slate-900">
                                 {totalPriceFormatted}
                             </span>
                         </div>
                         <div>
-                            <span className="text-gray-500">Date:</span>
-                            <span className="ml-1 text-gray-600">
+                            <span className="text-slate-500">Date:</span>
+                            <span className="ml-1 text-slate-600">
                                 {formatDate(orderDate)}
                             </span>
                         </div>
                         {isFarmer && buyerName && (
-                            <div className="sm:col-span-2">
-                                <span className="text-gray-500">Buyer:</span>
-                                <span className="ml-1 font-medium text-gray-900">
+                            <div className="sm:col-span-2 min-w-0">
+                                <span className="text-slate-500">Buyer:</span>
+                                <span className="ml-1 font-medium text-slate-900 break-words">
                                     {buyerName}
                                 </span>
                                 {buyerEmail && (
-                                    <span className="ml-2 text-gray-500 text-xs">
+                                    <span className="ml-2 text-slate-500 text-xs break-words">
                                         {buyerEmail}
                                     </span>
                                 )}
                                 {buyerLocation && (
-                                    <span className="ml-2 text-gray-500 text-xs">
+                                    <span className="ml-2 text-slate-500 text-xs break-words">
                                         📍 {buyerLocation}
                                     </span>
                                 )}
                             </div>
                         )}
                         {isBuyer && productFarmerName && (
-                            <div className="sm:col-span-2">
-                                <span className="text-gray-500">Farmer:</span>
-                                <span className="ml-1 font-medium text-gray-900">
+                            <div className="sm:col-span-2 min-w-0">
+                                <span className="text-slate-500">Farmer:</span>
+                                <span className="ml-1 font-medium text-slate-900 break-words">
                                     {productFarmerName}
                                 </span>
                                 {productFarmerLocation && (
-                                    <span className="ml-2 text-gray-500 text-xs">
+                                    <span className="ml-2 text-slate-500 text-xs break-words">
                                         📍 {productFarmerLocation}
                                     </span>
                                 )}
                             </div>
                         )}
                         {specialInstructions && (
-                            <div className="sm:col-span-2">
-                                <span className="text-gray-500">Instructions:</span>
-                                <span className="ml-1 text-gray-600 italic">
+                            <div className="sm:col-span-2 min-w-0">
+                                <span className="text-slate-500">Instructions:</span>
+                                <span className="ml-1 text-slate-600 italic break-words">
                                     {specialInstructions}
                                 </span>
                             </div>
@@ -130,15 +130,15 @@ export const OrderCard = ({
                 <div className="flex flex-wrap items-center gap-2">
                     <button
                         onClick={() => onViewDetails(orderId)}
-                        className="px-3 py-1.5 text-sm bg-blue-50 text-blue-600 rounded hover:bg-blue-100 transition-colors"
+                        className="px-3 py-1.5 text-sm bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
                     >
                         View Details
                     </button>
-                    
+
                     {isFarmer && status === 'pending' && (
                         <button
                             onClick={() => onStatusUpdate(orderId, 'confirmed')}
-                            className="px-3 py-1.5 text-sm bg-green-50 text-green-600 rounded hover:bg-green-100 transition-colors"
+                            className="px-3 py-1.5 text-sm bg-green-50 text-green-600 rounded-lg hover:bg-green-100 transition-colors"
                             disabled={loadingAction}
                         >
                             Confirm
@@ -147,7 +147,7 @@ export const OrderCard = ({
                     {isFarmer && status === 'confirmed' && (
                         <button
                             onClick={() => onStatusUpdate(orderId, 'shipped')}
-                            className="px-3 py-1.5 text-sm bg-purple-50 text-purple-600 rounded hover:bg-purple-100 transition-colors"
+                            className="px-3 py-1.5 text-sm bg-purple-50 text-purple-600 rounded-lg hover:bg-purple-100 transition-colors"
                             disabled={loadingAction}
                         >
                             Ship
@@ -156,17 +156,17 @@ export const OrderCard = ({
                     {isFarmer && status === 'shipped' && (
                         <button
                             onClick={() => onStatusUpdate(orderId, 'delivered')}
-                            className="px-3 py-1.5 text-sm bg-green-50 text-green-600 rounded hover:bg-green-100 transition-colors"
+                            className="px-3 py-1.5 text-sm bg-green-50 text-green-600 rounded-lg hover:bg-green-100 transition-colors"
                             disabled={loadingAction}
                         >
                             Deliver
                         </button>
                     )}
-                    
+
                     {!isFarmer && status === 'pending' && (
                         <button
                             onClick={() => onCancelOrder(orderId)}
-                            className="px-3 py-1.5 text-sm bg-red-50 text-red-600 rounded hover:bg-red-100 transition-colors"
+                            className="px-3 py-1.5 text-sm bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors"
                             disabled={loadingAction}
                         >
                             Cancel

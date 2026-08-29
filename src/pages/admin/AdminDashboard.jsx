@@ -194,7 +194,7 @@ const AdminDashboard = () => {
 
             <div className="max-w-6xl mx-auto px-6 py-6">
                 {/* Stats Grid */}
-                <div className="grid grid-cols-4 gap-4 mb-6">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
                     {[
                         { label: 'Total users', value: stats?.users?.total || 0, icon: '👥' },
                         { label: 'Active products', value: stats?.products?.active || 0, icon: '📦' },
@@ -235,7 +235,7 @@ const AdminDashboard = () => {
                 )}
 
                 {/* Admin Quick Stats - New Section */}
-                <div className="grid grid-cols-3 gap-4 mb-6">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
                     <div className="bg-white border border-slate-200 rounded-xl p-5 hover:shadow-md transition-shadow">
                         <div className="flex items-center justify-between">
                             <div>
@@ -294,7 +294,7 @@ const AdminDashboard = () => {
                     </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4 mb-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
                     <div className="bg-white border border-slate-200 rounded-xl p-5 hover:shadow-md transition-shadow">
                         <h3 className="text-sm font-bold text-slate-900 mb-4">Order status</h3>
                         <div className="space-y-3">
@@ -341,7 +341,7 @@ const AdminDashboard = () => {
                 {/* Quick Actions */}
                 <div className="mb-6">
                     <h3 className="text-sm font-bold text-slate-900 mb-3">Quick actions</h3>
-                    <div className="grid grid-cols-4 gap-3">
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                         {[
                             { icon: '🛒', title: 'Orders',         desc: 'View all orders',   to: '/app/orders' },
                             { icon: '👥', title: 'Users',          desc: 'Manage users',      to: '/app/admin/users' },

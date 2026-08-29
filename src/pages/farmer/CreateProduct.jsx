@@ -197,7 +197,7 @@ const CreateProduct = () => {
                         <h2 className="text-sm font-bold text-slate-900 mb-5">Quantity & pricing</h2>
                         <div className="space-y-4">
                             {/* Quantity + Unit */}
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div>
                                     <label className={labelClass}>Quantity <span className="text-red-500">*</span></label>
                                     <input
@@ -240,7 +240,7 @@ const CreateProduct = () => {
                     {/* Dates */}
                     <div className="bg-white border border-slate-200 rounded-xl p-6">
                         <h2 className="text-sm font-bold text-slate-900 mb-5">Dates</h2>
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
                                 <label className={labelClass}>Harvest date <span className="text-red-500">*</span></label>
                                 <input

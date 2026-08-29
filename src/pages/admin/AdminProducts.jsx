@@ -757,10 +757,10 @@ const AdminProducts = () => {
                                 </>
                             ) : (
                                 <div className="space-y-4">
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        <div className="min-w-0">
                                             <label className="text-sm font-medium text-gray-500">Product Name</label>
-                                            <p className="text-gray-900 font-medium">{selectedProduct.name}</p>
+                                            <p className="text-gray-900 font-medium break-words">{selectedProduct.name}</p>
                                         </div>
                                         <div>
                                             <label className="text-sm font-medium text-gray-500">Category</label>

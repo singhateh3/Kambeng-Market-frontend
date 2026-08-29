@@ -109,12 +109,6 @@ const Profile = () => {
                 submitData.append('avatar', formData.avatar);
             }
 
-            // Log what we're sending
-            console.log('📤 Submitting profile data:');
-            for (let [key, value] of submitData.entries()) {
-                console.log(`${key}:`, value instanceof File ? `File: ${value.name} (${value.size} bytes)` : value);
-            }
-
             await updateProfile(submitData);
             
             flash('success', 'Profile updated successfully!');

@@ -446,8 +446,9 @@ export const NotificationBell = () => {
                                                                 deleteNotification(notification.id);
                                                             }
                                                         }}
-                                                        className="text-gray-400 hover:text-red-600 transition"
+                                                        className="text-gray-400 hover:text-red-600 transition p-2 -m-2"
                                                         title="Delete"
+                                                        aria-label="Delete notification"
                                                     >
                                                         <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />

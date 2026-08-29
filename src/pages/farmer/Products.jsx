@@ -2,6 +2,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Modal } from '../../components/Modal';
+import { ImageWithFallback } from '../../components/common/ImageWithFallback';
 import { ProductsSkeleton } from '../../components/common/skeletons/ProductsSkeleton';
 import { useAuth } from '../../hooks/useAuth';
 import { useDebounce } from '../../hooks/useDebounce';
@@ -581,16 +582,12 @@ const Products = () => {
                         ) : (
                             <>
                                 <div className="relative h-56 bg-slate-100">
-                                    {selectedProduct.photos?.length > 0 ? (
-                                        <img
-                                            src={getImageUrl(selectedProduct.photos[0])}
-                                            alt={selectedProduct.name}
-                                            className="w-full h-full object-cover"
-                                            onError={(e) => { e.target.style.display = 'none'; }}
-                                        />
-                                    ) : (
-                                        <div className="w-full h-full flex items-center justify-center text-5xl">🌾</div>
-                                    )}
+                                    <ImageWithFallback
+                                        src={selectedProduct.photos?.length > 0 ? getImageUrl(selectedProduct.photos[0]) : null}
+                                        alt={selectedProduct.name}
+                                        className="w-full h-full object-cover"
+                                        iconClassName="text-5xl"
+                                    />
                                     <button
                                         onClick={closeModal}
                                         className="absolute top-3 right-3 w-8 h-8 flex items-center justify-center bg-white/90 hover:bg-white rounded-full text-slate-600 text-lg leading-none border-none cursor-pointer shadow-sm"
@@ -671,17 +668,13 @@ const ProductCard = ({ product, onView, onDelete, onStatusUpdate, loadingAction,
     return (
         <div className="bg-white rounded-xl border border-slate-200 overflow-hidden hover:-translate-y-0.5 hover:shadow-lg transition-all group">
             <div className="relative h-36 bg-slate-100">
-                {product.photos?.length > 0 ? (
-                    <img 
-                        src={getImageUrl(product.photos[0])} 
-                        alt={product.name} 
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" 
-                        loading="lazy" 
-                        onError={(e) => { e.target.style.display = 'none'; }} 
-                    />
-                ) : (
-                    <div className="w-full h-full flex items-center justify-center text-4xl">🌾</div>
-                )}
+                <ImageWithFallback
+                    src={product.photos?.length > 0 ? getImageUrl(product.photos[0]) : null}
+                    alt={product.name}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    loading="lazy"
+                    iconClassName="text-4xl"
+                />
                 <span className={`absolute top-2 left-2 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide ${status.color}`}>
                     {status.label}
                 </span>

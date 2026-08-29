@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '../../components/common/Button';
+import { ImageWithFallback } from '../../components/common/ImageWithFallback';
 import { Modal } from '../../components/Modal';
 import ReviewStars from '../../components/ReviewStars';
 import { OrderStatusBadge } from './OrderStatusBadge';
@@ -131,21 +132,21 @@ export const OrderDetails = ({
             <Modal isOpen onClose={onClose} title={`Order Details #${orderId}`} maxWidth="max-w-2xl">
                     <div className="p-6 space-y-6">
                         {/* Order Status */}
-                        <div className="flex items-center justify-between bg-gray-50 rounded-xl p-4 border border-gray-100">
+                        <div className="flex items-center justify-between bg-slate-50 rounded-xl p-4 border border-slate-100">
                             <div className="flex items-center">
                                 <span className="text-2xl mr-3">
                                     {getStatusIcon(status)}
                                 </span>
                                 <div>
-                                    <p className="text-sm text-gray-500">Order Status</p>
+                                    <p className="text-sm text-slate-500">Order Status</p>
                                     <div className="mt-1">
                                         <OrderStatusBadge status={status} />
                                     </div>
                                 </div>
                             </div>
                             <div className="text-right">
-                                <p className="text-sm text-gray-500">Order Date</p>
-                                <p className="text-sm font-medium text-gray-900">
+                                <p className="text-sm text-slate-500">Order Date</p>
+                                <p className="text-sm font-medium text-slate-900">
                                     {formatDate(orderDate)}
                                 </p>
                             </div>
@@ -153,34 +154,29 @@ export const OrderDetails = ({
 
                         {/* Order Items */}
                         <div>
-                            <h3 className="font-semibold text-gray-900 mb-3">Order Items</h3>
-                            <div className="border border-gray-200 rounded-xl overflow-hidden">
-                                <div className="bg-gray-50 px-4 py-2 grid grid-cols-12 gap-2 text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <h3 className="font-semibold text-slate-900 mb-3">Order Items</h3>
+                            <div className="border border-slate-200 rounded-xl overflow-hidden">
+                                {/* Table presentation — sm and up */}
+                                <div className="hidden sm:grid bg-slate-50 px-4 py-2 grid-cols-12 gap-2 text-xs font-medium text-slate-500 uppercase tracking-wider">
                                     <div className="col-span-5">Product</div>
                                     <div className="col-span-2">Quantity</div>
                                     <div className="col-span-2">Unit Price</div>
                                     <div className="col-span-3 text-right">Total</div>
                                 </div>
-                                <div className="px-4 py-3 grid grid-cols-12 gap-2 items-center hover:bg-gray-50">
-                                    <div className="col-span-5">
-                                        <div className="flex items-center">
-                                            <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center mr-3">
-                                                {productPhotos.length > 0 ? (
-                                                    <img 
-                                                        src={productPhotos[0]} 
-                                                        alt={productName} 
-                                                        className="w-12 h-12 object-cover rounded-lg"
-                                                    />
-                                                ) : (
-                                                    <span className="text-2xl">🌾</span>
-                                                )}
-                                            </div>
-                                            <div>
-                                                <p className="font-medium text-gray-900">
+                                <div className="hidden sm:grid px-4 py-3 grid-cols-12 gap-2 items-center hover:bg-slate-50">
+                                    <div className="col-span-5 min-w-0">
+                                        <div className="flex items-center min-w-0">
+                                            <ImageWithFallback
+                                                src={productPhotos[0]}
+                                                alt={productName}
+                                                className="w-12 h-12 rounded-lg object-cover mr-3 flex-shrink-0"
+                                            />
+                                            <div className="min-w-0">
+                                                <p className="font-medium text-slate-900 break-words">
                                                     {productName}
                                                 </p>
                                                 {productCategory && (
-                                                    <p className="text-xs text-gray-500">
+                                                    <p className="text-xs text-slate-500 break-words">
                                                         {productCategory}
                                                     </p>
                                                 )}
@@ -188,22 +184,59 @@ export const OrderDetails = ({
                                         </div>
                                     </div>
                                     <div className="col-span-2">
-                                        <span className="font-medium text-gray-900">
+                                        <span className="font-medium text-slate-900">
                                             {quantity}
                                         </span>
                                         {productUnit && (
-                                            <span className="text-xs text-gray-500 ml-1">
+                                            <span className="text-xs text-slate-500 ml-1">
                                                 {productUnit}
                                             </span>
                                         )}
                                     </div>
-                                    <div className="col-span-2">
-                                        <span className="text-gray-900">
+                                    <div className="col-span-2 break-words">
+                                        <span className="text-slate-900">
                                             {productPriceFormatted}
                                         </span>
                                     </div>
-                                    <div className="col-span-3 text-right font-bold text-gray-900">
+                                    <div className="col-span-3 text-right font-bold text-slate-900 break-words">
                                         {totalPriceFormatted}
+                                    </div>
+                                </div>
+
+                                {/* Stacked card — below sm, where a 12-col grid has no room */}
+                                <div className="sm:hidden p-4">
+                                    <div className="flex items-start gap-3 min-w-0">
+                                        <ImageWithFallback
+                                            src={productPhotos[0]}
+                                            alt={productName}
+                                            className="w-14 h-14 rounded-lg object-cover flex-shrink-0"
+                                        />
+                                        <div className="min-w-0 flex-1">
+                                            <p className="font-medium text-slate-900 break-words">{productName}</p>
+                                            {productCategory && (
+                                                <p className="text-xs text-slate-500 break-words">{productCategory}</p>
+                                            )}
+                                        </div>
+                                    </div>
+                                    <div className="mt-3 pt-3 border-t border-slate-100 space-y-1.5 text-sm">
+                                        <div className="flex items-center justify-between gap-2">
+                                            <span className="text-slate-500">Quantity</span>
+                                            <span className="font-medium text-slate-900 text-right break-words">
+                                                {quantity} {productUnit}
+                                            </span>
+                                        </div>
+                                        <div className="flex items-center justify-between gap-2">
+                                            <span className="text-slate-500">Unit Price</span>
+                                            <span className="font-medium text-slate-900 text-right break-words">
+                                                {productPriceFormatted}
+                                            </span>
+                                        </div>
+                                        <div className="flex items-center justify-between gap-2">
+                                            <span className="text-slate-500">Total</span>
+                                            <span className="font-bold text-slate-900 text-right break-words">
+                                                {totalPriceFormatted}
+                                            </span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -211,41 +244,41 @@ export const OrderDetails = ({
 
                         {/* Delivery Details */}
                         <div>
-                            <h3 className="font-semibold text-gray-900 mb-3">Delivery Details</h3>
-                            <div className="grid grid-cols-2 gap-4 bg-gray-50 rounded-xl p-4 border border-gray-100">
-                                <div>
-                                    <p className="text-sm text-gray-500">Delivery Method</p>
-                                    <p className="font-medium text-gray-900 capitalize">
+                            <h3 className="font-semibold text-slate-900 mb-3">Delivery Details</h3>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-slate-50 rounded-xl p-4 border border-slate-100">
+                                <div className="min-w-0">
+                                    <p className="text-sm text-slate-500">Delivery Method</p>
+                                    <p className="font-medium text-slate-900 capitalize break-words">
                                         {deliveryMethod === 'pickup' ? '📍 Pickup from Farm' : '🚚 Farmer Delivery'}
                                     </p>
                                 </div>
                                 {deliveryMethod === 'pickup' ? (
-                                    <div>
-                                        <p className="text-sm text-gray-500">Pickup Date</p>
-                                        <p className="font-medium text-gray-900">
+                                    <div className="min-w-0">
+                                        <p className="text-sm text-slate-500">Pickup Date</p>
+                                        <p className="font-medium text-slate-900 break-words">
                                             {pickupDate ? formatDate(pickupDate) : 'Not set'}
                                         </p>
                                     </div>
                                 ) : (
-                                    <div>
-                                        <p className="text-sm text-gray-500">Delivery Deadline</p>
-                                        <p className="font-medium text-gray-900">
+                                    <div className="min-w-0">
+                                        <p className="text-sm text-slate-500">Delivery Deadline</p>
+                                        <p className="font-medium text-slate-900 break-words">
                                             {deliveryDeadline ? formatDate(deliveryDeadline) : 'Not set'}
                                         </p>
                                     </div>
                                 )}
                                 {deliveryMethod !== 'pickup' && deliveryAddress && (
-                                    <div className="col-span-2">
-                                        <p className="text-sm text-gray-500">Delivery Address</p>
-                                        <p className="font-medium text-gray-900">
+                                    <div className="sm:col-span-2 min-w-0">
+                                        <p className="text-sm text-slate-500">Delivery Address</p>
+                                        <p className="font-medium text-slate-900 break-words">
                                             {deliveryAddress}
                                         </p>
                                     </div>
                                 )}
                                 {specialInstructions && (
-                                    <div className="col-span-2">
-                                        <p className="text-sm text-gray-500">Special Instructions</p>
-                                        <p className="font-medium text-gray-900">
+                                    <div className="sm:col-span-2 min-w-0">
+                                        <p className="text-sm text-slate-500">Special Instructions</p>
+                                        <p className="font-medium text-slate-900 break-words">
                                             {specialInstructions}
                                         </p>
                                     </div>
@@ -255,52 +288,52 @@ export const OrderDetails = ({
 
                         {/* Buyer/Farmer Info */}
                         <div>
-                            <h3 className="font-semibold text-gray-900 mb-3">
+                            <h3 className="font-semibold text-slate-900 mb-3">
                                 {isFarmer ? 'Buyer Information' : 'Farmer Information'}
                             </h3>
-                            <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
+                            <div className="bg-slate-50 rounded-xl p-4 border border-slate-100">
                                 {isFarmer ? (
-                                    <div className="flex items-center">
-                                        <div className="w-12 h-12 rounded-full bg-gray-300 flex items-center justify-center text-lg font-medium text-gray-600">
+                                    <div className="flex items-center min-w-0">
+                                        <div className="w-12 h-12 rounded-full bg-slate-300 flex items-center justify-center text-lg font-medium text-slate-600 flex-shrink-0">
                                             {buyerName?.[0]?.toUpperCase() || 'U'}
                                         </div>
-                                        <div className="ml-3">
-                                            <p className="font-medium text-gray-900">
+                                        <div className="ml-3 min-w-0">
+                                            <p className="font-medium text-slate-900 break-words">
                                                 {buyerName}
                                             </p>
                                             {buyerEmail && (
-                                                <p className="text-sm text-gray-500">
+                                                <p className="text-sm text-slate-500 break-words">
                                                     📧 {buyerEmail}
                                                 </p>
                                             )}
                                             {buyerLocation && (
-                                                <p className="text-sm text-gray-500">
+                                                <p className="text-sm text-slate-500 break-words">
                                                     📍 {buyerLocation}
                                                 </p>
                                             )}
                                             {buyerPhone && (
-                                                <p className="text-sm text-gray-500">
+                                                <p className="text-sm text-slate-500 break-words">
                                                     📞 {buyerPhone}
                                                 </p>
                                             )}
                                         </div>
                                     </div>
                                 ) : (
-                                    <div className="flex items-center">
-                                        <div className="w-12 h-12 rounded-full bg-gray-300 flex items-center justify-center text-lg font-medium text-gray-600">
+                                    <div className="flex items-center min-w-0">
+                                        <div className="w-12 h-12 rounded-full bg-slate-300 flex items-center justify-center text-lg font-medium text-slate-600 flex-shrink-0">
                                             {farmerName?.[0]?.toUpperCase() || 'F'}
                                         </div>
-                                        <div className="ml-3">
-                                            <p className="font-medium text-gray-900">
+                                        <div className="ml-3 min-w-0">
+                                            <p className="font-medium text-slate-900 break-words">
                                                 {farmerName}
                                             </p>
                                             {farmerLocation && (
-                                                <p className="text-sm text-gray-500">
+                                                <p className="text-sm text-slate-500 break-words">
                                                     📍 {farmerLocation}
                                                 </p>
                                             )}
                                             {farmerPhone && (
-                                                <p className="text-sm text-gray-500">
+                                                <p className="text-sm text-slate-500 break-words">
                                                     📞 {farmerPhone}
                                                 </p>
                                             )}
@@ -313,22 +346,22 @@ export const OrderDetails = ({
                         {/* Review Section */}
                         {review && (
                             <div>
-                                <h3 className="font-semibold text-gray-900 mb-3">Your Review</h3>
+                                <h3 className="font-semibold text-slate-900 mb-3">Your Review</h3>
                                 <div className="bg-purple-50 rounded-xl p-4 border border-purple-200">
-                                    <div className="flex items-start justify-between">
-                                        <div>
+                                    <div className="flex items-start justify-between gap-3">
+                                        <div className="min-w-0">
                                             <div className="flex items-center space-x-2">
                                                 <ReviewStars rating={review.rating} size="md" />
-                                                <span className="text-sm font-medium text-gray-900">
+                                                <span className="text-sm font-medium text-slate-900">
                                                     {review.rating}.0
                                                 </span>
                                             </div>
                                             {review.comment && (
-                                                <p className="mt-2 text-gray-700 text-sm">
+                                                <p className="mt-2 text-slate-700 text-sm break-words">
                                                     "{review.comment}"
                                                 </p>
                                             )}
-                                            <p className="mt-1 text-xs text-gray-400">
+                                            <p className="mt-1 text-xs text-slate-400">
                                                 Reviewed on {formatDate(review.created_at)}
                                             </p>
                                         </div>
@@ -339,7 +372,7 @@ export const OrderDetails = ({
                         )}
 
                         {/* Actions */}
-                        <div className="flex flex-wrap gap-2 pt-4 border-t border-gray-100">
+                        <div className="flex flex-wrap gap-2 pt-4 border-t border-slate-100">
                             <Button variant="secondary" onClick={onClose}>
                                 Close
                             </Button>
@@ -413,16 +446,16 @@ export const OrderDetails = ({
                             {confirmData.icon}
                         </div>
                     </div>
-                    <h3 className="text-xl font-bold text-gray-900 text-center mb-2">
+                    <h3 className="text-xl font-bold text-slate-900 text-center mb-2">
                         {confirmData.title}
                     </h3>
-                    <p className="text-gray-600 text-center mb-6">
+                    <p className="text-slate-600 text-center mb-6">
                         {confirmData.message}
                     </p>
                     <div className="flex gap-3">
                         <button
                             onClick={handleCancel}
-                            className="flex-1 px-4 py-2.5 text-sm font-semibold text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition border-none cursor-pointer"
+                            className="flex-1 px-4 py-2.5 text-sm font-semibold text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200 transition border-none cursor-pointer"
                         >
                             Cancel
                         </button>

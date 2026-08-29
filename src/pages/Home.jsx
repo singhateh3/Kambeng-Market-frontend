@@ -1,10 +1,12 @@
 // src/pages/Home.jsx
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { ImageWithFallback } from '../components/common/ImageWithFallback';
 import { Skeleton } from "../components/common/skeletons/Skeleton";
 import ReviewStars from '../components/ReviewStars';
 import { useAuth } from '../hooks/useAuth';
 import api from '../services/api';
+import { getImageUrl } from '../utils/imageUtils';
 
 const CATEGORY_ICONS = {
     'Vegetables': '🥬', 'Fruits': '🍎', 'Grains': '🌾',
@@ -511,19 +513,14 @@ const ProductCard = ({ product }) => {
             className="bg-white rounded-xl border border-slate-200 overflow-hidden cursor-pointer hover:-translate-y-0.5 hover:shadow-lg transition-all group"
         >
             <div className="relative h-36 bg-slate-100">
-                {product.photos?.length > 0 ? (
-                    <img
-                        src={product.photos[0]}
-                        alt={product.name}
-                        loading="lazy"
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                        onError={(e) => { e.target.style.display = 'none'; }}
-                    />
-                ) : (
-                    <div className="w-full h-full flex items-center justify-center text-4xl">
-                        {getCategoryIcon(product.category)}
-                    </div>
-                )}
+                <ImageWithFallback
+                    src={product.photos?.length > 0 ? getImageUrl(product.photos[0]) : null}
+                    alt={product.name}
+                    loading="lazy"
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    icon={getCategoryIcon(product.category)}
+                    iconClassName="text-4xl"
+                />
                 {product.is_available && (
                     <span className="absolute top-2 left-2 bg-green-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide">
                         Fresh

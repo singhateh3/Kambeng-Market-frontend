@@ -228,10 +228,10 @@ const RegularDashboard = () => {
                         {recentOrders.length === 0 ? (
                             <div className="text-center py-10 text-slate-400 text-sm">No orders yet</div>
                         ) : recentOrders.map((order) => (
-                            <div key={order.id} className="flex items-center justify-between py-2.5 border-b border-slate-50 last:border-0">
-                                <div>
-                                    <p className="text-sm font-semibold text-slate-900">{order.product?.name || 'Product'}</p>
-                                    <p className="text-xs text-slate-400">{order.quantity} × {order.product?.price_formatted || 'GMD 0'}</p>
+                            <div key={order.id} className="flex items-center justify-between gap-3 py-2.5 border-b border-slate-50 last:border-0">
+                                <div className="min-w-0 flex-1">
+                                    <p className="text-sm font-semibold text-slate-900 truncate">{order.product?.name || 'Product'}</p>
+                                    <p className="text-xs text-slate-400 truncate">{order.quantity} × {order.product?.price_formatted || 'GMD 0'}</p>
                                     {/* Show review status for buyers */}
                                     {isBuyer && order.review && (
                                         <div className="mt-1">
@@ -239,7 +239,7 @@ const RegularDashboard = () => {
                                         </div>
                                     )}
                                 </div>
-                                <div className="flex flex-col items-end gap-1">
+                                <div className="flex flex-col items-end gap-1 flex-shrink-0">
                                     <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${statusStyles(order.status)}`}>
                                         {order.status_label || order.status}
                                     </span>
@@ -277,16 +277,16 @@ const RegularDashboard = () => {
                                     const reviewCount = product?.reviews_count || 0;
                                     
                                     return (
-                                        <div key={product.id} className="flex items-center justify-between py-2.5 border-b border-slate-50 last:border-0">
-                                            <div className="flex items-center gap-2.5">
+                                        <div key={product.id} className="flex items-center justify-between gap-3 py-2.5 border-b border-slate-50 last:border-0">
+                                            <div className="flex items-center gap-2.5 min-w-0 flex-1">
                                                 <div className="w-9 h-9 rounded-lg overflow-hidden bg-slate-100 flex items-center justify-center text-lg flex-shrink-0">
                                                     {product.photos?.length > 0
                                                         ? <img src={product.photos[0]} alt={product.name} loading="lazy" className="w-full h-full object-cover" />
                                                         : '🌾'}
                                                 </div>
-                                                <div>
-                                                    <p className="text-sm font-semibold text-slate-900">{product.name}</p>
-                                                    <p className="text-xs text-slate-400">{product.price_formatted || `GMD ${product.price}`} · {product.quantity} {product.unit}</p>
+                                                <div className="min-w-0">
+                                                    <p className="text-sm font-semibold text-slate-900 truncate">{product.name}</p>
+                                                    <p className="text-xs text-slate-400 truncate">{product.price_formatted || `GMD ${product.price}`} · {product.quantity} {product.unit}</p>
                                                     {/* Show product rating for farmers */}
                                                     {avgRating > 0 && (
                                                         <div className="flex items-center gap-1 mt-0.5">
@@ -301,7 +301,7 @@ const RegularDashboard = () => {
                                                     )}
                                                 </div>
                                             </div>
-                                            <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${statusStyles(product.status)}`}>
+                                            <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full flex-shrink-0 ${statusStyles(product.status)}`}>
                                                 {product.status_label || product.status}
                                             </span>
                                         </div>

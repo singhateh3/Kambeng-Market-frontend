@@ -587,6 +587,124 @@ import api from '../../services/api';
                 )}
             </div>
 
+            {/* View Modal — read-only, mirrors Users.jsx's View modal pattern.
+                Built only from fields UserResource actually serializes today
+                (name/email/phone/location/avatar/verification status+dates,
+                farmer_profile's farm_name/farm_location/bio/id_verified/
+                verification_notes/rejection_reason/rejected_at). The backend
+                has an uploadDocument endpoint that stores verification_document/
+                business_license/id_document paths on the farmer profile, but
+                UserResource never includes those fields in the API response —
+                so no documents/images section is rendered here; that data
+                genuinely isn't available to the frontend yet. */}
+            <Modal
+                isOpen={showModal && !!selectedFarmer && modalAction === 'view'}
+                onClose={closeModal}
+                title="Farmer Details"
+                maxWidth="max-w-lg"
+            >
+                {selectedFarmer && (
+                    <div className="p-6 space-y-5">
+                        <div className="flex items-center gap-4 min-w-0">
+                            <div className="w-14 h-14 rounded-full bg-slate-200 flex items-center justify-center text-xl font-medium text-slate-600 flex-shrink-0 overflow-hidden">
+                                {selectedFarmer.avatar ? (
+                                    <img
+                                        src={selectedFarmer.avatar}
+                                        alt={selectedFarmer.name}
+                                        className="w-full h-full object-cover"
+                                        onError={(e) => { e.target.style.display = 'none'; }}
+                                    />
+                                ) : (
+                                    selectedFarmer.name?.[0]?.toUpperCase() || 'U'
+                                )}
+                            </div>
+                            <div className="min-w-0">
+                                <h3 className="font-semibold text-slate-900 break-words">{selectedFarmer.name}</h3>
+                                <p className="text-sm text-slate-500 break-words">{selectedFarmer.email}</p>
+                            </div>
+                        </div>
+
+                        <span className={`inline-block px-2 py-1 text-xs rounded-full ${
+                            selectedFarmer.verification_status === 'approved'
+                                ? 'bg-green-100 text-green-800'
+                                : selectedFarmer.verification_status === 'pending'
+                                ? 'bg-yellow-100 text-yellow-800'
+                                : selectedFarmer.verification_status === 'rejected'
+                                ? 'bg-red-100 text-red-800'
+                                : 'bg-slate-100 text-slate-800'
+                        }`}>
+                            {selectedFarmer.verification_status_label || selectedFarmer.verification_status || 'Not Submitted'}
+                        </span>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm border-t border-slate-100 pt-4">
+                            <div className="min-w-0">
+                                <p className="text-slate-500">Phone</p>
+                                <p className="text-slate-900 font-medium break-words">{selectedFarmer.phone || 'Not provided'}</p>
+                            </div>
+                            <div className="min-w-0">
+                                <p className="text-slate-500">Location</p>
+                                <p className="text-slate-900 font-medium break-words">{selectedFarmer.location || 'Not provided'}</p>
+                            </div>
+                            <div className="min-w-0">
+                                <p className="text-slate-500">Farm name</p>
+                                <p className="text-slate-900 font-medium break-words">{selectedFarmer.farmer_profile?.farm_name || 'Not provided'}</p>
+                            </div>
+                            <div className="min-w-0">
+                                <p className="text-slate-500">Farm location</p>
+                                <p className="text-slate-900 font-medium break-words">{selectedFarmer.farmer_profile?.farm_location || 'Not provided'}</p>
+                            </div>
+                            <div className="sm:col-span-2 min-w-0">
+                                <p className="text-slate-500">Bio</p>
+                                <p className="text-slate-900 font-medium break-words">{selectedFarmer.farmer_profile?.bio || 'No bio provided'}</p>
+                            </div>
+                            <div className="min-w-0">
+                                <p className="text-slate-500">Requested</p>
+                                <p className="text-slate-900 font-medium">
+                                    {selectedFarmer.verification_requested_at
+                                        ? new Date(selectedFarmer.verification_requested_at).toLocaleDateString()
+                                        : '-'}
+                                </p>
+                            </div>
+                            {selectedFarmer.verified_at && (
+                                <div className="min-w-0">
+                                    <p className="text-slate-500">Verified</p>
+                                    <p className="text-slate-900 font-medium">
+                                        {new Date(selectedFarmer.verified_at).toLocaleDateString()}
+                                    </p>
+                                </div>
+                            )}
+                            {selectedFarmer.farmer_profile?.rejected_at && (
+                                <div className="min-w-0">
+                                    <p className="text-slate-500">Rejected</p>
+                                    <p className="text-slate-900 font-medium">
+                                        {new Date(selectedFarmer.farmer_profile.rejected_at).toLocaleDateString()}
+                                    </p>
+                                </div>
+                            )}
+                        </div>
+
+                        {selectedFarmer.farmer_profile?.verification_notes && (
+                            <div className="bg-slate-50 rounded-xl p-4 border border-slate-100 min-w-0">
+                                <p className="text-xs text-slate-500 mb-1">Verification notes</p>
+                                <p className="text-sm text-slate-700 break-words">{selectedFarmer.farmer_profile.verification_notes}</p>
+                            </div>
+                        )}
+                        {selectedFarmer.farmer_profile?.rejection_reason && (
+                            <div className="bg-red-50 rounded-xl p-4 border border-red-100 min-w-0">
+                                <p className="text-xs text-red-500 mb-1">Rejection reason</p>
+                                <p className="text-sm text-red-700 break-words">{selectedFarmer.farmer_profile.rejection_reason}</p>
+                            </div>
+                        )}
+
+                        <div className="flex justify-end pt-2 border-t border-slate-100">
+                            <Button variant="secondary" onClick={closeModal}>
+                                Close
+                            </Button>
+                        </div>
+                    </div>
+                )}
+            </Modal>
+
             {/* Reject Modal (Single) */}
             <Modal
                 isOpen={showModal && !!selectedFarmer && modalAction === 'reject'}
@@ -597,13 +715,13 @@ import api from '../../services/api';
                 {selectedFarmer && (
                     <div className="p-6">
                         <div className="mb-4">
-                            <div className="flex items-center mb-4">
-                                <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center text-lg font-medium text-gray-600">
+                            <div className="flex items-center mb-4 min-w-0">
+                                <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center text-lg font-medium text-gray-600 flex-shrink-0">
                                     {selectedFarmer.name?.[0]?.toUpperCase() || 'U'}
                                 </div>
-                                <div className="ml-4">
-                                    <h3 className="font-semibold text-gray-900">{selectedFarmer.name}</h3>
-                                    <p className="text-sm text-gray-500">{selectedFarmer.farmer_profile?.farm_name || 'No farm name'}</p>
+                                <div className="ml-4 min-w-0">
+                                    <h3 className="font-semibold text-gray-900 break-words">{selectedFarmer.name}</h3>
+                                    <p className="text-sm text-gray-500 break-words">{selectedFarmer.farmer_profile?.farm_name || 'No farm name'}</p>
                                 </div>
                             </div>
                         </div>

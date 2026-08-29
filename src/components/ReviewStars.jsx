@@ -40,8 +40,9 @@ import React from 'react';
                     onClick={() => handleClick(index)}
                     onMouseEnter={() => handleMouseEnter(index)}
                     onMouseLeave={handleMouseLeave}
-                    className={`${interactive ? 'cursor-pointer hover:scale-110 transition-transform' : 'cursor-default'} focus:outline-none`}
+                    className={`${interactive ? 'cursor-pointer hover:scale-110 transition-transform p-1.5 -m-1.5' : 'cursor-default'} focus:outline-none`}
                     disabled={!interactive}
+                    aria-label={interactive ? `Rate ${index + 1} star${index === 0 ? '' : 's'}` : undefined}
                 >
                     <svg
                         className={`${sizes[size]} ${

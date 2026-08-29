@@ -305,14 +305,14 @@ const AdminUsers = () => {
                                                     <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-sm font-medium text-gray-600">
                                                         {user.name?.[0]?.toUpperCase() || 'U'}
                                                     </div>
-                                                    <div className="ml-3">
-                                                        <div className="text-sm font-medium text-gray-900">
+                                                    <div className="ml-3 min-w-0">
+                                                        <div className="text-sm font-medium text-gray-900 truncate max-w-[180px]" title={user.name}>
                                                             {user.name}
                                                             {user.id === currentUser?.id && (
                                                                 <span className="ml-2 text-xs text-primary-600">(You)</span>
                                                             )}
                                                         </div>
-                                                        <div className="text-sm text-gray-500">
+                                                        <div className="text-sm text-gray-500 truncate max-w-[180px]" title={user.email}>
                                                             {user.email}
                                                         </div>
                                                     </div>
@@ -451,23 +451,23 @@ const AdminUsers = () => {
                             </>
                         ) : (
                             <div className="space-y-3">
-                                <div className="flex items-center">
-                                    <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center text-lg font-medium text-gray-600">
+                                <div className="flex items-center min-w-0">
+                                    <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center text-lg font-medium text-gray-600 flex-shrink-0">
                                         {selectedUser.name?.[0]?.toUpperCase() || 'U'}
                                     </div>
-                                    <div className="ml-3">
-                                        <div className="font-semibold text-gray-900">{selectedUser.name}</div>
-                                        <div className="text-sm text-gray-500">{selectedUser.email}</div>
+                                    <div className="ml-3 min-w-0">
+                                        <div className="font-semibold text-gray-900 break-words">{selectedUser.name}</div>
+                                        <div className="text-sm text-gray-500 break-words">{selectedUser.email}</div>
                                     </div>
                                 </div>
                                 <div className="border-t pt-3">
                                     <div className="grid grid-cols-2 gap-2 text-sm">
                                         <div className="text-gray-500">Role</div>
-                                        <div className="text-gray-900 capitalize">{selectedUser.role}</div>
+                                        <div className="text-gray-900 capitalize break-words">{selectedUser.role}</div>
                                         <div className="text-gray-500">Phone</div>
-                                        <div className="text-gray-900">{selectedUser.phone || 'Not provided'}</div>
+                                        <div className="text-gray-900 break-words">{selectedUser.phone || 'Not provided'}</div>
                                         <div className="text-gray-500">Location</div>
-                                        <div className="text-gray-900">{selectedUser.location || 'Not provided'}</div>
+                                        <div className="text-gray-900 break-words">{selectedUser.location || 'Not provided'}</div>
                                         <div className="text-gray-500">Joined</div>
                                         <div className="text-gray-900">{new Date(selectedUser.created_at).toLocaleDateString()}</div>
                                         {selectedUser.role === 'farmer' && (
@@ -481,11 +481,11 @@ const AdminUsers = () => {
                                                 {selectedUser.farmer_profile && (
                                                     <>
                                                         <div className="text-gray-500">Farm Name</div>
-                                                        <div className="text-gray-900">{selectedUser.farmer_profile.farm_name}</div>
+                                                        <div className="text-gray-900 break-words">{selectedUser.farmer_profile.farm_name}</div>
                                                         <div className="text-gray-500">Farm Location</div>
-                                                        <div className="text-gray-900">{selectedUser.farmer_profile.farm_location}</div>
+                                                        <div className="text-gray-900 break-words">{selectedUser.farmer_profile.farm_location}</div>
                                                         <div className="text-gray-500">Bio</div>
-                                                        <div className="text-gray-900">{selectedUser.farmer_profile.bio || 'No bio'}</div>
+                                                        <div className="text-gray-900 break-words">{selectedUser.farmer_profile.bio || 'No bio'}</div>
                                                     </>
                                                 )}
                                             </>

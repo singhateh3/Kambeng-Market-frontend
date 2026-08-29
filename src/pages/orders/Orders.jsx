@@ -86,8 +86,6 @@ const Orders = () => {
         { value: 'cancelled', label: 'Cancelled' },
     ];
 
-    if (loading) return <OrdersSkeleton />;
-
     return (
         <div className="bg-slate-50 min-h-screen">
             <div className="bg-white border-b border-slate-200">
@@ -145,7 +143,9 @@ const Orders = () => {
                     <div className="ml-auto text-xs text-slate-400">{pagination.total} order{pagination.total !== 1 ? 's' : ''}</div>
                 </div>
 
-                {orders.length === 0 ? (
+                {loading ? (
+                    <OrdersSkeleton />
+                ) : orders.length === 0 ? (
                     <div className="bg-white border border-slate-200 rounded-xl text-center py-20">
                         <div className="text-5xl mb-3">📋</div>
                         <h3 className="text-base font-bold text-slate-900 mb-1">No orders found</h3>
