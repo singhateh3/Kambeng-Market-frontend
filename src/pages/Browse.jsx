@@ -1,6 +1,7 @@
 // src/pages/Browse.jsx
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { ImageWithFallback } from '../components/common/ImageWithFallback';
 import { BrowseSkeleton } from '../components/common/skeletons/BrowseSkeleton';
 import { useAuth } from '../hooks/useAuth';
 import { useDebounce } from '../hooks/useDebounce';
@@ -93,20 +94,20 @@ const Browse = () => {
     if (isInitialLoad) return <BrowseSkeleton />;
 
     return (
-        <div className="bg-slate-50 min-h-screen">
+        <div className="bg-slate-50 dark:bg-slate-950 min-h-screen">
             {/* Header */}
-            <div className="bg-white border-b border-slate-200">
+            <div className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800">
                 <div className="max-w-6xl mx-auto px-6 py-5">
-                    <h1 className="text-xl font-extrabold text-slate-900 tracking-tight">Browse products</h1>
-                    <p className="text-sm text-slate-500 mt-0.5">Fresh produce from verified Gambian farmers</p>
+                    <h1 className="text-xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight">Browse products</h1>
+                    <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">Fresh produce from verified Gambian farmers</p>
                 </div>
             </div>
 
             <div className="max-w-6xl mx-auto px-6 py-6">
                 {/* Search + filter bar */}
-                <div className="bg-white border border-slate-200 rounded-xl p-4 mb-5 flex flex-col sm:flex-row gap-3">
+                <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-4 mb-5 flex flex-col sm:flex-row gap-3">
                     <div className="relative flex-1">
-                        <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                         </svg>
                         <input
@@ -115,14 +116,14 @@ const Browse = () => {
                             placeholder="Search products or farmers..."
                             value={searchValue}
                             onChange={(e) => setSearchValue(e.target.value)}
-                            className="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-lg text-sm bg-slate-50 text-slate-900 outline-none focus:border-green-400 focus:bg-white transition"
+                            className="w-full pl-9 pr-4 py-2 border border-slate-200 dark:border-slate-700 rounded-lg text-sm bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 outline-none focus:border-green-400 dark:focus:border-green-500 focus:bg-white dark:focus:bg-slate-800 transition"
                             autoComplete="off"
                         />
                     </div>
                     <select
                         value={category}
                         onChange={(e) => setCategory(e.target.value)}
-                        className="px-3 py-2 border border-slate-200 rounded-lg text-sm bg-slate-50 text-slate-700 outline-none focus:border-green-400 focus:bg-white transition sm:w-48 cursor-pointer"
+                        className="px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg text-sm bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200 outline-none focus:border-green-400 dark:focus:border-green-500 focus:bg-white dark:focus:bg-slate-800 transition sm:w-48 cursor-pointer"
                     >
                         <option value="">All categories</option>
                         {categories.map((cat) => (
@@ -132,7 +133,7 @@ const Browse = () => {
                     {(searchValue || category) && (
                         <button
                             onClick={clearFilters}
-                            className="px-4 py-2 text-sm font-semibold text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200 transition border-none cursor-pointer flex-shrink-0"
+                            className="px-4 py-2 text-sm font-semibold text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-700 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-600 transition border-none cursor-pointer flex-shrink-0"
                         >
                             Clear
                         </button>
@@ -147,7 +148,7 @@ const Browse = () => {
                             className={`flex-shrink-0 px-3.5 py-1.5 rounded-full text-xs font-semibold border transition cursor-pointer ${
                                 !category
                                     ? 'bg-green-600 text-white border-green-600'
-                                    : 'bg-white text-slate-600 border-slate-200 hover:border-green-400 hover:text-green-700'
+                                    : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-green-400 dark:hover:border-green-600 hover:text-green-700 dark:hover:text-green-400'
                             }`}
                         >
                             All
@@ -159,7 +160,7 @@ const Browse = () => {
                                 className={`flex-shrink-0 flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold border transition cursor-pointer ${
                                     category === cat
                                         ? 'bg-green-600 text-white border-green-600'
-                                        : 'bg-white text-slate-600 border-slate-200 hover:border-green-400 hover:text-green-700'
+                                        : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-green-400 dark:hover:border-green-600 hover:text-green-700 dark:hover:text-green-400'
                                 }`}
                             >
                                 <span>{CATEGORY_ICONS[cat] || '📦'}</span>
@@ -171,12 +172,12 @@ const Browse = () => {
 
                 {/* Results count */}
                 <div className="flex items-center justify-between mb-4">
-                    <p className="text-xs text-slate-500">
+                    <p className="text-xs text-slate-500 dark:text-slate-400">
                         {pagination.total > 0 ? `${pagination.total} product${pagination.total !== 1 ? 's' : ''} found` : ''}
                     </p>
                     {(debouncedSearch || category) && (
-                        <p className="text-xs text-slate-400">
-                            {category && <span className="font-medium text-green-600">{category}</span>}
+                        <p className="text-xs text-slate-400 dark:text-slate-500">
+                            {category && <span className="font-medium text-green-600 dark:text-green-400">{category}</span>}
                             {debouncedSearch && category && ' · '}
                             {debouncedSearch && <span>"{debouncedSearch}"</span>}
                         </p>
@@ -186,10 +187,10 @@ const Browse = () => {
                 {/* Products grid container with smooth opacity transitions */}
                 <div className={`transition-opacity duration-200 ${loading ? 'opacity-60 pointer-events-none' : 'opacity-100'}`}>
                     {products.length === 0 ? (
-                        <div className="bg-white border border-slate-200 rounded-xl text-center py-20">
+                        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-center py-20">
                             <div className="text-5xl mb-3">🔍</div>
-                            <h3 className="text-base font-bold text-slate-900 mb-1">No products found</h3>
-                            <p className="text-sm text-slate-400 mb-5">Try a different search or category.</p>
+                            <h3 className="text-base font-bold text-slate-900 dark:text-slate-100 mb-1">No products found</h3>
+                            <p className="text-sm text-slate-400 dark:text-slate-500 mb-5">Try a different search or category.</p>
                             <button
                                 onClick={clearFilters}
                                 className="bg-green-600 text-white text-sm font-semibold px-5 py-2.5 rounded-lg hover:bg-green-700 transition border-none cursor-pointer"
@@ -207,23 +208,23 @@ const Browse = () => {
 
                             {/* Pagination */}
                             {pagination.last_page > 1 && (
-                                <div className="mt-5 bg-white border border-slate-200 rounded-xl px-5 py-3.5 flex items-center justify-between flex-wrap gap-3">
-                                    <span className="text-xs text-slate-500">
+                                <div className="mt-5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-5 py-3.5 flex items-center justify-between flex-wrap gap-3">
+                                    <span className="text-xs text-slate-500 dark:text-slate-400">
                                         Showing {products.length} of {pagination.total} products
                                     </span>
                                     <div className="flex items-center gap-2">
                                         <button
                                             disabled={pagination.current_page <= 1}
                                             onClick={() => setPage(pagination.current_page - 1)}
-                                            className="px-3.5 py-1.5 text-xs font-semibold rounded-lg border border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed transition cursor-pointer"
+                                            className="px-3.5 py-1.5 text-xs font-semibold rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition cursor-pointer"
                                         >← Previous</button>
-                                        <span className="text-xs text-slate-500 px-1">
+                                        <span className="text-xs text-slate-500 dark:text-slate-400 px-1">
                                             {pagination.current_page} / {pagination.last_page}
                                         </span>
                                         <button
                                             disabled={pagination.current_page >= pagination.last_page}
                                             onClick={() => setPage(pagination.current_page + 1)}
-                                            className="px-3.5 py-1.5 text-xs font-semibold rounded-lg border border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed transition cursor-pointer"
+                                            className="px-3.5 py-1.5 text-xs font-semibold rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition cursor-pointer"
                                         >Next →</button>
                                     </div>
                                 </div>
@@ -249,22 +250,17 @@ const ProductCard = ({ product, navigate, user }) => {
     return (
         <div
             onClick={() => navigate(`/app/products/${product.id}`)}
-            className="bg-white rounded-xl border border-slate-200 overflow-hidden cursor-pointer hover:-translate-y-0.5 hover:shadow-lg transition-all group"
+            className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden cursor-pointer hover:-translate-y-0.5 hover:shadow-lg transition-all group"
         >
             {/* Image Wrap */}
-            <div className="relative h-36 bg-slate-100 overflow-hidden">
-                {product.photos?.length > 0 ? (
-                    <img
-                        src={product.photos[0]}
-                        alt={product.name}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                        onError={(e) => { e.target.style.display = 'none'; }}
-                    />
-                ) : (
-                    <div className="w-full h-full flex items-center justify-center text-4xl">
-                        {CATEGORY_ICONS[product.category] || '🌾'}
-                    </div>
-                )}
+            <div className="relative h-36 bg-slate-100 dark:bg-slate-800 overflow-hidden">
+                <ImageWithFallback
+                    src={product.photos?.length > 0 ? product.photos[0] : null}
+                    alt={product.name}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    icon={CATEGORY_ICONS[product.category] || '🌾'}
+                    iconClassName="text-4xl"
+                />
 
                 {/* Status badge */}
                 <span className={`absolute top-2 left-2 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide ${
@@ -284,17 +280,17 @@ const ProductCard = ({ product, navigate, user }) => {
 
             {/* Info */}
             <div className="p-3">
-                <p className="text-[11px] text-slate-400 font-medium mb-0.5">
+                <p className="text-[11px] text-slate-400 dark:text-slate-500 font-medium mb-0.5">
                     {product.farmer?.name || 'Unknown Farmer'}
                 </p>
-                <h3 className="text-sm font-bold text-slate-900 truncate mb-1.5 group-hover:text-green-700 transition-colors">
+                <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 truncate mb-1.5 group-hover:text-green-700 dark:group-hover:text-green-400 transition-colors">
                     {product.name}
                 </h3>
                 <div className="flex items-center justify-between mb-2.5">
-                    <span className="text-base font-extrabold text-green-600">
+                    <span className="text-base font-extrabold text-green-600 dark:text-green-400">
                         {product.price_formatted || `GMD ${product.price}`}
                     </span>
-                    <span className="text-[11px] text-slate-400">{product.quantity} {product.unit}</span>
+                    <span className="text-[11px] text-slate-400 dark:text-slate-500">{product.quantity} {product.unit}</span>
                 </div>
 
                 {user?.role === 'buyer' && isAvailable ? (
@@ -305,11 +301,11 @@ const ProductCard = ({ product, navigate, user }) => {
                         Place order
                     </button>
                 ) : user?.role === 'buyer' && !isAvailable ? (
-                    <button disabled className="w-full bg-slate-100 text-slate-400 text-xs font-semibold py-2 rounded-lg cursor-not-allowed border-none">
+                    <button disabled className="w-full bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-600 text-xs font-semibold py-2 rounded-lg cursor-not-allowed border-none">
                         {isExpired ? 'Expired' : 'Sold out'}
                     </button>
                 ) : user?.role === 'farmer' ? (
-                    <button className="w-full bg-blue-50 text-blue-600 text-xs font-semibold py-2 rounded-lg hover:bg-blue-100 transition border-none cursor-pointer">
+                    <button className="w-full bg-blue-50 dark:bg-blue-900/40 text-blue-600 dark:text-blue-300 text-xs font-semibold py-2 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/60 transition border-none cursor-pointer">
                         View details
                     </button>
                 ) : (

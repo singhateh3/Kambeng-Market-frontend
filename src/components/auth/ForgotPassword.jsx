@@ -5,6 +5,7 @@ import { authService } from '../../services/authService';
 import { Alert } from '../common/Alert';
 import { Button } from '../common/Button';
 import { Input } from '../common/Input';
+import { ThemeToggle } from '../ThemeToggle';
 
 export const ForgotPassword = () => {
     const [email, setEmail] = useState('');
@@ -30,13 +31,16 @@ export const ForgotPassword = () => {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+        <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-slate-950 py-12 px-4 sm:px-6 lg:px-8 relative">
+            <div className="absolute top-4 right-4">
+                <ThemeToggle />
+            </div>
             <div className="max-w-md w-full space-y-8">
                 <div>
-                    <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+                    <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900 dark:text-slate-100">
                         Reset your password
                     </h2>
-                    <p className="mt-2 text-center text-sm text-gray-600">
+                    <p className="mt-2 text-center text-sm text-gray-600 dark:text-slate-400">
                         Enter your email address and we'll send you a link to reset your password.
                     </p>
                 </div>

@@ -38,7 +38,7 @@ export const ReviewList = ({ productId }) => {
     if (loading) {
         return (
             <div className="flex items-center justify-center py-8">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600 dark:border-green-400"></div>
             </div>
         );
     }
@@ -47,11 +47,11 @@ export const ReviewList = ({ productId }) => {
         <div className="space-y-6">
             {/* Rating Summary */}
             {totalReviews > 0 && (
-                <div className="flex items-center space-x-4 p-4 bg-gray-50 rounded-xl">
+                <div className="flex items-center space-x-4 p-4 bg-gray-50 dark:bg-slate-800 rounded-xl">
                     <div className="text-center">
-                        <div className="text-3xl font-bold text-gray-900">{averageRating.toFixed(1)}</div>
+                        <div className="text-3xl font-bold text-gray-900 dark:text-slate-100">{averageRating.toFixed(1)}</div>
                         <ReviewStars rating={averageRating} size="md" />
-                        <div className="text-sm text-gray-500">{totalReviews} reviews</div>
+                        <div className="text-sm text-gray-500 dark:text-slate-400">{totalReviews} reviews</div>
                     </div>
                 </div>
             )}
@@ -59,7 +59,7 @@ export const ReviewList = ({ productId }) => {
             {/* Reviews List */}
             {reviews.length === 0 ? (
                 <div className="text-center py-8">
-                    <p className="text-gray-500">No reviews yet. Be the first to review!</p>
+                    <p className="text-gray-500 dark:text-slate-400">No reviews yet. Be the first to review!</p>
                 </div>
             ) : (
                 <div className="space-y-4">
@@ -75,22 +75,22 @@ export const ReviewList = ({ productId }) => {
                     <button
                         className={`px-3 py-1 rounded-lg text-sm ${
                             pagination.current_page <= 1
-                                ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                                : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+                                ? 'bg-gray-100 dark:bg-slate-800 text-gray-400 dark:text-slate-600 cursor-not-allowed'
+                                : 'bg-gray-100 dark:bg-slate-700 hover:bg-gray-200 dark:hover:bg-slate-600 text-gray-700 dark:text-slate-200'
                         }`}
                         disabled={pagination.current_page <= 1}
                         onClick={() => setPagination(prev => ({ ...prev, current_page: prev.current_page - 1 }))}
                     >
                         Previous
                     </button>
-                    <span className="px-3 py-1 text-sm text-gray-600">
+                    <span className="px-3 py-1 text-sm text-gray-600 dark:text-slate-400">
                         Page {pagination.current_page} of {pagination.last_page}
                     </span>
                     <button
                         className={`px-3 py-1 rounded-lg text-sm ${
                             pagination.current_page >= pagination.last_page
-                                ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                                : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+                                ? 'bg-gray-100 dark:bg-slate-800 text-gray-400 dark:text-slate-600 cursor-not-allowed'
+                                : 'bg-gray-100 dark:bg-slate-700 hover:bg-gray-200 dark:hover:bg-slate-600 text-gray-700 dark:text-slate-200'
                         }`}
                         disabled={pagination.current_page >= pagination.last_page}
                         onClick={() => setPagination(prev => ({ ...prev, current_page: prev.current_page + 1 }))}
@@ -114,21 +114,21 @@ const ReviewItem = ({ review }) => {
     };
 
     return (
-        <div className="border border-gray-100 rounded-xl p-4 bg-white">
+        <div className="border border-gray-100 dark:border-slate-700 rounded-xl p-4 bg-white dark:bg-slate-800">
             <div className="flex items-start justify-between">
                 <div className="flex items-center space-x-3">
-                    <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center text-green-700 font-medium">
+                    <div className="w-10 h-10 rounded-full bg-green-100 dark:bg-green-900/40 flex items-center justify-center text-green-700 dark:text-green-300 font-medium">
                         {review.user?.name?.[0]?.toUpperCase() || 'U'}
                     </div>
                     <div>
-                        <p className="font-medium text-gray-900">{review.user?.name || 'Anonymous'}</p>
+                        <p className="font-medium text-gray-900 dark:text-slate-100">{review.user?.name || 'Anonymous'}</p>
                         <ReviewStars rating={review.rating} size="sm" />
                     </div>
                 </div>
-                <span className="text-xs text-gray-400">{formatDate(review.created_at)}</span>
+                <span className="text-xs text-gray-400 dark:text-slate-500">{formatDate(review.created_at)}</span>
             </div>
             {review.comment && (
-                <p className="mt-3 text-gray-600 text-sm">{review.comment}</p>
+                <p className="mt-3 text-gray-600 dark:text-slate-400 text-sm">{review.comment}</p>
             )}
         </div>
     );

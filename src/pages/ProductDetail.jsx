@@ -80,22 +80,22 @@ const ProductDetail = () => {
     if (loading) {
         return (
             <div className="flex items-center justify-center h-64">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 dark:border-green-400"></div>
             </div>
         );
     }
 
     if (error || !product || !product.id) {
         return (
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-12 text-center max-w-2xl mx-auto">
+            <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-100 dark:border-slate-700 p-12 text-center max-w-2xl mx-auto">
                 <div className="text-6xl mb-4">🔍</div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">Product Not Found</h3>
-                <p className="text-gray-500">The product you're looking for doesn't exist or has been removed.</p>
+                <h3 className="text-xl font-semibold text-gray-900 dark:text-slate-100 mb-2">Product Not Found</h3>
+                <p className="text-gray-500 dark:text-slate-400">The product you're looking for doesn't exist or has been removed.</p>
                 {productId && (
-                    <p className="text-sm text-gray-400 mt-2">Product ID: {productId}</p>
+                    <p className="text-sm text-gray-400 dark:text-slate-500 mt-2">Product ID: {productId}</p>
                 )}
                 {error && (
-                    <p className="text-sm text-red-500 mt-2">Error: {error}</p>
+                    <p className="text-sm text-red-500 dark:text-red-400 mt-2">Error: {error}</p>
                 )}
                 <Button className="mt-4" onClick={() => navigate('/app/browse')}>
                     Browse Products
@@ -106,12 +106,12 @@ const ProductDetail = () => {
 
     return (
         <div className="max-w-5xl mx-auto">
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+            <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-100 dark:border-slate-700 overflow-hidden">
                 {/* Back Button */}
-                <div className="p-4 border-b border-gray-100">
+                <div className="p-4 border-b border-gray-100 dark:border-slate-700">
                     <button
                         onClick={handleGoBack}
-                        className="text-gray-600 hover:text-gray-900 flex items-center transition"
+                        className="text-gray-600 dark:text-slate-300 hover:text-gray-900 dark:hover:text-slate-100 flex items-center transition"
                     >
                         <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -124,7 +124,7 @@ const ProductDetail = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                         {/* Product Image */}
                         <div>
-                            <div className="bg-gray-50 rounded-xl overflow-hidden relative">
+                            <div className="bg-gray-50 dark:bg-slate-900 rounded-xl overflow-hidden relative">
                                 <ImageWithFallback
                                     src={product.photos?.[activeImage]}
                                     alt={product.name}
@@ -159,7 +159,7 @@ const ProductDetail = () => {
                                             className={`w-20 h-20 object-cover rounded-lg border-2 cursor-pointer transition-all flex-shrink-0 ${
                                                 activeImage === index
                                                     ? 'border-green-500 shadow-md'
-                                                    : 'border-gray-200 hover:border-green-300'
+                                                    : 'border-gray-200 dark:border-slate-600 hover:border-green-300 dark:hover:border-green-600'
                                             }`}
                                             iconClassName="text-2xl"
                                             onClick={() => setActiveImage(index)}
@@ -172,13 +172,13 @@ const ProductDetail = () => {
                         {/* Product Info */}
                         <div className="space-y-4">
                             <div>
-                                <h1 className="text-2xl font-bold text-gray-900">{product.name}</h1>
+                                <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100">{product.name}</h1>
                                 {product.variety && (
-                                    <p className="text-sm text-green-600 font-medium mt-1">
+                                    <p className="text-sm text-green-600 dark:text-green-400 font-medium mt-1">
                                         Variety: {product.variety}
                                     </p>
                                 )}
-                                <p className="text-sm text-gray-500">{product.category}</p>
+                                <p className="text-sm text-gray-500 dark:text-slate-400">{product.category}</p>
                             </div>
 
                             <div className="flex items-center space-x-2">
@@ -191,53 +191,53 @@ const ProductDetail = () => {
                                 {Number(product.avg_rating ?? product.average_rating ?? 0) > 0 && (
                                     <div className="flex items-center">
                                         <span className="text-yellow-400">⭐</span>
-                                        <span className="ml-1 text-gray-600 font-medium">
+                                        <span className="ml-1 text-gray-600 dark:text-slate-300 font-medium">
                                             {Number(product.avg_rating ?? product.average_rating).toFixed(1)}
                                         </span>
                                     </div>
                                 )}
-                                <span className="text-gray-300">|</span>
-                                <span className="text-sm text-gray-500">
+                                <span className="text-gray-300 dark:text-slate-600">|</span>
+                                <span className="text-sm text-gray-500 dark:text-slate-400">
                                     {product.orders_count || 0} orders
                                 </span>
                             </div>
 
-                            <div className="border-t border-b border-gray-100 py-4">
-                                <div className="text-3xl font-bold text-green-600">
+                            <div className="border-t border-b border-gray-100 dark:border-slate-700 py-4">
+                                <div className="text-3xl font-bold text-green-600 dark:text-green-400">
                                     {product.price_formatted || `GMD ${product.price}`}
                                 </div>
-                                <div className="text-sm text-gray-500 mt-1">
+                                <div className="text-sm text-gray-500 dark:text-slate-400 mt-1">
                                     per {product.unit_display || product.unit}
                                 </div>
                             </div>
 
                             <div className="space-y-2">
                                 <div className="flex justify-between py-1">
-                                    <span className="text-gray-600">Quantity Available</span>
-                                    <span className="font-medium text-gray-900">
+                                    <span className="text-gray-600 dark:text-slate-400">Quantity Available</span>
+                                    <span className="font-medium text-gray-900 dark:text-slate-100">
                                         {product.quantity} {product.unit_display || product.unit}
                                     </span>
                                 </div>
                                 <div className="flex justify-between py-1">
-                                    <span className="text-gray-600">Status</span>
+                                    <span className="text-gray-600 dark:text-slate-400">Status</span>
                                     <span className={`font-medium ${
-                                        isAvailable && !isExpired ? 'text-green-600' : 'text-red-600'
+                                        isAvailable && !isExpired ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
                                     }`}>
-                                        {isExpired ? 'Expired' : 
+                                        {isExpired ? 'Expired' :
                                          isAvailable ? product.status_label || 'Available' : 'Sold Out'}
                                     </span>
                                 </div>
                                 <div className="flex justify-between py-1">
-                                    <span className="text-gray-600">Harvest Date</span>
-                                    <span className="font-medium text-gray-900">
-                                        {product.harvest_date_display || 
+                                    <span className="text-gray-600 dark:text-slate-400">Harvest Date</span>
+                                    <span className="font-medium text-gray-900 dark:text-slate-100">
+                                        {product.harvest_date_display ||
                                          (product.harvest_date ? new Date(product.harvest_date).toLocaleDateString() : '-')}
                                     </span>
                                 </div>
                                 <div className="flex justify-between py-1">
-                                    <span className="text-gray-600">Expiry Date</span>
-                                    <span className="font-medium text-gray-900">
-                                        {product.expiry_date_display || 
+                                    <span className="text-gray-600 dark:text-slate-400">Expiry Date</span>
+                                    <span className="font-medium text-gray-900 dark:text-slate-100">
+                                        {product.expiry_date_display ||
                                          (product.expiry_date ? new Date(product.expiry_date).toLocaleDateString() : '-')}
                                     </span>
                                 </div>
@@ -245,25 +245,25 @@ const ProductDetail = () => {
 
                             {product.description && (
                                 <div>
-                                    <h3 className="font-semibold text-gray-900 mb-1">Description</h3>
-                                    <p className="text-gray-600 text-sm leading-relaxed">{product.description}</p>
+                                    <h3 className="font-semibold text-gray-900 dark:text-slate-100 mb-1">Description</h3>
+                                    <p className="text-gray-600 dark:text-slate-400 text-sm leading-relaxed">{product.description}</p>
                                 </div>
                             )}
 
                             {/* Farmer Info */}
                             {product.farmer && (
-                                <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
-                                    <h3 className="font-semibold text-gray-900 mb-2">Sold by</h3>
+                                <div className="bg-gray-50 dark:bg-slate-900 rounded-xl p-4 border border-gray-100 dark:border-slate-700">
+                                    <h3 className="font-semibold text-gray-900 dark:text-slate-100 mb-2">Sold by</h3>
                                     <div className="flex items-center">
-                                        <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center text-sm font-medium text-green-700">
+                                        <div className="w-10 h-10 rounded-full bg-green-100 dark:bg-green-900/40 flex items-center justify-center text-sm font-medium text-green-700 dark:text-green-300">
                                             {product.farmer.name?.[0]?.toUpperCase() || 'F'}
                                         </div>
                                         <div className="ml-3">
-                                            <p className="font-medium text-gray-900">
+                                            <p className="font-medium text-gray-900 dark:text-slate-100">
                                                 {product.farmer.name || 'Unknown Farmer'}
                                             </p>
                                             {product.farmer.location && (
-                                                <p className="text-sm text-gray-500">
+                                                <p className="text-sm text-gray-500 dark:text-slate-400">
                                                     📍 {product.farmer.location}
                                                 </p>
                                             )}
@@ -278,7 +278,7 @@ const ProductDetail = () => {
                                     <>
                                         <div className="flex items-center space-x-4">
                                             <div className="flex items-center space-x-2">
-                                                <label className="text-sm font-medium text-gray-700">
+                                                <label className="text-sm font-medium text-gray-700 dark:text-slate-300">
                                                     Quantity:
                                                 </label>
                                                 <input
@@ -287,10 +287,10 @@ const ProductDetail = () => {
                                                     max={product.quantity}
                                                     value={quantity}
                                                     onChange={handleQuantityChange}
-                                                    className="w-20 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                                                    className="w-20 px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-900 text-gray-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-green-500"
                                                 />
                                             </div>
-                                            <span className="text-sm text-gray-500">
+                                            <span className="text-sm text-gray-500 dark:text-slate-400">
                                                 {product.unit}s available
                                             </span>
                                         </div>
@@ -304,19 +304,19 @@ const ProductDetail = () => {
                                     </>
                                 )}
                                 {isBuyer && !isAvailable && !isExpired && (
-                                    <button className="w-full bg-gray-300 text-gray-600 py-3 rounded-xl cursor-not-allowed font-semibold text-lg" disabled>
+                                    <button className="w-full bg-gray-300 dark:bg-slate-700 text-gray-600 dark:text-slate-400 py-3 rounded-xl cursor-not-allowed font-semibold text-lg" disabled>
                                         Sold Out
                                     </button>
                                 )}
                                 {isBuyer && isExpired && (
-                                    <button className="w-full bg-gray-300 text-gray-600 py-3 rounded-xl cursor-not-allowed font-semibold text-lg" disabled>
+                                    <button className="w-full bg-gray-300 dark:bg-slate-700 text-gray-600 dark:text-slate-400 py-3 rounded-xl cursor-not-allowed font-semibold text-lg" disabled>
                                         Expired
                                     </button>
                                 )}
                                 {isFarmer && (
                                     <button
                                         onClick={() => navigate('/app/products')}
-                                        className="w-full bg-blue-50 text-blue-600 py-3 rounded-xl hover:bg-blue-100 transition font-semibold text-lg"
+                                        className="w-full bg-blue-50 dark:bg-blue-900/40 text-blue-600 dark:text-blue-300 py-3 rounded-xl hover:bg-blue-100 dark:hover:bg-blue-900/60 transition font-semibold text-lg"
                                     >
                                         📦 View My Products
                                     </button>

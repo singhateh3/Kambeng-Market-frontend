@@ -13,8 +13,8 @@ const AdminDashboard = () => {
     const [refreshing, setRefreshing] = useState(false);
 
     // Use cached fetch for stats - cache for 2 minutes
-    const { 
-        data: cachedStats, 
+    const {
+        data: cachedStats,
         isCached,
         refresh: refreshStats,
         invalidateCache: invalidateStatsCache
@@ -25,7 +25,7 @@ const AdminDashboard = () => {
             // Handle different response formats
             if (data) {
                 let statsData = null;
-                
+
                 // Extract stats data from response
                 if (data.data) {
                     statsData = data.data;
@@ -34,7 +34,7 @@ const AdminDashboard = () => {
                 } else if (data.success && data.data) {
                     statsData = data.data;
                 }
-                
+
                 if (statsData) {
                     setStats(statsData);
 
@@ -67,13 +67,13 @@ const AdminDashboard = () => {
         if (cachedStats) {
             console.log('📦 Using cached stats:', cachedStats);
             let statsData = null;
-            
+
             if (cachedStats.data) {
                 statsData = cachedStats.data;
             } else if (cachedStats.users || cachedStats.orders || cachedStats.products) {
                 statsData = cachedStats;
             }
-            
+
             if (statsData) {
                 setStats(statsData);
 
@@ -98,7 +98,7 @@ const AdminDashboard = () => {
     const handleRefresh = useCallback(async () => {
         setRefreshing(true);
         setLoading(true);
-        
+
         try {
             // Invalidate and refresh stats
             invalidateStatsCache();
@@ -122,13 +122,13 @@ const AdminDashboard = () => {
 
     const statusColor = (status) => {
         const map = {
-            delivered: 'bg-green-50 text-green-700',
-            pending:   'bg-yellow-50 text-yellow-700',
-            confirmed: 'bg-blue-50 text-blue-700',
-            shipped:   'bg-purple-50 text-purple-700',
-            cancelled: 'bg-red-50 text-red-700',
+            delivered: 'bg-green-50 dark:bg-green-900/40 text-green-700 dark:text-green-300',
+            pending:   'bg-yellow-50 dark:bg-yellow-900/40 text-yellow-700 dark:text-yellow-300',
+            confirmed: 'bg-blue-50 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300',
+            shipped:   'bg-purple-50 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300',
+            cancelled: 'bg-red-50 dark:bg-red-900/40 text-red-700 dark:text-red-300',
         };
-        return map[status] || 'bg-slate-100 text-slate-600';
+        return map[status] || 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300';
     };
 
     const maxStat = Math.max(
@@ -142,23 +142,23 @@ const AdminDashboard = () => {
     );
 
     return (
-        <div className="bg-slate-50 min-h-screen">
+        <div className="bg-slate-50 dark:bg-slate-950 min-h-screen">
             {/* Header */}
-            <div className="bg-white border-b border-slate-200">
+            <div className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800">
                 <div className="max-w-6xl mx-auto px-6 py-5">
                     <div className="flex items-center justify-between">
                         <div>
-                            <h1 className="text-xl font-extrabold text-slate-900 tracking-tight">Admin Dashboard</h1>
+                            <h1 className="text-xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight">Admin Dashboard</h1>
                             <div className="flex items-center gap-2 mt-0.5">
-                                <p className="text-sm text-slate-500">Welcome back, {user?.name}!</p>
+                                <p className="text-sm text-slate-500 dark:text-slate-400">Welcome back, {user?.name}!</p>
                                 {isCached && (
-                                    <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full flex items-center gap-1 animate-in fade-in duration-300">
-                                        <span className="w-1.5 h-1.5 bg-green-600 rounded-full animate-pulse"></span>
+                                    <span className="text-xs bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300 px-2 py-0.5 rounded-full flex items-center gap-1 animate-in fade-in duration-300">
+                                        <span className="w-1.5 h-1.5 bg-green-600 dark:bg-green-400 rounded-full animate-pulse"></span>
                                         Cached
                                     </span>
                                 )}
                                 {refreshing && (
-                                    <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full flex items-center gap-1 animate-in fade-in duration-300">
+                                    <span className="text-xs bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 px-2 py-0.5 rounded-full flex items-center gap-1 animate-in fade-in duration-300">
                                         <svg className="w-3 h-3 animate-spin" fill="none" viewBox="0 0 24 24">
                                             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                                             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
@@ -174,7 +174,7 @@ const AdminDashboard = () => {
 
             {/* Cache Status Bar */}
             <div className="max-w-6xl mx-auto px-6 pt-3">
-                <div className="flex items-center justify-between text-xs text-slate-400 bg-white border border-slate-200 rounded-lg px-3 py-1.5">
+                <div className="flex items-center justify-between text-xs text-slate-400 dark:text-slate-500 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-1.5">
                     <div className="flex items-center gap-4">
                         <span className="flex items-center gap-1">
                             <span className={`w-2 h-2 rounded-full ${isCached ? 'bg-green-500' : 'bg-blue-500'}`}></span>
@@ -185,7 +185,7 @@ const AdminDashboard = () => {
                     <button
                         onClick={handleRefresh}
                         disabled={refreshing}
-                        className="text-green-600 hover:text-green-700 font-medium disabled:opacity-50"
+                        className="text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300 font-medium disabled:opacity-50"
                     >
                         {refreshing ? 'Refreshing...' : 'Force refresh'}
                     </button>
@@ -201,32 +201,32 @@ const AdminDashboard = () => {
                         { label: 'Total orders', value: stats?.orders?.total || 0, icon: '🛒' },
                         { label: 'Revenue', value: fmt(stats?.orders?.total_revenue), icon: '💰' },
                     ].map((s, i) => (
-                        <div key={i} className="bg-white border border-slate-200 rounded-xl p-5 hover:shadow-md transition-shadow">
+                        <div key={i} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-5 hover:shadow-md transition-shadow">
                             <div className="text-2xl mb-3">{s.icon}</div>
-                            <div className="text-2xl font-extrabold text-slate-900 tracking-tight mb-1">{s.value}</div>
-                            <div className="text-xs text-slate-500">{s.label}</div>
+                            <div className="text-2xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight mb-1">{s.value}</div>
+                            <div className="text-xs text-slate-500 dark:text-slate-400">{s.label}</div>
                         </div>
                     ))}
                 </div>
 
                 {/* Pending Verifications Alert */}
                 {pendingVerifications > 0 && (
-                    <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4 mb-6 animate-in slide-in-from-top duration-300">
+                    <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-xl p-4 mb-6 animate-in slide-in-from-top duration-300">
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-3">
                                 <span className="text-2xl">👨‍🌾</span>
                                 <div>
-                                    <p className="text-sm font-semibold text-yellow-800">
+                                    <p className="text-sm font-semibold text-yellow-800 dark:text-yellow-300">
                                         {pendingVerifications} farmer verification{pendingVerifications > 1 ? 's' : ''} pending
                                     </p>
-                                    <p className="text-xs text-yellow-700">
+                                    <p className="text-xs text-yellow-700 dark:text-yellow-400">
                                         Review and verify farmer applications
                                     </p>
                                 </div>
                             </div>
-                            <Link 
-                                to="/app/admin/farmers/verification" 
-                                className="bg-yellow-100 text-yellow-800 text-xs font-semibold px-4 py-2 rounded-lg hover:bg-yellow-200 transition no-underline"
+                            <Link
+                                to="/app/admin/farmers/verification"
+                                className="bg-yellow-100 dark:bg-yellow-900/40 text-yellow-800 dark:text-yellow-300 text-xs font-semibold px-4 py-2 rounded-lg hover:bg-yellow-200 dark:hover:bg-yellow-900/60 transition no-underline"
                             >
                                 Review now →
                             </Link>
@@ -236,57 +236,57 @@ const AdminDashboard = () => {
 
                 {/* Admin Quick Stats - New Section */}
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-                    <div className="bg-white border border-slate-200 rounded-xl p-5 hover:shadow-md transition-shadow">
+                    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-5 hover:shadow-md transition-shadow">
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-2xl font-extrabold text-slate-900">
+                                <p className="text-2xl font-extrabold text-slate-900 dark:text-slate-100">
                                     {stats?.users?.farmers || 0}
                                 </p>
-                                <p className="text-xs text-slate-500">Total Farmers</p>
+                                <p className="text-xs text-slate-500 dark:text-slate-400">Total Farmers</p>
                             </div>
                             <span className="text-3xl">👨‍🌾</span>
                         </div>
                         <div className="mt-2">
-                            <span className="text-xs text-green-600">
+                            <span className="text-xs text-green-600 dark:text-green-400">
                                 {stats?.users?.verified_farmers || 0} verified
                             </span>
                         </div>
                     </div>
 
-                    <div className="bg-white border border-slate-200 rounded-xl p-5 hover:shadow-md transition-shadow">
+                    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-5 hover:shadow-md transition-shadow">
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-2xl font-extrabold text-slate-900">
+                                <p className="text-2xl font-extrabold text-slate-900 dark:text-slate-100">
                                     {stats?.orders?.pending || 0}
                                 </p>
-                                <p className="text-xs text-slate-500">Pending Orders</p>
+                                <p className="text-xs text-slate-500 dark:text-slate-400">Pending Orders</p>
                             </div>
                             <span className="text-3xl">⏳</span>
                         </div>
                         <div className="mt-2">
-                            <Link 
-                                to="/app/orders?status=pending" 
-                                className="text-xs text-blue-600 hover:text-blue-700"
+                            <Link
+                                to="/app/orders?status=pending"
+                                className="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300"
                             >
                                 View pending →
                             </Link>
                         </div>
                     </div>
 
-                    <div className="bg-white border border-slate-200 rounded-xl p-5 hover:shadow-md transition-shadow">
+                    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-5 hover:shadow-md transition-shadow">
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-2xl font-extrabold text-slate-900">
+                                <p className="text-2xl font-extrabold text-slate-900 dark:text-slate-100">
                                     {stats?.products?.active || 0}
                                 </p>
-                                <p className="text-xs text-slate-500">Active Products</p>
+                                <p className="text-xs text-slate-500 dark:text-slate-400">Active Products</p>
                             </div>
                             <span className="text-3xl">📦</span>
                         </div>
                         <div className="mt-2">
-                            <Link 
-                                to="/app/admin/products" 
-                                className="text-xs text-blue-600 hover:text-blue-700"
+                            <Link
+                                to="/app/admin/products"
+                                className="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300"
                             >
                                 Manage products →
                             </Link>
@@ -295,8 +295,8 @@ const AdminDashboard = () => {
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-                    <div className="bg-white border border-slate-200 rounded-xl p-5 hover:shadow-md transition-shadow">
-                        <h3 className="text-sm font-bold text-slate-900 mb-4">Order status</h3>
+                    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-5 hover:shadow-md transition-shadow">
+                        <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 mb-4">Order status</h3>
                         <div className="space-y-3">
                             {[
                                 { label: 'Pending',   count: stats?.orders?.pending   || 0, bar: 'bg-yellow-400' },
@@ -306,18 +306,18 @@ const AdminDashboard = () => {
                                 { label: 'Cancelled', count: stats?.orders?.cancelled || 0, bar: 'bg-red-400' },
                             ].map((row, i) => (
                                 <div key={i} className="flex items-center gap-3">
-                                    <span className="text-xs text-slate-500 w-20 flex-shrink-0">{row.label}</span>
-                                    <div className="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                                    <span className="text-xs text-slate-500 dark:text-slate-400 w-20 flex-shrink-0">{row.label}</span>
+                                    <div className="flex-1 h-1.5 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
                                         <div className={`h-full rounded-full ${row.bar}`} style={{ width: `${Math.min((row.count / maxStat) * 100, 100)}%` }} />
                                     </div>
-                                    <span className="text-xs font-semibold text-slate-700 w-6 text-right">{row.count}</span>
+                                    <span className="text-xs font-semibold text-slate-700 dark:text-slate-300 w-6 text-right">{row.count}</span>
                                 </div>
                             ))}
                         </div>
                     </div>
 
-                    <div className="bg-white border border-slate-200 rounded-xl p-5 hover:shadow-md transition-shadow">
-                        <h3 className="text-sm font-bold text-slate-900 mb-4">User breakdown</h3>
+                    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-5 hover:shadow-md transition-shadow">
+                        <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 mb-4">User breakdown</h3>
                         <div className="space-y-3">
                             {[
                                 { label: 'Total',            count: stats?.users?.total            || 0, bar: 'bg-slate-400' },
@@ -327,11 +327,11 @@ const AdminDashboard = () => {
                                 { label: 'Verified farmers', count: stats?.users?.verified_farmers || 0, bar: 'bg-teal-500' },
                             ].map((row, i) => (
                                 <div key={i} className="flex items-center gap-3">
-                                    <span className="text-xs text-slate-500 w-28 flex-shrink-0">{row.label}</span>
-                                    <div className="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                                    <span className="text-xs text-slate-500 dark:text-slate-400 w-28 flex-shrink-0">{row.label}</span>
+                                    <div className="flex-1 h-1.5 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
                                         <div className={`h-full rounded-full ${row.bar}`} style={{ width: `${Math.min((row.count / maxStat) * 100, 100)}%` }} />
                                     </div>
-                                    <span className="text-xs font-semibold text-slate-700 w-6 text-right">{row.count}</span>
+                                    <span className="text-xs font-semibold text-slate-700 dark:text-slate-300 w-6 text-right">{row.count}</span>
                                 </div>
                             ))}
                         </div>
@@ -340,7 +340,7 @@ const AdminDashboard = () => {
 
                 {/* Quick Actions */}
                 <div className="mb-6">
-                    <h3 className="text-sm font-bold text-slate-900 mb-3">Quick actions</h3>
+                    <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 mb-3">Quick actions</h3>
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                         {[
                             { icon: '🛒', title: 'Orders',         desc: 'View all orders',   to: '/app/orders' },
@@ -348,11 +348,11 @@ const AdminDashboard = () => {
                             { icon: '✅', title: 'Verify farmers', desc: 'Review & approve',  to: '/app/admin/farmers/verification' },
                             { icon: '📦', title: 'Products',       desc: 'Manage listings',   to: '/app/admin/products' },
                         ].map((a, i) => (
-                            <Link key={i} to={a.to} className="bg-white border border-slate-200 rounded-xl px-4 py-4 flex items-center gap-3 no-underline hover:border-green-400 hover:shadow-sm transition-all group">
-                                <div className="w-9 h-9 rounded-lg bg-green-50 flex items-center justify-center text-lg flex-shrink-0">{a.icon}</div>
+                            <Link key={i} to={a.to} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-4 flex items-center gap-3 no-underline hover:border-green-400 dark:hover:border-green-600 hover:shadow-sm transition-all group">
+                                <div className="w-9 h-9 rounded-lg bg-green-50 dark:bg-green-900/40 flex items-center justify-center text-lg flex-shrink-0">{a.icon}</div>
                                 <div>
-                                    <p className="text-sm font-bold text-slate-900 group-hover:text-green-700 transition-colors">{a.title}</p>
-                                    <p className="text-xs text-slate-400">{a.desc}</p>
+                                    <p className="text-sm font-bold text-slate-900 dark:text-slate-100 group-hover:text-green-700 dark:group-hover:text-green-400 transition-colors">{a.title}</p>
+                                    <p className="text-xs text-slate-400 dark:text-slate-500">{a.desc}</p>
                                 </div>
                             </Link>
                         ))}
@@ -360,15 +360,15 @@ const AdminDashboard = () => {
                 </div>
 
                 {/* Recent Orders */}
-                <div className="bg-white border border-slate-200 rounded-xl p-5 hover:shadow-md transition-shadow">
-                    <h3 className="text-sm font-bold text-slate-900 mb-4">Recent orders</h3>
+                <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-5 hover:shadow-md transition-shadow">
+                    <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 mb-4">Recent orders</h3>
                     {(!stats?.recent_activity?.recent_orders?.length) ? (
-                        <div className="text-center py-10 text-slate-400 text-sm">No recent orders</div>
+                        <div className="text-center py-10 text-slate-400 dark:text-slate-500 text-sm">No recent orders</div>
                     ) : stats.recent_activity.recent_orders.slice(0, 5).map((order) => (
-                        <div key={order.id} className="flex items-center justify-between py-2.5 border-b border-slate-50 last:border-0">
+                        <div key={order.id} className="flex items-center justify-between py-2.5 border-b border-slate-50 dark:border-slate-800 last:border-0">
                             <div>
-                                <span className="text-sm font-semibold text-slate-900">{order.buyer?.name || 'Unknown'}</span>
-                                <span className="text-sm text-slate-400 ml-2">ordered {order.product?.name || 'Unknown product'}</span>
+                                <span className="text-sm font-semibold text-slate-900 dark:text-slate-100">{order.buyer?.name || 'Unknown'}</span>
+                                <span className="text-sm text-slate-400 dark:text-slate-500 ml-2">ordered {order.product?.name || 'Unknown product'}</span>
                             </div>
                             <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${statusColor(order.status)}`}>
                                 {order.status || 'Unknown'}

@@ -48,55 +48,55 @@ export const OrderCard = ({
     };
 
     return (
-        <div className="bg-white border border-slate-200 rounded-xl p-4 hover:shadow-sm transition-shadow">
+        <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-4 hover:shadow-sm transition-shadow">
             <div className="flex flex-wrap items-start justify-between gap-4">
                 {/* Left: Order Info */}
                 <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-3 mb-2">
-                        <span className="text-sm font-semibold text-slate-900">
+                        <span className="text-sm font-semibold text-slate-900 dark:text-slate-100">
                             Order #{orderId}
                         </span>
                         <OrderStatusBadge status={status} />
                     </div>
-                    
+
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
                         <div className="min-w-0">
-                            <span className="text-slate-500">Product:</span>
-                            <span className="ml-1 font-medium text-slate-900 break-words">
+                            <span className="text-slate-500 dark:text-slate-400">Product:</span>
+                            <span className="ml-1 font-medium text-slate-900 dark:text-slate-100 break-words">
                                 {productName}
                             </span>
                         </div>
                         <div>
-                            <span className="text-slate-500">Quantity:</span>
-                            <span className="ml-1 font-medium text-slate-900">
+                            <span className="text-slate-500 dark:text-slate-400">Quantity:</span>
+                            <span className="ml-1 font-medium text-slate-900 dark:text-slate-100">
                                 {quantity} {productUnit}
                             </span>
                         </div>
                         <div>
-                            <span className="text-slate-500">Total:</span>
-                            <span className="ml-1 font-medium text-slate-900">
+                            <span className="text-slate-500 dark:text-slate-400">Total:</span>
+                            <span className="ml-1 font-medium text-slate-900 dark:text-slate-100">
                                 {totalPriceFormatted}
                             </span>
                         </div>
                         <div>
-                            <span className="text-slate-500">Date:</span>
-                            <span className="ml-1 text-slate-600">
+                            <span className="text-slate-500 dark:text-slate-400">Date:</span>
+                            <span className="ml-1 text-slate-600 dark:text-slate-300">
                                 {formatDate(orderDate)}
                             </span>
                         </div>
                         {isFarmer && buyerName && (
                             <div className="sm:col-span-2 min-w-0">
-                                <span className="text-slate-500">Buyer:</span>
-                                <span className="ml-1 font-medium text-slate-900 break-words">
+                                <span className="text-slate-500 dark:text-slate-400">Buyer:</span>
+                                <span className="ml-1 font-medium text-slate-900 dark:text-slate-100 break-words">
                                     {buyerName}
                                 </span>
                                 {buyerEmail && (
-                                    <span className="ml-2 text-slate-500 text-xs break-words">
+                                    <span className="ml-2 text-slate-500 dark:text-slate-400 text-xs break-words">
                                         {buyerEmail}
                                     </span>
                                 )}
                                 {buyerLocation && (
-                                    <span className="ml-2 text-slate-500 text-xs break-words">
+                                    <span className="ml-2 text-slate-500 dark:text-slate-400 text-xs break-words">
                                         📍 {buyerLocation}
                                     </span>
                                 )}
@@ -104,12 +104,12 @@ export const OrderCard = ({
                         )}
                         {isBuyer && productFarmerName && (
                             <div className="sm:col-span-2 min-w-0">
-                                <span className="text-slate-500">Farmer:</span>
-                                <span className="ml-1 font-medium text-slate-900 break-words">
+                                <span className="text-slate-500 dark:text-slate-400">Farmer:</span>
+                                <span className="ml-1 font-medium text-slate-900 dark:text-slate-100 break-words">
                                     {productFarmerName}
                                 </span>
                                 {productFarmerLocation && (
-                                    <span className="ml-2 text-slate-500 text-xs break-words">
+                                    <span className="ml-2 text-slate-500 dark:text-slate-400 text-xs break-words">
                                         📍 {productFarmerLocation}
                                     </span>
                                 )}
@@ -117,8 +117,8 @@ export const OrderCard = ({
                         )}
                         {specialInstructions && (
                             <div className="sm:col-span-2 min-w-0">
-                                <span className="text-slate-500">Instructions:</span>
-                                <span className="ml-1 text-slate-600 italic break-words">
+                                <span className="text-slate-500 dark:text-slate-400">Instructions:</span>
+                                <span className="ml-1 text-slate-600 dark:text-slate-300 italic break-words">
                                     {specialInstructions}
                                 </span>
                             </div>
@@ -138,7 +138,7 @@ export const OrderCard = ({
                     {isFarmer && status === 'pending' && (
                         <button
                             onClick={() => onStatusUpdate(orderId, 'confirmed')}
-                            className="px-3 py-1.5 text-sm bg-green-50 text-green-600 rounded-lg hover:bg-green-100 transition-colors"
+                            className="px-3 py-1.5 text-sm bg-green-50 dark:bg-green-900/40 text-green-600 dark:text-green-300 rounded-lg hover:bg-green-100 dark:hover:bg-green-900/60 transition-colors"
                             disabled={loadingAction}
                         >
                             Confirm
@@ -147,7 +147,7 @@ export const OrderCard = ({
                     {isFarmer && status === 'confirmed' && (
                         <button
                             onClick={() => onStatusUpdate(orderId, 'shipped')}
-                            className="px-3 py-1.5 text-sm bg-purple-50 text-purple-600 rounded-lg hover:bg-purple-100 transition-colors"
+                            className="px-3 py-1.5 text-sm bg-purple-50 dark:bg-purple-900/40 text-purple-600 dark:text-purple-300 rounded-lg hover:bg-purple-100 dark:hover:bg-purple-900/60 transition-colors"
                             disabled={loadingAction}
                         >
                             Ship
@@ -156,7 +156,7 @@ export const OrderCard = ({
                     {isFarmer && status === 'shipped' && (
                         <button
                             onClick={() => onStatusUpdate(orderId, 'delivered')}
-                            className="px-3 py-1.5 text-sm bg-green-50 text-green-600 rounded-lg hover:bg-green-100 transition-colors"
+                            className="px-3 py-1.5 text-sm bg-green-50 dark:bg-green-900/40 text-green-600 dark:text-green-300 rounded-lg hover:bg-green-100 dark:hover:bg-green-900/60 transition-colors"
                             disabled={loadingAction}
                         >
                             Deliver
@@ -166,7 +166,7 @@ export const OrderCard = ({
                     {!isFarmer && status === 'pending' && (
                         <button
                             onClick={() => onCancelOrder(orderId)}
-                            className="px-3 py-1.5 text-sm bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors"
+                            className="px-3 py-1.5 text-sm bg-red-50 dark:bg-red-900/40 text-red-600 dark:text-red-300 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/60 transition-colors"
                             disabled={loadingAction}
                         >
                             Cancel
