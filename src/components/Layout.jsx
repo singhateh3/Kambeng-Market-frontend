@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { NotificationBell } from './NotificationBell';
+import { ThemeToggle } from './ThemeToggle';
 
 export const Layout = () => {
     const { user, logout } = useAuth();
@@ -222,6 +223,13 @@ export const Layout = () => {
                         <div className="order-3">
                             <NotificationBell />
                         </div>
+
+                        {/* Theme toggle — desktop only; the mobile equivalent lives in
+                            the stacked nav panel below so the tight 320px header row
+                            (hamburger/avatar/bell) isn't disturbed. */}
+                        <div className="hidden lg:block order-4">
+                            <ThemeToggle />
+                        </div>
                     </div>
                 </div>
 
@@ -237,6 +245,9 @@ export const Layout = () => {
                         {isAdmin  && mobileNavLink('/app/admin/users', 'Users')}
                         {isAdmin  && mobileNavLink('/app/admin/farmers/verification', 'Verify')}
                         {isAdmin  && mobileNavLink('/app/admin/products', 'Products')}
+                        <div className="pt-1 mt-1 border-t border-slate-100">
+                            <ThemeToggle variant="row" />
+                        </div>
                     </div>
                 )}
             </nav>

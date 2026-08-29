@@ -5,11 +5,19 @@ export const Alert = ({
     message,
     onClose,
 }) => {
+    // Pale bg-*-50/text-*-800 combos read fine in light mode but a near-white
+    // tint on a dark page has poor contrast against near-black text — so
+    // dark mode switches to a dark tinted background + light text instead of
+    // just adding dark: on top of the same pale tokens. This is the pattern
+    // the app's many hand-rolled status badges/pills (OrderStatusBadge,
+    // Dashboard's statusStyles(), etc. — bg-*-50/bg-*-100 + text-*-700/800,
+    // same contrast risk) should follow when they get their own dark-mode
+    // pass; not converted here, this file is just the reference example.
     const variants = {
-        success: 'bg-green-50 border-green-400 text-green-800',
-        error: 'bg-red-50 border-red-400 text-red-800',
-        warning: 'bg-yellow-50 border-yellow-400 text-yellow-800',
-        info: 'bg-blue-50 border-blue-400 text-blue-800',
+        success: 'bg-green-50 border-green-400 text-green-800 dark:bg-green-950 dark:border-green-800 dark:text-green-200',
+        error: 'bg-red-50 border-red-400 text-red-800 dark:bg-red-950 dark:border-red-800 dark:text-red-200',
+        warning: 'bg-yellow-50 border-yellow-400 text-yellow-800 dark:bg-yellow-950 dark:border-yellow-800 dark:text-yellow-200',
+        info: 'bg-blue-50 border-blue-400 text-blue-800 dark:bg-blue-950 dark:border-blue-800 dark:text-blue-200',
     };
 
     const icons = {
@@ -45,7 +53,7 @@ export const Alert = ({
                 {onClose && (
                     <button
                         onClick={onClose}
-                        className="ml-auto flex-shrink-0 text-gray-400 hover:text-gray-600"
+                        className="ml-auto flex-shrink-0 text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300"
                     >
                         <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                             <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />

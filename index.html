@@ -5,6 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" type="image/png" href="/favicon.png" />
     <title>Kambeng Market</title>
+    <!--
+      Applies the saved theme to <html> before React mounts, so the page
+      never flashes light-then-dark on load. Must stay in sync with the
+      storage key in src/context/ThemeContext.jsx (kambeng-theme).
+    -->
+    <script>
+        (function () {
+            try {
+                if (localStorage.getItem('kambeng-theme') === 'dark') {
+                    document.documentElement.classList.add('dark');
+                }
+            } catch (e) {}
+        })();
+    </script>
 </head>
 <body>
     <div id="root"></div>
