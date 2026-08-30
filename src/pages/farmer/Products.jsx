@@ -706,6 +706,14 @@ const ProductCard = ({ product, onView, onDelete, onStatusUpdate, loadingAction,
                         >
                             👁️
                         </button>
+                        <Link
+                            to={`/app/products/${product.id}/edit`}
+                            className="w-7 h-7 flex items-center justify-center text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition no-underline"
+                            title="Edit product"
+                            aria-label="Edit product"
+                        >
+                            ✏️
+                        </Link>
                         {!isExpired && (
                             product.status === 'active' ? (
                                 <button

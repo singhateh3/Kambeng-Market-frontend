@@ -28,6 +28,7 @@ const AdminProducts = lazy(() => import('./pages/admin/AdminProducts'));
 const FarmerVerification = lazy(() => import('./pages/admin/FarmerVerification'));
 const AdminUsers = lazy(() => import('./pages/admin/Users'));
 const CreateProduct = lazy(() => import('./pages/farmer/CreateProduct'));
+const EditProduct = lazy(() => import('./pages/farmer/EditProduct'));
 const Products = lazy(() => import('./pages/farmer/Products'));
 const OrderDetailsPage = lazy(() => import('./pages/orders/OrderDetailsPage'));
 const Orders = lazy(() => import('./pages/orders/Orders'));
@@ -69,13 +70,21 @@ export const App = () => {
                                     </ProtectedRoute>
                                 } 
                             />
-                            <Route 
-                                path="products/create" 
+                            <Route
+                                path="products/create"
                                 element={
                                     <ProtectedRoute requiredRole="farmer">
                                         <CreateProduct />
                                     </ProtectedRoute>
-                                } 
+                                }
+                            />
+                            <Route
+                                path="products/:productId/edit"
+                                element={
+                                    <ProtectedRoute requiredRole="farmer">
+                                        <EditProduct />
+                                    </ProtectedRoute>
+                                }
                             />
 
                             {/* Buyer Routes */}
