@@ -35,6 +35,8 @@ const OrderDetailsPage = lazy(() => import('./pages/orders/OrderDetailsPage'));
 const Orders = lazy(() => import('./pages/orders/Orders'));
 const WriteReview = lazy(() => import('./pages/orders/WriteReview'));
 const ReportIssue = lazy(() => import('./pages/orders/ReportIssue'));
+const FarmerProfile = lazy(() => import('./pages/FarmerProfile'));
+const SavedFarmers = lazy(() => import('./pages/buyer/SavedFarmers'));
 
 export const App = () => {
     return (
@@ -109,6 +111,12 @@ export const App = () => {
 
                             {/* Product Detail - Accessible by both farmers and buyers */}
                             <Route path="products/:productId" element={<ProtectedRoute><ProductDetail /></ProtectedRoute>} />
+
+                            {/* Farmer public profile - Accessible by any authenticated user */}
+                            <Route path="farmers/:userId" element={<ProtectedRoute><FarmerProfile /></ProtectedRoute>} />
+
+                            {/* Saved Farmers - Buyers only */}
+                            <Route path="saved-farmers" element={<ProtectedRoute requiredRole="buyer"><SavedFarmers /></ProtectedRoute>} />
 
                             {/* Orders - Accessible by both farmers and buyers */}
                             <Route path="orders" element={<ProtectedRoute><Orders /></ProtectedRoute>} />

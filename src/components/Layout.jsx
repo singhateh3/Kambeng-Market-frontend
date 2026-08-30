@@ -132,6 +132,7 @@ export const Layout = () => {
                         {isFarmer && navLink('/app/products', 'My Products')}
                         {isBuyer  && navLink('/app/browse', 'Browse')}
                         {navLink('/app/orders', 'Orders')}
+                        {isBuyer  && navLink('/app/saved-farmers', 'Saved Farmers')}
                         {isAdmin  && navLink('/app/admin/users', 'Users')}
                         {isAdmin  && navLink('/app/admin/farmers/verification', 'Verify')}
                         {isAdmin  && navLink('/app/admin/products', 'Products')}
@@ -248,6 +249,7 @@ export const Layout = () => {
                         {isFarmer && mobileNavLink('/app/products', 'My Products')}
                         {isBuyer  && mobileNavLink('/app/browse', 'Browse')}
                         {mobileNavLink('/app/orders', 'Orders')}
+                        {isBuyer  && mobileNavLink('/app/saved-farmers', 'Saved Farmers')}
                         {isAdmin  && mobileNavLink('/app/admin/users', 'Users')}
                         {isAdmin  && mobileNavLink('/app/admin/farmers/verification', 'Verify')}
                         {isAdmin  && mobileNavLink('/app/admin/products', 'Products')}

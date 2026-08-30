@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { Button } from '../components/common/Button';
 import { ImageWithFallback } from '../components/common/ImageWithFallback';
+import { SaveFarmerButton } from '../components/SaveFarmerButton';
 import { useAuth } from '../hooks/useAuth';
 import api from '../services/api';
 
@@ -15,12 +16,29 @@ const ProductDetail = () => {
     const [error, setError] = useState(null);
     const [quantity, setQuantity] = useState(1);
     const [activeImage, setActiveImage] = useState(0);
+    const [farmerSaved, setFarmerSaved] = useState(false);
 
     useEffect(() => {
         if (productId) {
             fetchProduct();
         }
     }, [productId]);
+
+    // Only buyers can save farmers, and this only makes sense once we know
+    // which farmer the loaded product belongs to.
+    useEffect(() => {
+        const farmerId = product?.farmer?.id;
+        if (user?.role !== 'buyer' || !farmerId) return;
+
+        let cancelled = false;
+        api.get(`/saved-farmers?farmer_id=${farmerId}&per_page=1`)
+            .then((response) => {
+                if (!cancelled) setFarmerSaved((response.data.data || []).length > 0);
+            })
+            .catch((err) => console.error('Error checking saved farmer status:', err));
+
+        return () => { cancelled = true; };
+    }, [product?.farmer?.id, user?.role]);
 
     const fetchProduct = async () => {
         try {
@@ -254,20 +272,29 @@ const ProductDetail = () => {
                             {product.farmer && (
                                 <div className="bg-gray-50 dark:bg-slate-900 rounded-xl p-4 border border-gray-100 dark:border-slate-700">
                                     <h3 className="font-semibold text-gray-900 dark:text-slate-100 mb-2">Sold by</h3>
-                                    <div className="flex items-center">
-                                        <div className="w-10 h-10 rounded-full bg-green-100 dark:bg-green-900/40 flex items-center justify-center text-sm font-medium text-green-700 dark:text-green-300">
-                                            {product.farmer.name?.[0]?.toUpperCase() || 'F'}
-                                        </div>
-                                        <div className="ml-3">
-                                            <p className="font-medium text-gray-900 dark:text-slate-100">
-                                                {product.farmer.name || 'Unknown Farmer'}
-                                            </p>
-                                            {product.farmer.location && (
-                                                <p className="text-sm text-gray-500 dark:text-slate-400">
-                                                    📍 {product.farmer.location}
+                                    <div className="flex items-center justify-between gap-3">
+                                        <Link to={`/app/farmers/${product.farmer.id}`} className="flex items-center min-w-0 no-underline hover:opacity-80 transition">
+                                            <div className="w-10 h-10 rounded-full bg-green-100 dark:bg-green-900/40 flex items-center justify-center text-sm font-medium text-green-700 dark:text-green-300 flex-shrink-0">
+                                                {product.farmer.name?.[0]?.toUpperCase() || 'F'}
+                                            </div>
+                                            <div className="ml-3 min-w-0">
+                                                <p className="font-medium text-gray-900 dark:text-slate-100 truncate">
+                                                    {product.farmer.name || 'Unknown Farmer'}
                                                 </p>
-                                            )}
-                                        </div>
+                                                {product.farmer.location && (
+                                                    <p className="text-sm text-gray-500 dark:text-slate-400 truncate">
+                                                        📍 {product.farmer.location}
+                                                    </p>
+                                                )}
+                                            </div>
+                                        </Link>
+                                        {isBuyer && (
+                                            <SaveFarmerButton
+                                                farmerId={product.farmer.id}
+                                                initialSaved={farmerSaved}
+                                                onChange={setFarmerSaved}
+                                            />
+                                        )}
                                     </div>
                                 </div>
                             )}

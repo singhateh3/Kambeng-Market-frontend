@@ -35,6 +35,7 @@ const RegularDashboard = () => {
     const [refreshing, setRefreshing] = useState(false);
     const [recentOrders, setRecentOrders] = useState([]);
     const [recentProducts, setRecentProducts] = useState([]);
+    const [savedFarmers, setSavedFarmers] = useState([]);
 
     // Depend on primitives (id + role), not the whole `user` object. If
     // AuthContext ever returns a new object reference for `user` after
@@ -79,7 +80,10 @@ const RegularDashboard = () => {
                 setRecentOrders(ordersRes.data.data || []);
                 setRecentProducts(productsRes.data.data || []);
             } else if (user?.role === 'buyer') {
-                const ordersRes = await api.get('/orders?per_page=5').catch(() => ({ data: { data: [], meta: { total: 0 } } }));
+                const [ordersRes, savedFarmersRes] = await Promise.all([
+                    api.get('/orders?per_page=5').catch(() => ({ data: { data: [], meta: { total: 0 } } })),
+                    api.get('/saved-farmers?per_page=3').catch(() => ({ data: { data: [], meta: { total: 0 } } })),
+                ]);
                 setStats({
                     total_products: 0, active_products: 0,
                     total_orders: ordersRes.data.meta?.total || 0,
@@ -91,6 +95,7 @@ const RegularDashboard = () => {
                 });
                 setRecentOrders(ordersRes.data.data || []);
                 setRecentProducts([]);
+                setSavedFarmers(savedFarmersRes.data.data || []);
             }
         } catch (e) {
             console.error(e);
@@ -315,14 +320,43 @@ const RegularDashboard = () => {
                             <>
                                 <div className="flex items-center justify-between mb-4">
                                     <span className="text-sm font-bold text-slate-900 dark:text-slate-100">Saved farmers</span>
-                                    <Link to="/app/browse" className="text-xs font-semibold text-green-600 dark:text-green-400 no-underline hover:text-green-700 dark:hover:text-green-300">Browse all →</Link>
-                                </div>
-                                <div className="text-center py-10">
-                                    <p className="text-slate-400 dark:text-slate-500 text-sm mb-3">Save farmers for quick ordering</p>
-                                    <Link to="/app/browse" className="bg-green-600 text-white text-xs font-semibold px-4 py-2 rounded-lg no-underline hover:bg-green-700 transition">
-                                        Browse farmers
+                                    <Link
+                                        to={savedFarmers.length > 0 ? '/app/saved-farmers' : '/app/browse'}
+                                        className="text-xs font-semibold text-green-600 dark:text-green-400 no-underline hover:text-green-700 dark:hover:text-green-300"
+                                    >
+                                        {savedFarmers.length > 0 ? 'View all →' : 'Browse all →'}
                                     </Link>
                                 </div>
+                                {savedFarmers.length === 0 ? (
+                                    <div className="text-center py-10">
+                                        <p className="text-slate-400 dark:text-slate-500 text-sm mb-3">Save farmers for quick ordering</p>
+                                        <Link to="/app/browse" className="bg-green-600 text-white text-xs font-semibold px-4 py-2 rounded-lg no-underline hover:bg-green-700 transition">
+                                            Browse farmers
+                                        </Link>
+                                    </div>
+                                ) : savedFarmers.map((sf) => {
+                                    const farmer = sf.farmer || {};
+                                    const farmerProfile = farmer.farmer_profile || {};
+                                    const displayName = farmerProfile.farm_name || farmer.name || 'Unknown Farmer';
+
+                                    return (
+                                        <Link
+                                            key={sf.id}
+                                            to={`/app/farmers/${farmer.id}`}
+                                            className="flex items-center gap-2.5 py-2.5 border-b border-slate-50 dark:border-slate-800 last:border-0 no-underline hover:opacity-80 transition"
+                                        >
+                                            <div className="w-9 h-9 rounded-full bg-green-100 dark:bg-green-900/40 flex items-center justify-center text-sm font-bold text-green-700 dark:text-green-300 flex-shrink-0">
+                                                {displayName?.[0]?.toUpperCase() || 'F'}
+                                            </div>
+                                            <div className="min-w-0">
+                                                <p className="text-sm font-semibold text-slate-900 dark:text-slate-100 truncate">{displayName}</p>
+                                                {farmer.location && (
+                                                    <p className="text-xs text-slate-400 dark:text-slate-500 truncate">📍 {farmer.location}</p>
+                                                )}
+                                            </div>
+                                        </Link>
+                                    );
+                                })}
                             </>
                         )}
                     </div>
