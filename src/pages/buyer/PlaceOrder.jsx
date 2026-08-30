@@ -468,6 +468,7 @@ const PlaceOrder = () => {
                                 formData.delivery_method === 'farmer_delivery' && formData.delivery_deadline && {
                                     label: 'Deadline', value: new Date(formData.delivery_deadline).toLocaleDateString()
                                 },
+                                { label: 'Payment', value: '💵 Cash on Delivery' },
                             ].filter(Boolean).map((row, i) => (
                                 <div key={i} className="flex items-start justify-between gap-4">
                                     <span className="text-xs text-slate-500 dark:text-slate-400 flex-shrink-0">{row.label}</span>

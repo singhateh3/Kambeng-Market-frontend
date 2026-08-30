@@ -6,6 +6,7 @@ import { Button } from '../../components/common/Button';
 import ReviewStars from '../../components/ReviewStars';
 import { useAuth } from '../../hooks/useAuth';
 import api from '../../services/api';
+import { PaymentStatusBadge } from './PaymentStatusBadge';
 
 const OrderDetailsPage = () => {
     const { orderId } = useParams();
@@ -352,6 +353,13 @@ const OrderDetailsPage = () => {
                                 <p className="text-sm text-gray-500 dark:text-slate-400">Delivery Method</p>
                                 <p className="font-medium text-gray-900 dark:text-slate-100 capitalize">
                                     {order?.delivery_method === 'pickup' ? '📍 Pickup from Farm' : '🚚 Farmer Delivery'}
+                                </p>
+                            </div>
+                            <div>
+                                <p className="text-sm text-gray-500 dark:text-slate-400">Payment</p>
+                                <p className="font-medium text-gray-900 dark:text-slate-100 flex items-center gap-2 flex-wrap">
+                                    <span>{(order?.payment_method || 'cod') === 'cod' ? '💵 Cash on Delivery' : order.payment_method}</span>
+                                    <PaymentStatusBadge status={order?.payment_status || 'pending'} />
                                 </p>
                             </div>
                             {order?.delivery_method === 'pickup' ? (

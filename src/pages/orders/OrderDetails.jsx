@@ -6,6 +6,7 @@ import { ImageWithFallback } from '../../components/common/ImageWithFallback';
 import { Modal } from '../../components/Modal';
 import ReviewStars from '../../components/ReviewStars';
 import { OrderStatusBadge } from './OrderStatusBadge';
+import { PaymentStatusBadge } from './PaymentStatusBadge';
 
 export const OrderDetails = ({
     order,
@@ -33,6 +34,8 @@ export const OrderDetails = ({
     const deliveryDeadline = order?.delivery_deadline || null;
     const deliveryAddress = order?.delivery_address || null;
     const specialInstructions = order?.special_instructions || '';
+    const paymentMethod = order?.payment_method || 'cod';
+    const paymentStatus = order?.payment_status || 'pending';
 
     // Safely access product properties
     const product = order?.product || {};
@@ -250,6 +253,13 @@ export const OrderDetails = ({
                                     <p className="text-sm text-slate-500 dark:text-slate-400">Delivery Method</p>
                                     <p className="font-medium text-slate-900 dark:text-slate-100 capitalize break-words">
                                         {deliveryMethod === 'pickup' ? '📍 Pickup from Farm' : '🚚 Farmer Delivery'}
+                                    </p>
+                                </div>
+                                <div className="min-w-0">
+                                    <p className="text-sm text-slate-500 dark:text-slate-400">Payment</p>
+                                    <p className="font-medium text-slate-900 dark:text-slate-100 flex items-center gap-2 flex-wrap">
+                                        <span>{paymentMethod === 'cod' ? '💵 Cash on Delivery' : paymentMethod}</span>
+                                        <PaymentStatusBadge status={paymentStatus} />
                                     </p>
                                 </div>
                                 {deliveryMethod === 'pickup' ? (

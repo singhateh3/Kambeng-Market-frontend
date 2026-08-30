@@ -1,5 +1,6 @@
 // src/pages/orders/OrderCard.jsx
 import { OrderStatusBadge } from './OrderStatusBadge';
+import { PaymentStatusBadge } from './PaymentStatusBadge';
 
 export const OrderCard = ({ 
     order, 
@@ -17,6 +18,11 @@ export const OrderCard = ({
     const totalPrice = order?.total_price || 0;
     const totalPriceFormatted = order?.total_price_formatted || `GMD ${totalPrice}`;
     const orderDate = order?.order_date || order?.created_at || new Date().toISOString();
+    // Older cached order objects (fetched before payment fields existed)
+    // won't have these — default to what every order is today rather than
+    // rendering blank.
+    const paymentMethod = order?.payment_method || 'cod';
+    const paymentStatus = order?.payment_status || 'pending';
     
     // Safely access nested product properties
     const productName = order?.product?.name || 'Unknown Product';
@@ -83,6 +89,13 @@ export const OrderCard = ({
                             <span className="ml-1 text-slate-600 dark:text-slate-300">
                                 {formatDate(orderDate)}
                             </span>
+                        </div>
+                        <div className="sm:col-span-2 flex items-center gap-2 flex-wrap">
+                            <span className="text-slate-500 dark:text-slate-400">Payment:</span>
+                            <span className="text-slate-700 dark:text-slate-300">
+                                {paymentMethod === 'cod' ? 'Cash on Delivery' : paymentMethod}
+                            </span>
+                            <PaymentStatusBadge status={paymentStatus} />
                         </div>
                         {isFarmer && buyerName && (
                             <div className="sm:col-span-2 min-w-0">
