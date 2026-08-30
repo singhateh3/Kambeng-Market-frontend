@@ -1,4 +1,5 @@
 // src/pages/orders/OrderCard.jsx
+import { DisputeStatusBadge } from './DisputeStatusBadge';
 import { OrderStatusBadge } from './OrderStatusBadge';
 import { PaymentStatusBadge } from './PaymentStatusBadge';
 
@@ -23,6 +24,7 @@ export const OrderCard = ({
     // rendering blank.
     const paymentMethod = order?.payment_method || 'cod';
     const paymentStatus = order?.payment_status || 'pending';
+    const dispute = order?.dispute || null;
     
     // Safely access nested product properties
     const productName = order?.product?.name || 'Unknown Product';
@@ -97,6 +99,12 @@ export const OrderCard = ({
                             </span>
                             <PaymentStatusBadge status={paymentStatus} />
                         </div>
+                        {dispute && (
+                            <div className="sm:col-span-2 flex items-center gap-2 flex-wrap">
+                                <span className="text-slate-500 dark:text-slate-400">Dispute:</span>
+                                <DisputeStatusBadge status={dispute.status} />
+                            </div>
+                        )}
                         {isFarmer && buyerName && (
                             <div className="sm:col-span-2 min-w-0">
                                 <span className="text-slate-500 dark:text-slate-400">Buyer:</span>

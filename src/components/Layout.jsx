@@ -135,6 +135,7 @@ export const Layout = () => {
                         {isAdmin  && navLink('/app/admin/users', 'Users')}
                         {isAdmin  && navLink('/app/admin/farmers/verification', 'Verify')}
                         {isAdmin  && navLink('/app/admin/products', 'Products')}
+                        {isAdmin  && navLink('/app/admin/disputes', 'Disputes')}
                     </div>
 
                     {/* Right side */}
@@ -250,6 +251,7 @@ export const Layout = () => {
                         {isAdmin  && mobileNavLink('/app/admin/users', 'Users')}
                         {isAdmin  && mobileNavLink('/app/admin/farmers/verification', 'Verify')}
                         {isAdmin  && mobileNavLink('/app/admin/products', 'Products')}
+                        {isAdmin  && mobileNavLink('/app/admin/disputes', 'Disputes')}
                         <div className="pt-1 mt-1 border-t border-slate-100 dark:border-slate-700">
                             <ThemeToggle variant="row" />
                         </div>

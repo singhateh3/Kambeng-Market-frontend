@@ -6,7 +6,10 @@ import { Button } from '../../components/common/Button';
 import ReviewStars from '../../components/ReviewStars';
 import { useAuth } from '../../hooks/useAuth';
 import api from '../../services/api';
+import { DisputeStatusBadge } from './DisputeStatusBadge';
 import { PaymentStatusBadge } from './PaymentStatusBadge';
+
+const REPORTABLE_STATUSES = ['confirmed', 'shipped', 'delivered'];
 
 const OrderDetailsPage = () => {
     const { orderId } = useParams();
@@ -246,6 +249,8 @@ const OrderDetailsPage = () => {
     const farmer = product?.farmer || {};
     const confirmationContent = getConfirmationContent();
     const review = order?.review || null;
+    const dispute = order?.dispute || null;
+    const canReport = isBuyer && REPORTABLE_STATUSES.includes(order?.status) && !dispute;
 
     return (
         <div className="max-w-4xl mx-auto">
@@ -279,6 +284,7 @@ const OrderDetailsPage = () => {
                                     ⭐ Reviewed
                                 </span>
                             )}
+                            {dispute && <DisputeStatusBadge status={dispute.status} />}
                         </div>
                     </div>
                 </div>
@@ -497,6 +503,27 @@ const OrderDetailsPage = () => {
                     )}
                     {/* ========== END REVIEW SECTION ========== */}
 
+                    {/* ========== DISPUTE SECTION ========== */}
+                    {dispute && (
+                        <div>
+                            <h3 className="font-semibold text-gray-900 dark:text-slate-100 mb-3">Reported Issue</h3>
+                            <div className="bg-amber-50 dark:bg-amber-900/20 rounded-xl p-4 border border-amber-200 dark:border-amber-800">
+                                <DisputeStatusBadge status={dispute.status} />
+                                {dispute.description && (
+                                    <p className="mt-2 text-gray-700 dark:text-slate-300 text-sm">
+                                        "{dispute.description}"
+                                    </p>
+                                )}
+                                {dispute.admin_note && (
+                                    <p className="mt-2 text-xs text-gray-500 dark:text-slate-400">
+                                        Admin note: {dispute.admin_note}
+                                    </p>
+                                )}
+                            </div>
+                        </div>
+                    )}
+                    {/* ========== END DISPUTE SECTION ========== */}
+
                     {/* Actions */}
                     <div className="flex flex-wrap gap-2 pt-4 border-t dark:border-slate-700">
                         <Button variant="secondary" onClick={() => navigate('/app/orders')}>
@@ -549,6 +576,13 @@ const OrderDetailsPage = () => {
                             <div className="text-sm text-gray-500 dark:text-slate-400 italic">
                                 Buyer has not reviewed this order yet.
                             </div>
+                        )}
+                        {canReport && (
+                            <Link to={`/app/orders/${orderId}/report`}>
+                                <Button variant="outline" className="bg-red-50 dark:bg-red-900/40 text-red-600 dark:text-red-300 hover:bg-red-100 dark:hover:bg-red-900/60 border-red-200 dark:border-red-800">
+                                    ⚠️ Report an Issue
+                                </Button>
+                            </Link>
                         )}
                     </div>
                 </div>

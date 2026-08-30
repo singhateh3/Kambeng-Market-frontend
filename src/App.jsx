@@ -24,6 +24,7 @@ const ProductDetail = lazy(() => import('./pages/ProductDetail'));
 const Profile = lazy(() => import('./pages/Profile'));
 const PlaceOrder = lazy(() => import('./pages/buyer/PlaceOrder'));
 const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'));
+const AdminDisputes = lazy(() => import('./pages/admin/AdminDisputes'));
 const AdminProducts = lazy(() => import('./pages/admin/AdminProducts'));
 const FarmerVerification = lazy(() => import('./pages/admin/FarmerVerification'));
 const AdminUsers = lazy(() => import('./pages/admin/Users'));
@@ -33,6 +34,7 @@ const Products = lazy(() => import('./pages/farmer/Products'));
 const OrderDetailsPage = lazy(() => import('./pages/orders/OrderDetailsPage'));
 const Orders = lazy(() => import('./pages/orders/Orders'));
 const WriteReview = lazy(() => import('./pages/orders/WriteReview'));
+const ReportIssue = lazy(() => import('./pages/orders/ReportIssue'));
 
 export const App = () => {
     return (
@@ -112,6 +114,7 @@ export const App = () => {
                             <Route path="orders" element={<ProtectedRoute><Orders /></ProtectedRoute>} />
                             <Route path="orders/:orderId" element={<ProtectedRoute><OrderDetailsPage /></ProtectedRoute>} />
                             <Route path="orders/:orderId/review" element={<ProtectedRoute><WriteReview /></ProtectedRoute>} />
+                            <Route path="orders/:orderId/report" element={<ProtectedRoute requiredRole="buyer"><ReportIssue /></ProtectedRoute>} />
 
                             {/* Notifications - Accessible by all authenticated users */}
                             <Route path="notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
@@ -149,13 +152,21 @@ export const App = () => {
                                     </ProtectedRoute>
                                 } 
                             />
-                            <Route 
-                                path="admin/products" 
+                            <Route
+                                path="admin/products"
                                 element={
                                     <ProtectedRoute requiredRole="admin">
                                         <AdminProducts />
                                     </ProtectedRoute>
-                                } 
+                                }
+                            />
+                            <Route
+                                path="admin/disputes"
+                                element={
+                                    <ProtectedRoute requiredRole="admin">
+                                        <AdminDisputes />
+                                    </ProtectedRoute>
+                                }
                             />
                         </Route>
 

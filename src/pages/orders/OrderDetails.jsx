@@ -5,8 +5,11 @@ import { Button } from '../../components/common/Button';
 import { ImageWithFallback } from '../../components/common/ImageWithFallback';
 import { Modal } from '../../components/Modal';
 import ReviewStars from '../../components/ReviewStars';
+import { DisputeStatusBadge } from './DisputeStatusBadge';
 import { OrderStatusBadge } from './OrderStatusBadge';
 import { PaymentStatusBadge } from './PaymentStatusBadge';
+
+const REPORTABLE_STATUSES = ['confirmed', 'shipped', 'delivered'];
 
 export const OrderDetails = ({
     order,
@@ -61,6 +64,8 @@ export const OrderDetails = ({
 
     // Safely access review
     const review = order?.review || null;
+    const dispute = order?.dispute || null;
+    const canReport = isBuyer && REPORTABLE_STATUSES.includes(status) && !dispute;
 
     const getStatusIcon = (status) => {
         const icons = {
@@ -381,11 +386,42 @@ export const OrderDetails = ({
                             </div>
                         )}
 
+                        {/* Dispute Section */}
+                        {dispute && (
+                            <div>
+                                <h3 className="font-semibold text-slate-900 dark:text-slate-100 mb-3">Reported Issue</h3>
+                                <div className="bg-amber-50 dark:bg-amber-900/20 rounded-xl p-4 border border-amber-200 dark:border-amber-800">
+                                    <div className="flex items-start justify-between gap-3 flex-wrap">
+                                        <div className="min-w-0">
+                                            <DisputeStatusBadge status={dispute.status} />
+                                            {dispute.description && (
+                                                <p className="mt-2 text-slate-700 dark:text-slate-300 text-sm break-words">
+                                                    "{dispute.description}"
+                                                </p>
+                                            )}
+                                            {dispute.admin_note && (
+                                                <p className="mt-2 text-xs text-slate-500 dark:text-slate-400 break-words">
+                                                    Admin note: {dispute.admin_note}
+                                                </p>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
                         {/* Actions */}
                         <div className="flex flex-wrap gap-2 pt-4 border-t border-slate-100 dark:border-slate-700">
                             <Button variant="secondary" onClick={onClose}>
                                 Close
                             </Button>
+                            {canReport && (
+                                <Link to={`/app/orders/${orderId}/report`} onClick={onClose}>
+                                    <Button variant="outline" className="bg-red-50 dark:bg-red-900/40 text-red-600 dark:text-red-300 hover:bg-red-100 dark:hover:bg-red-900/60 border-red-200 dark:border-red-800">
+                                        ⚠️ Report an Issue
+                                    </Button>
+                                </Link>
+                            )}
                             {isFarmer && status === 'pending' && (
                                 <Button
                                     variant="primary"
