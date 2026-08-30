@@ -12,6 +12,12 @@ dist
 dist-ssr
 *.local
 
+# Env files — never committed, VITE_* vars ship to the browser bundle
+# so nothing sensitive belongs here regardless, but keep the habit.
+.env
+.env.*
+!.env.example
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
