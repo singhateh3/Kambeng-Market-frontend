@@ -26,22 +26,24 @@ const Browse = () => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [categories, setCategories] = useState([]);
-    
+    const [regions, setRegions] = useState([]);
+
     // Controlled text input string
     const [searchValue, setSearchValue] = useState(searchParams.get('search') || '');
     const [category, setCategory] = useState(searchParams.get('category') || '');
+    const [region, setRegion] = useState(searchParams.get('region') || '');
     const [page, setPage] = useState(1);
-    
+
     const [pagination, setPagination] = useState({
         current_page: 1, last_page: 1, per_page: 20, total: 0,
     });
 
     const searchInputRef = useRef(null);
-    // Tracks the last category/search combo actually fetched, so a filter
-    // change and the page-1 reset it triggers collapse into a single
+    // Tracks the last category/region/search combo actually fetched, so a
+    // filter change and the page-1 reset it triggers collapse into a single
     // request instead of firing once with the stale page (e.g. page 3 of
     // the old filter set) and again a render later with the corrected page.
-    const prevFiltersRef = useRef({ category, search: searchValue });
+    const prevFiltersRef = useRef({ category, region, search: searchValue });
     // Holds the AbortController for whichever request is currently in
     // flight, so a fast filter/category change (fired before the previous
     // request resolves) cancels it instead of racing it — otherwise an
@@ -63,6 +65,7 @@ const Browse = () => {
             setError(null);
             const params = new URLSearchParams({
                 category: String(category ?? ''),
+                region: String(region ?? ''),
                 search: String(debouncedSearch ?? ''),
                 page: String(page),
                 per_page: '20',
@@ -84,16 +87,17 @@ const Browse = () => {
                 setIsInitialLoad(false);
             }
         }
-    }, [category, debouncedSearch, page]);
+    }, [category, region, debouncedSearch, page]);
 
-    // Reset pagination back to page 1 whenever search terms or category
-    // change, then fetch exactly once with the correct page for the new
-    // filters (see prevFiltersRef above).
+    // Reset pagination back to page 1 whenever search terms, category, or
+    // region change, then fetch exactly once with the correct page for the
+    // new filters (see prevFiltersRef above).
     useEffect(() => {
         const filtersChanged =
             prevFiltersRef.current.category !== category ||
+            prevFiltersRef.current.region !== region ||
             prevFiltersRef.current.search !== debouncedSearch;
-        prevFiltersRef.current = { category, search: debouncedSearch };
+        prevFiltersRef.current = { category, region, search: debouncedSearch };
 
         if (filtersChanged && page !== 1) {
             setPage(1);
@@ -101,7 +105,7 @@ const Browse = () => {
         }
 
         fetchProducts();
-    }, [category, debouncedSearch, page, fetchProducts]);
+    }, [category, region, debouncedSearch, page, fetchProducts]);
 
     // Cancel any in-flight request if the page is left mid-fetch.
     useEffect(() => {
@@ -121,9 +125,23 @@ const Browse = () => {
         fetchCategories();
     }, []);
 
+    // Isolated runtime region fetcher
+    useEffect(() => {
+        const fetchRegions = async () => {
+            try {
+                const response = await api.get('/products/regions');
+                setRegions(response.data.data || []);
+            } catch (err) {
+                console.error('Error fetching regions:', err);
+            }
+        };
+        fetchRegions();
+    }, []);
+
     const clearFilters = () => {
         setSearchValue('');
         setCategory('');
+        setRegion('');
         setPage(1);
         if (searchInputRef.current) {
             searchInputRef.current.focus();
@@ -185,7 +203,18 @@ const Browse = () => {
                             <option key={cat} value={cat}>{CATEGORY_ICONS[cat] || '📦'} {cat}</option>
                         ))}
                     </select>
-                    {(searchValue || category) && (
+                    <select
+                        value={region}
+                        onChange={(e) => setRegion(e.target.value)}
+                        aria-label="Filter by region"
+                        className="px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg text-sm bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200 outline-none focus:border-green-400 dark:focus:border-green-500 focus:bg-white dark:focus:bg-slate-800 transition sm:w-48 cursor-pointer"
+                    >
+                        <option value="">All regions</option>
+                        {regions.map((r) => (
+                            <option key={r} value={r}>📍 {r}</option>
+                        ))}
+                    </select>
+                    {(searchValue || category || region) && (
                         <button
                             onClick={clearFilters}
                             className="px-4 py-2 text-sm font-semibold text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-700 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-600 transition border-none cursor-pointer flex-shrink-0"
@@ -230,10 +259,12 @@ const Browse = () => {
                     <p className="text-xs text-slate-500 dark:text-slate-400">
                         {pagination.total > 0 ? `${pagination.total} product${pagination.total !== 1 ? 's' : ''} found` : ''}
                     </p>
-                    {(debouncedSearch || category) && (
+                    {(debouncedSearch || category || region) && (
                         <p className="text-xs text-slate-400 dark:text-slate-500">
                             {category && <span className="font-medium text-green-600 dark:text-green-400">{category}</span>}
-                            {debouncedSearch && category && ' · '}
+                            {region && (category ? ' · ' : '')}
+                            {region && <span className="font-medium text-green-600 dark:text-green-400">📍 {region}</span>}
+                            {debouncedSearch && (category || region) && ' · '}
                             {debouncedSearch && <span>"{debouncedSearch}"</span>}
                         </p>
                     )}
@@ -257,7 +288,7 @@ const Browse = () => {
                         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-center py-20">
                             <div className="text-5xl mb-3">🔍</div>
                             <h3 className="text-base font-bold text-slate-900 dark:text-slate-100 mb-1">No products found</h3>
-                            <p className="text-sm text-slate-400 dark:text-slate-500 mb-5">Try a different search or category.</p>
+                            <p className="text-sm text-slate-400 dark:text-slate-500 mb-5">Try a different search, category, or region.</p>
                             <button
                                 onClick={clearFilters}
                                 className="bg-green-600 text-white text-sm font-semibold px-5 py-2.5 rounded-lg hover:bg-green-700 transition border-none cursor-pointer"
