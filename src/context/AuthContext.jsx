@@ -1,5 +1,6 @@
 // src/context/AuthContext.jsx
 import { createContext, useContext, useEffect, useState } from 'react';
+import { queryClient } from '../lib/queryClient';
 import { authService } from '../services/authService';
 
 const AuthContext = createContext(undefined);
@@ -37,6 +38,11 @@ export const AuthProvider = ({ children }) => {
             console.error('Failed to refresh user:', error);
             setUser(null);
             localStorage.removeItem('authToken');
+            // Token was invalid/expired — this is an involuntary logout, so
+            // it gets the same cache wipe an explicit logout() does. Any
+            // private queries cached under the previous session must not
+            // linger and be readable by whoever ends up signed in next.
+            queryClient.clear();
             return null;
         }
     };
@@ -51,12 +57,23 @@ export const AuthProvider = ({ children }) => {
         initAuth();
     }, []);
 
+    // Shared by password login/register and Google/Apple sign-in — all
+    // four return the same {token, user} shape and need the same
+    // "persist token, wipe stale cache, set user" sequence. The cache
+    // wipe happens *before* the new user is set, so nothing private from
+    // a prior session (or a different account) on this browser tab can
+    // ever be read by the incoming one — per-user query keys alone aren't
+    // relied on for this, this clear is unconditional.
+    const applyAuthResponse = (response) => {
+        localStorage.setItem('authToken', response.token || response.data?.token);
+        queryClient.clear();
+        setUser(response.user || response.data?.user);
+        return response;
+    };
+
     const login = async (data) => {
         try {
-            const response = await authService.login(data);
-            localStorage.setItem('authToken', response.token || response.data?.token);
-            setUser(response.user || response.data?.user);
-            return response;
+            return applyAuthResponse(await authService.login(data));
         } catch (error) {
             console.error('Login error in AuthContext:', error);
             // Re-throw the error so the component can handle it
@@ -66,12 +83,27 @@ export const AuthProvider = ({ children }) => {
 
     const register = async (data) => {
         try {
-            const response = await authService.register(data);
-            localStorage.setItem('authToken', response.token || response.data?.token);
-            setUser(response.user || response.data?.user);
-            return response;
+            return applyAuthResponse(await authService.register(data));
         } catch (error) {
             console.error('Register error in AuthContext:', error);
+            throw error;
+        }
+    };
+
+    const loginWithGoogle = async (idToken) => {
+        try {
+            return applyAuthResponse(await authService.loginWithGoogle(idToken));
+        } catch (error) {
+            console.error('Google login error in AuthContext:', error);
+            throw error;
+        }
+    };
+
+    const loginWithApple = async (idToken, name) => {
+        try {
+            return applyAuthResponse(await authService.loginWithApple(idToken, name));
+        } catch (error) {
+            console.error('Apple login error in AuthContext:', error);
             throw error;
         }
     };
@@ -84,6 +116,9 @@ export const AuthProvider = ({ children }) => {
         } finally {
             localStorage.removeItem('authToken');
             setUser(null);
+            // Same reasoning as login() — no private query result should
+            // survive to be seen by whoever uses this browser tab next.
+            queryClient.clear();
         }
     };
 
@@ -119,6 +154,8 @@ export const AuthProvider = ({ children }) => {
         isAuthenticated: !!user && !!localStorage.getItem('authToken'),
         login,
         register,
+        loginWithGoogle,
+        loginWithApple,
         logout,
         updateProfile,
         refreshUser,

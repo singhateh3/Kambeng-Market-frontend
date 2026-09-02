@@ -6,6 +6,7 @@ import { Skeleton } from "../components/common/skeletons/Skeleton";
 import ReviewStars from '../components/ReviewStars';
 import { ThemeToggle } from '../components/ThemeToggle';
 import { useAuth } from '../hooks/useAuth';
+import { useCategoriesQuery, useFeaturedProductsQuery } from '../hooks/queries/productQueries';
 import api from '../services/api';
 import { getImageUrl } from '../utils/imageUtils';
 
@@ -21,41 +22,34 @@ const getCategoryIcon = (category) => CATEGORY_ICONS[category] || '📦';
 const Home = () => {
     const { user, isAuthenticated } = useAuth();
     const navigate = useNavigate();
-    const [featuredProducts, setFeaturedProducts] = useState([]);
-    const [categories, setCategories] = useState([]);
-    const [loading, setLoading] = useState(true);
     const [stats, setStats] = useState(null);
+    const [statsLoading, setStatsLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
 
-    useEffect(() => { fetchHomeData(); }, []);
+    // Products/categories are now cached, shared, public server state via
+    // TanStack Query. Statistics stays a plain fetch — it's not part of
+    // this migration pass (not product/farmer data) and this keeps that
+    // one endpoint's failure independent of the other two, exactly as the
+    // previous Promise.allSettled-style handling did.
+    const { data: featuredProducts = [], isLoading: productsLoading } = useFeaturedProductsQuery();
+    const { data: categories = [], isLoading: categoriesLoading } = useCategoriesQuery();
 
-    const fetchHomeData = async () => {
-        try {
-            setLoading(true);
-            // Each request fails independently now — one flaky endpoint no longer
-            // blanks out the whole homepage. Previously Promise.all([...]) meant
-            // a single rejection (e.g. categories timing out) prevented
-            // featuredProducts from rendering even though that call succeeded.
-            const [productsRes, categoriesRes, statsRes] = await Promise.all([
-                api.get('/products?per_page=8&sort_by=created_at&sort_order=desc')
-                    .catch((err) => { console.error('Error fetching products:', err); return { data: { data: [] } }; }),
-                api.get('/products/categories')
-                    .catch((err) => { console.error('Error fetching categories:', err); return { data: { data: [] } }; }),
-                api.get('/public/statistics')
-                    .catch((err) => { console.error('Error fetching statistics:', err); return { data: { data: null } }; }),
-            ]);
-            setFeaturedProducts(productsRes.data?.data || []);
-            setCategories(categoriesRes.data?.data || []);
-            setStats(statsRes.data?.data || null);
-        } finally {
-            setLoading(false);
-        }
-    };
+    useEffect(() => {
+        let cancelled = false;
+        api.get('/public/statistics')
+            .then((res) => { if (!cancelled) setStats(res.data?.data || null); })
+            .catch((err) => console.error('Error fetching statistics:', err))
+            .finally(() => { if (!cancelled) setStatsLoading(false); });
+        return () => { cancelled = true; };
+    }, []);
+
+    const loading = productsLoading || categoriesLoading || statsLoading;
 
     const handleSearch = (e) => {
         e.preventDefault();
         if (searchQuery.trim()) {
-            navigate(isAuthenticated ? `/app/browse?search=${encodeURIComponent(searchQuery)}` : '/login');
+            // Browse is public — no auth check needed to search.
+            navigate(`/app/browse?search=${encodeURIComponent(searchQuery)}`);
         }
     };
 
@@ -192,7 +186,7 @@ const Home = () => {
                     <div className="max-w-6xl mx-auto px-6">
                         <div className="flex items-center justify-between mb-4">
                             <h2 className="text-sm font-bold text-slate-900 dark:text-slate-100">Shop by category</h2>
-                            <Link to={isAuthenticated ? '/app/browse' : '/login'} className="text-xs font-semibold text-green-600 dark:text-green-400 no-underline hover:text-green-700 dark:hover:text-green-300">
+                            <Link to="/app/browse" className="text-xs font-semibold text-green-600 dark:text-green-400 no-underline hover:text-green-700 dark:hover:text-green-300">
                                 All categories →
                             </Link>
                         </div>
@@ -200,7 +194,7 @@ const Home = () => {
                             {categories.slice(0, 14).map((cat, i) => (
                                 <Link
                                     key={i}
-                                    to={isAuthenticated ? `/app/browse?category=${encodeURIComponent(cat)}` : '/login'}
+                                    to={`/app/browse?category=${encodeURIComponent(cat)}`}
                                     className="flex-shrink-0 flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-xs font-medium no-underline hover:bg-green-50 dark:hover:bg-green-900/40 hover:border-green-400 dark:hover:border-green-700 hover:text-green-700 dark:hover:text-green-300 transition"
                                 >
                                     <span>{getCategoryIcon(cat)}</span>
@@ -220,7 +214,7 @@ const Home = () => {
                             <h2 className="text-lg font-extrabold text-slate-900 dark:text-slate-100 tracking-tight">Featured products</h2>
                             <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Freshly listed by farmers near you</p>
                         </div>
-                        <Link to={isAuthenticated ? '/app/browse' : '/login'} className="text-xs font-semibold text-green-600 dark:text-green-400 no-underline hover:text-green-700 dark:hover:text-green-300">
+                        <Link to="/app/browse" className="text-xs font-semibold text-green-600 dark:text-green-400 no-underline hover:text-green-700 dark:hover:text-green-300">
                             View all →
                         </Link>
                     </div>
@@ -432,12 +426,16 @@ const HomeSkeleton = () => {
 // Updated ProductCard with Ratings
 const ProductCard = ({ product }) => {
     const navigate = useNavigate();
-    const { isAuthenticated } = useAuth();
+    const { user } = useAuth();
+    // Product viewing is public; only the "place order" action is buyer-only
+    // (or anonymous — anonymous users can start checkout and are prompted to
+    // sign in at submit time, not before). Farmers/admins never get it.
+    const canOrder = !user || user.role === 'buyer';
 
-    const handleClick = () => navigate(isAuthenticated ? `/app/products/${product.id}` : '/login');
+    const handleClick = () => navigate(`/app/products/${product.id}`);
     const handleOrder = (e) => {
         e.stopPropagation();
-        navigate(isAuthenticated ? `/app/place-order/${product.id}` : '/login');
+        navigate(`/app/place-order/${product.id}`);
     };
 
     // Coerce to Number defensively — Laravel's withAvg() aggregate can come back
@@ -497,12 +495,21 @@ const ProductCard = ({ product }) => {
                     </span>
                     <span className="text-[11px] text-slate-400 dark:text-slate-500">{product.quantity} {product.unit}</span>
                 </div>
-                <button
-                    onClick={handleOrder}
-                    className="w-full bg-green-600 text-white text-xs font-semibold py-2 rounded-lg hover:bg-green-700 transition border-none cursor-pointer"
-                >
-                    Place order
-                </button>
+                {canOrder ? (
+                    <button
+                        onClick={handleOrder}
+                        className="w-full bg-green-600 text-white text-xs font-semibold py-2 rounded-lg hover:bg-green-700 transition border-none cursor-pointer"
+                    >
+                        Place order
+                    </button>
+                ) : (
+                    <button
+                        onClick={handleClick}
+                        className="w-full bg-blue-50 dark:bg-blue-900/40 text-blue-600 dark:text-blue-300 text-xs font-semibold py-2 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/60 transition border-none cursor-pointer"
+                    >
+                        View details
+                    </button>
+                )}
             </div>
         </div>
     );

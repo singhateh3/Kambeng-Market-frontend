@@ -3,71 +3,51 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { OrdersSkeleton } from '../../components/common/skeletons/OrdersSkeleton';
 import { useAuth } from '../../hooks/useAuth';
-import api from '../../services/api';
+import { useCancelOrderMutation, useOrdersQuery, useUpdateOrderStatusMutation } from '../../hooks/queries/orderQueries';
 import { OrderCard } from './OrderCard';
 import { OrderDetails } from './OrderDetails';
 
 const Orders = () => {
     const { user } = useAuth();
-    const [orders, setOrders] = useState([]);
-    const [loading, setLoading] = useState(true);
     const [filters, setFilters] = useState({ status: '', page: 1, per_page: 20 });
-    const [pagination, setPagination] = useState({ current_page: 1, last_page: 1, per_page: 20, total: 0 });
     const [showModal, setShowModal] = useState(false);
     const [selectedOrder, setSelectedOrder] = useState(null);
     const [success, setSuccess] = useState(null);
     const [error, setError] = useState(null);
-    const [loadingAction, setLoadingAction] = useState(false);
 
-    useEffect(() => { fetchOrders(); }, [filters]);
+    const { data, isLoading: loading, error: ordersError } = useOrdersQuery(filters);
+    const orders = data?.orders || [];
+    const pagination = data?.pagination || { current_page: 1, last_page: 1, per_page: 20, total: 0 };
 
-    const fetchOrders = async () => {
-        try {
-            setLoading(true);
-            const params = new URLSearchParams({
-                status:   String(filters.status   ?? ''),
-                page:     String(filters.page     ?? 1),
-                per_page: String(filters.per_page ?? 20),
-            });
-            const response = await api.get(`/orders?${params}`);
-            setOrders(response.data.data || []);
-            setPagination(response.data.meta || { current_page: 1, last_page: 1, per_page: 20, total: 0 });
-        } catch (err) {
-            console.error('Error fetching orders:', err);
-            flash('error', 'Failed to load orders');
-        } finally {
-            setLoading(false);
-        }
-    };
+    const updateStatusMutation = useUpdateOrderStatusMutation();
+    const cancelOrderMutation = useCancelOrderMutation();
+    const loadingAction = updateStatusMutation.isPending || cancelOrderMutation.isPending;
 
     const flash = (type, msg) => {
         if (type === 'success') { setSuccess(msg); setTimeout(() => setSuccess(null), 3000); }
         else { setError(msg); setTimeout(() => setError(null), 3000); }
     };
 
+    useEffect(() => {
+        if (ordersError) flash('error', 'Failed to load orders');
+    }, [ordersError]);
+
     const handleStatusUpdate = async (orderId, status) => {
         try {
-            setLoadingAction(true);
-            await api.patch(`/orders/${orderId}/status`, { status });
+            await updateStatusMutation.mutateAsync({ orderId, status });
             flash('success', `Order status updated to ${status}`);
-            await fetchOrders();
         } catch (err) {
             flash('error', err.response?.data?.message || 'Failed to update order status');
         }
-        finally { setLoadingAction(false); }
     };
 
     // FIXED: Removed confirm() - confirmation is now handled in the modal
     const handleCancelOrder = async (orderId) => {
         try {
-            setLoadingAction(true);
-            await api.post(`/orders/${orderId}/cancel`);
+            await cancelOrderMutation.mutateAsync(orderId);
             flash('success', 'Order cancelled successfully');
-            await fetchOrders();
         } catch (err) {
             flash('error', err.response?.data?.message || 'Failed to cancel order');
-        } finally {
-            setLoadingAction(false); 
         }
     };
 

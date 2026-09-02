@@ -1,14 +1,20 @@
 // src/components/auth/Register.jsx
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
+import { resolveReturnTo } from '../../utils/authRedirect';
 import { Alert } from '../common/Alert';
+import { AppleSignInButton } from './AppleSignInButton';
 import { Button } from '../common/Button';
+import { GoogleSignInButton } from './GoogleSignInButton';
 import { ThemeToggle } from '../ThemeToggle';
+
+const SOCIAL_AUTH_CONFIGURED = Boolean(import.meta.env.VITE_GOOGLE_CLIENT_ID || import.meta.env.VITE_APPLE_SERVICES_ID);
 
 export const Register = () => {
     const { register } = useAuth();
     const navigate = useNavigate();
+    const location = useLocation();
     const [formData, setFormData] = useState({
         name: '',
         email: '',
@@ -33,7 +39,7 @@ export const Register = () => {
 
         try {
             await register(formData);
-            navigate('/app/dashboard');
+            navigate(resolveReturnTo(location.state, '/app/dashboard'));
         } catch (error) {
             const backendErrors = error.response?.data?.errors;
             if (backendErrors) {
@@ -301,11 +307,26 @@ export const Register = () => {
                             Create Account
                         </Button>
 
+                        {SOCIAL_AUTH_CONFIGURED && (
+                            <>
+                                <div className="flex items-center gap-3">
+                                    <div className="flex-1 h-px bg-gray-200 dark:bg-slate-700" />
+                                    <span className="text-xs text-gray-400 dark:text-slate-500">or</span>
+                                    <div className="flex-1 h-px bg-gray-200 dark:bg-slate-700" />
+                                </div>
+                                <div className="space-y-3">
+                                    <GoogleSignInButton />
+                                    <AppleSignInButton />
+                                </div>
+                            </>
+                        )}
+
                         <div className="text-center">
                             <p className="text-sm text-gray-600 dark:text-slate-400">
                                 Already have an account?{' '}
                                 <Link
                                     to="/login"
+                                    state={location.state}
                                     className="font-medium text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300 transition"
                                 >
                                     Sign in

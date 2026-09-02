@@ -1,14 +1,20 @@
 // src/components/auth/Login.jsx
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
+import { resolveReturnTo } from '../../utils/authRedirect';
 import { Alert } from '../common/Alert';
+import { AppleSignInButton } from './AppleSignInButton';
 import { Button } from '../common/Button';
+import { GoogleSignInButton } from './GoogleSignInButton';
 import { ThemeToggle } from '../ThemeToggle';
+
+const SOCIAL_AUTH_CONFIGURED = Boolean(import.meta.env.VITE_GOOGLE_CLIENT_ID || import.meta.env.VITE_APPLE_SERVICES_ID);
 
 export const Login = () => {
     const { login } = useAuth();
     const navigate = useNavigate();
+    const location = useLocation();
     const [formData, setFormData] = useState({
         email: '',
         password: '',
@@ -30,11 +36,12 @@ export const Login = () => {
 
             // Navigate based on role — AuthContext.login() returns the raw
             // backend body, {message, data: {user, token, token_type}}.
-            if (response?.data?.user?.role === 'admin') {
-                navigate('/app/admin/dashboard');
-            } else {
-                navigate('/app/dashboard');
-            }
+            // If the user was bounced here from a protected page (or from
+            // anonymous checkout), return them there instead of the default
+            // dashboard — resolveReturnTo() only ever trusts an internal
+            // path that this app itself put into router state.
+            const fallback = response?.data?.user?.role === 'admin' ? '/app/admin/dashboard' : '/app/dashboard';
+            navigate(resolveReturnTo(location.state, fallback));
         } catch (error) {
             console.error('Login error:', error);
             
@@ -239,11 +246,26 @@ export const Login = () => {
                             Sign in
                         </Button>
 
+                        {SOCIAL_AUTH_CONFIGURED && (
+                            <>
+                                <div className="flex items-center gap-3">
+                                    <div className="flex-1 h-px bg-gray-200 dark:bg-slate-700" />
+                                    <span className="text-xs text-gray-400 dark:text-slate-500">or</span>
+                                    <div className="flex-1 h-px bg-gray-200 dark:bg-slate-700" />
+                                </div>
+                                <div className="space-y-3">
+                                    <GoogleSignInButton />
+                                    <AppleSignInButton />
+                                </div>
+                            </>
+                        )}
+
                         <div className="text-center">
                             <p className="text-sm text-gray-600 dark:text-slate-400">
                                 Don't have an account?{' '}
                                 <Link
                                     to="/register"
+                                    state={location.state}
                                     className="font-medium text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300 transition"
                                 >
                                     Sign up

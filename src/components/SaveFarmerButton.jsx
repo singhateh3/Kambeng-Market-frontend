@@ -1,13 +1,16 @@
 // src/components/SaveFarmerButton.jsx
 import { useEffect, useState } from 'react';
-import api from '../services/api';
+import { useToggleSavedFarmerMutation } from '../hooks/queries/savedFarmerQueries';
 
-// Self-contained save/unsave toggle — owns its own request + error state,
-// same pattern as ReviewForm/ReportIssueForm ("give me an id, I handle my
-// own mutation") rather than pushing the API call up to the parent page.
+// Self-contained save/unsave toggle — owns its own local "saved" display
+// state, same pattern as ReviewForm/ReportIssueForm ("give me an id, I
+// handle my own mutation") rather than pushing the API call up to the
+// parent page. The actual request goes through the shared
+// useToggleSavedFarmerMutation so the SavedFarmers list page's cache stays
+// correct no matter where a save/unsave happens (here, or its own page).
 export const SaveFarmerButton = ({ farmerId, initialSaved = false, onChange, size = 'md' }) => {
     const [saved, setSaved] = useState(initialSaved);
-    const [loading, setLoading] = useState(false);
+    const toggleMutation = useToggleSavedFarmerMutation();
 
     // initialSaved often arrives after an async "is this already saved?"
     // check resolves post-mount (see ProductDetail.jsx) — sync to it
@@ -18,22 +21,15 @@ export const SaveFarmerButton = ({ farmerId, initialSaved = false, onChange, siz
 
     const handleToggle = async (e) => {
         e.stopPropagation();
-        if (loading) return;
+        if (toggleMutation.isPending) return;
 
         const next = !saved;
-        setLoading(true);
         try {
-            if (next) {
-                await api.post(`/saved-farmers/${farmerId}`);
-            } else {
-                await api.delete(`/saved-farmers/${farmerId}`);
-            }
+            await toggleMutation.mutateAsync({ farmerId, save: next });
             setSaved(next);
             onChange?.(next);
         } catch (err) {
             console.error('Error toggling saved farmer:', err);
-        } finally {
-            setLoading(false);
         }
     };
 
@@ -46,7 +42,7 @@ export const SaveFarmerButton = ({ farmerId, initialSaved = false, onChange, siz
         <button
             type="button"
             onClick={handleToggle}
-            disabled={loading}
+            disabled={toggleMutation.isPending}
             aria-pressed={saved}
             aria-label={saved ? 'Remove farmer from saved list' : 'Save farmer'}
             title={saved ? 'Saved — click to remove' : 'Save this farmer'}

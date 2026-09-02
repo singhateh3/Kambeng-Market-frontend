@@ -1,42 +1,23 @@
 // src/pages/buyer/SavedFarmers.jsx
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Footer } from '../../components/Footer';
-import api from '../../services/api';
+import { useSavedFarmersQuery, useToggleSavedFarmerMutation } from '../../hooks/queries/savedFarmerQueries';
 
 const SavedFarmers = () => {
-    const [savedFarmers, setSavedFarmers] = useState([]);
-    const [isInitialLoad, setIsInitialLoad] = useState(true);
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState(null);
     const [page, setPage] = useState(1);
-    const [pagination, setPagination] = useState({ current_page: 1, last_page: 1, per_page: 20, total: 0 });
     const [removingId, setRemovingId] = useState(null);
 
-    useEffect(() => { fetchSavedFarmers(); }, [page]);
+    const { data, isLoading: isInitialLoad, isFetching: loading, error, refetch } = useSavedFarmersQuery(page);
+    const savedFarmers = data?.savedFarmers || [];
+    const pagination = data?.pagination || { current_page: 1, last_page: 1, per_page: 20, total: 0 };
 
-    const fetchSavedFarmers = async () => {
-        try {
-            setLoading(true);
-            setError(null);
-            const response = await api.get(`/saved-farmers?page=${page}&per_page=20`);
-            setSavedFarmers(response.data.data || []);
-            setPagination(response.data.meta || { current_page: 1, last_page: 1, per_page: 20, total: 0 });
-        } catch (err) {
-            console.error('Error fetching saved farmers:', err);
-            setError('Failed to load saved farmers. Please try again.');
-        } finally {
-            setLoading(false);
-            setIsInitialLoad(false);
-        }
-    };
+    const toggleMutation = useToggleSavedFarmerMutation();
 
     const handleRemove = async (farmerId) => {
         try {
             setRemovingId(farmerId);
-            await api.delete(`/saved-farmers/${farmerId}`);
-            setSavedFarmers((prev) => prev.filter((sf) => sf.farmer_id !== farmerId));
-            setPagination((prev) => ({ ...prev, total: Math.max(0, prev.total - 1) }));
+            await toggleMutation.mutateAsync({ farmerId, save: false });
         } catch (err) {
             console.error('Error removing saved farmer:', err);
         } finally {
@@ -66,9 +47,9 @@ const SavedFarmers = () => {
                     <div className="bg-white dark:bg-slate-900 border border-red-200 dark:border-red-800 rounded-xl text-center py-20">
                         <div className="text-5xl mb-3">⚠️</div>
                         <h3 className="text-base font-bold text-slate-900 dark:text-slate-100 mb-1">Something went wrong</h3>
-                        <p className="text-sm text-slate-400 dark:text-slate-500 mb-5">{error}</p>
+                        <p className="text-sm text-slate-400 dark:text-slate-500 mb-5">Failed to load saved farmers. Please try again.</p>
                         <button
-                            onClick={fetchSavedFarmers}
+                            onClick={() => refetch()}
                             className="bg-green-600 text-white text-sm font-semibold px-5 py-2.5 rounded-lg hover:bg-green-700 transition border-none cursor-pointer"
                         >
                             Try again

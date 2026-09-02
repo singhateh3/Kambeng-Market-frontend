@@ -1,12 +1,12 @@
 // src/pages/Browse.jsx
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { useEffect, useRef, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Footer } from '../components/Footer';
 import { ImageWithFallback } from '../components/common/ImageWithFallback';
 import { BrowseSkeleton } from '../components/common/skeletons/BrowseSkeleton';
 import { useAuth } from '../hooks/useAuth';
 import { useDebounce } from '../hooks/useDebounce';
-import api from '../services/api';
+import { useCategoriesQuery, useProductsQuery, useRegionsQuery } from '../hooks/queries/productQueries';
 
 const CATEGORY_ICONS = {
     'Vegetables': '🥬', 'Fruits': '🍎', 'Grains': '🌾',
@@ -20,13 +20,6 @@ const Browse = () => {
     const { user } = useAuth();
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
-    
-    const [products, setProducts] = useState([]);
-    const [isInitialLoad, setIsInitialLoad] = useState(true);
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState(null);
-    const [categories, setCategories] = useState([]);
-    const [regions, setRegions] = useState([]);
 
     // Controlled text input string
     const [searchValue, setSearchValue] = useState(searchParams.get('search') || '');
@@ -34,64 +27,17 @@ const Browse = () => {
     const [region, setRegion] = useState(searchParams.get('region') || '');
     const [page, setPage] = useState(1);
 
-    const [pagination, setPagination] = useState({
-        current_page: 1, last_page: 1, per_page: 20, total: 0,
-    });
-
     const searchInputRef = useRef(null);
-    // Tracks the last category/region/search combo actually fetched, so a
-    // filter change and the page-1 reset it triggers collapse into a single
-    // request instead of firing once with the stale page (e.g. page 3 of
-    // the old filter set) and again a render later with the corrected page.
-    const prevFiltersRef = useRef({ category, region, search: searchValue });
-    // Holds the AbortController for whichever request is currently in
-    // flight, so a fast filter/category change (fired before the previous
-    // request resolves) cancels it instead of racing it — otherwise an
-    // older, slower response could land after a newer one and overwrite
-    // correct results with stale ones.
-    const abortControllerRef = useRef(null);
 
     // Debounce processing
     const debouncedSearch = useDebounce(searchValue, 300);
 
-    // Primary data fetcher
-    const fetchProducts = useCallback(async () => {
-        abortControllerRef.current?.abort();
-        const controller = new AbortController();
-        abortControllerRef.current = controller;
-
-        try {
-            setLoading(true);
-            setError(null);
-            const params = new URLSearchParams({
-                category: String(category ?? ''),
-                region: String(region ?? ''),
-                search: String(debouncedSearch ?? ''),
-                page: String(page),
-                per_page: '20',
-            });
-            const response = await api.get(`/products?${params}`, { signal: controller.signal });
-            setProducts(response.data.data || []);
-            setPagination(response.data.meta || { current_page: 1, last_page: 1, per_page: 20, total: 0 });
-        } catch (err) {
-            if (err.code === 'ERR_CANCELED') return; // superseded by a newer request
-            console.error('Error fetching products:', err);
-            setError('Failed to load products. Please try again.');
-            setProducts([]);
-        } finally {
-            // Only the request that's still current should clear the
-            // loading flag — an aborted request's finally still runs, and
-            // must not flip loading off while its replacement is pending.
-            if (abortControllerRef.current === controller) {
-                setLoading(false);
-                setIsInitialLoad(false);
-            }
-        }
-    }, [category, region, debouncedSearch, page]);
-
     // Reset pagination back to page 1 whenever search terms, category, or
-    // region change, then fetch exactly once with the correct page for the
-    // new filters (see prevFiltersRef above).
+    // region change — the query itself (below) is keyed on {category,
+    // region, search, page}, so TanStack Query handles request
+    // cancellation/dedup for the resulting key change; no manual
+    // AbortController bookkeeping needed here anymore.
+    const prevFiltersRef = useRef({ category, region, search: debouncedSearch });
     useEffect(() => {
         const filtersChanged =
             prevFiltersRef.current.category !== category ||
@@ -99,44 +45,21 @@ const Browse = () => {
             prevFiltersRef.current.search !== debouncedSearch;
         prevFiltersRef.current = { category, region, search: debouncedSearch };
 
-        if (filtersChanged && page !== 1) {
-            setPage(1);
-            return;
-        }
+        if (filtersChanged) setPage(1);
+    }, [category, region, debouncedSearch]);
 
-        fetchProducts();
-    }, [category, region, debouncedSearch, page, fetchProducts]);
+    const {
+        data: productsData,
+        isLoading,
+        isFetching,
+        error,
+        refetch,
+    } = useProductsQuery({ category, region, search: debouncedSearch, page, per_page: 20 });
+    const products = productsData?.products || [];
+    const pagination = productsData?.pagination || { current_page: 1, last_page: 1, per_page: 20, total: 0 };
 
-    // Cancel any in-flight request if the page is left mid-fetch.
-    useEffect(() => {
-        return () => abortControllerRef.current?.abort();
-    }, []);
-
-    // Isolated runtime category fetcher
-    useEffect(() => {
-        const fetchCategories = async () => {
-            try {
-                const response = await api.get('/products/categories');
-                setCategories(response.data.data || []);
-            } catch (err) {
-                console.error('Error fetching categories:', err);
-            }
-        };
-        fetchCategories();
-    }, []);
-
-    // Isolated runtime region fetcher
-    useEffect(() => {
-        const fetchRegions = async () => {
-            try {
-                const response = await api.get('/products/regions');
-                setRegions(response.data.data || []);
-            } catch (err) {
-                console.error('Error fetching regions:', err);
-            }
-        };
-        fetchRegions();
-    }, []);
+    const { data: categories = [] } = useCategoriesQuery();
+    const { data: regions = [] } = useRegionsQuery();
 
     const clearFilters = () => {
         setSearchValue('');
@@ -148,7 +71,7 @@ const Browse = () => {
         }
     };
 
-    if (isInitialLoad) return <BrowseSkeleton />;
+    if (isLoading) return <BrowseSkeleton />;
 
     return (
         <div className="bg-slate-50 dark:bg-slate-950 min-h-screen">
@@ -271,14 +194,14 @@ const Browse = () => {
                 </div>
 
                 {/* Products grid container with smooth opacity transitions */}
-                <div className={`transition-opacity duration-200 ${loading ? 'opacity-60 pointer-events-none' : 'opacity-100'}`}>
+                <div className={`transition-opacity duration-200 ${isFetching ? 'opacity-60 pointer-events-none' : 'opacity-100'}`}>
                     {error ? (
                         <div className="bg-white dark:bg-slate-900 border border-red-200 dark:border-red-800 rounded-xl text-center py-20">
                             <div className="text-5xl mb-3">⚠️</div>
                             <h3 className="text-base font-bold text-slate-900 dark:text-slate-100 mb-1">Something went wrong</h3>
-                            <p className="text-sm text-slate-400 dark:text-slate-500 mb-5">{error}</p>
+                            <p className="text-sm text-slate-400 dark:text-slate-500 mb-5">Failed to load products. Please try again.</p>
                             <button
-                                onClick={fetchProducts}
+                                onClick={() => refetch()}
                                 className="bg-green-600 text-white text-sm font-semibold px-5 py-2.5 rounded-lg hover:bg-green-700 transition border-none cursor-pointer"
                             >
                                 Try again
@@ -317,7 +240,7 @@ const Browse = () => {
                                         <button
                                             type="button"
                                             aria-label="Go to previous page"
-                                            disabled={loading || pagination.current_page <= 1}
+                                            disabled={isFetching || pagination.current_page <= 1}
                                             onClick={() => setPage(pagination.current_page - 1)}
                                             className="px-3.5 py-1.5 text-xs font-semibold rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-green-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900"
                                         >← Previous</button>
@@ -327,7 +250,7 @@ const Browse = () => {
                                         <button
                                             type="button"
                                             aria-label="Go to next page"
-                                            disabled={loading || pagination.current_page >= pagination.last_page}
+                                            disabled={isFetching || pagination.current_page >= pagination.last_page}
                                             onClick={() => setPage(pagination.current_page + 1)}
                                             className="px-3.5 py-1.5 text-xs font-semibold rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-green-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900"
                                         >Next →</button>
@@ -348,6 +271,7 @@ const Browse = () => {
 const ProductCard = ({ product, navigate, user }) => {
     const isExpired = product.expiry_date && new Date(product.expiry_date) < new Date();
     const isAvailable = product.is_available && !isExpired;
+    const canOrder = !user || user.role === 'buyer';
 
     const handleOrder = (e) => {
         e.stopPropagation();
@@ -400,27 +324,25 @@ const ProductCard = ({ product, navigate, user }) => {
                     <span className="text-[11px] text-slate-400 dark:text-slate-500">{product.quantity} {product.unit}</span>
                 </div>
 
-                {user?.role === 'buyer' && isAvailable ? (
+                {/* Product viewing is public; the order action is buyer-only (or
+                    anonymous — anonymous users can start checkout and are
+                    prompted to sign in at submit time). Farmers/admins get a
+                    neutral "View details" affordance instead. */}
+                {canOrder && isAvailable ? (
                     <button
                         onClick={handleOrder}
                         className="w-full bg-green-600 text-white text-xs font-semibold py-2 rounded-lg hover:bg-green-700 transition border-none cursor-pointer"
                     >
                         Place order
                     </button>
-                ) : user?.role === 'buyer' && !isAvailable ? (
+                ) : canOrder && !isAvailable ? (
                     <button disabled className="w-full bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-600 text-xs font-semibold py-2 rounded-lg cursor-not-allowed border-none">
                         {isExpired ? 'Expired' : 'Sold out'}
                     </button>
-                ) : user?.role === 'farmer' ? (
+                ) : (
                     <button className="w-full bg-blue-50 dark:bg-blue-900/40 text-blue-600 dark:text-blue-300 text-xs font-semibold py-2 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/60 transition border-none cursor-pointer">
                         View details
                     </button>
-                ) : (
-                    <Link to="/login" onClick={(e) => e.stopPropagation()}>
-                        <button className="w-full bg-green-600 text-white text-xs font-semibold py-2 rounded-lg hover:bg-green-700 transition border-none cursor-pointer">
-                            Login to order
-                        </button>
-                    </Link>
                 )}
             </div>
         </div>

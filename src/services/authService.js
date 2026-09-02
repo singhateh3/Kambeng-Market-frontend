@@ -12,6 +12,24 @@ export const authService = {
         return response.data;
     },
 
+    // The frontend only ever sends the provider's own signed identity
+    // token — never any user-asserted identity — matching what the
+    // backend's SocialAuthController independently re-verifies.
+    async loginWithGoogle(idToken) {
+        const response = await api.post('/auth/google', { id_token: idToken });
+        return response.data;
+    },
+
+    // `name` (Apple's { firstName, lastName }) is optional — only present
+    // on that user's very first authorization for this app, never
+    // recoverable afterward. It carries no authority on its own; the
+    // backend only ever uses it as a brand-new account's initial display
+    // name, never to modify an existing user.
+    async loginWithApple(idToken, name) {
+        const response = await api.post('/auth/apple', { id_token: idToken, name });
+        return response.data;
+    },
+
     async logout() {
         const response = await api.post('/logout');
         return response.data;

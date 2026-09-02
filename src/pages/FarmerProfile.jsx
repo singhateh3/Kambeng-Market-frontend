@@ -4,22 +4,20 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { Button } from '../components/common/Button';
 import { SaveFarmerButton } from '../components/SaveFarmerButton';
 import { useAuth } from '../hooks/useAuth';
+import { usePublicFarmerProfileQuery } from '../hooks/queries/farmerQueries';
 import api from '../services/api';
 
 const FarmerProfile = () => {
     const { userId } = useParams();
     const navigate = useNavigate();
     const { user } = useAuth();
-    const [profile, setProfile] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+    const { data: profile, isLoading: loading, error } = usePublicFarmerProfileQuery(userId);
     const [farmerSaved, setFarmerSaved] = useState(false);
 
     const isBuyer = user?.role === 'buyer';
-
-    useEffect(() => {
-        fetchProfile();
-    }, [userId]);
+    const errorMessage = error
+        ? (error.response?.status === 404 ? 'Farmer not found' : 'Failed to load farmer profile')
+        : null;
 
     useEffect(() => {
         if (!isBuyer || !userId) return;
@@ -31,20 +29,6 @@ const FarmerProfile = () => {
             .catch((err) => console.error('Error checking saved farmer status:', err));
         return () => { cancelled = true; };
     }, [userId, isBuyer]);
-
-    const fetchProfile = async () => {
-        try {
-            setLoading(true);
-            setError(null);
-            const response = await api.get(`/farmers/${userId}/profile`);
-            setProfile(response.data.data || response.data);
-        } catch (err) {
-            console.error('Error fetching farmer profile:', err);
-            setError(err.response?.status === 404 ? 'Farmer not found' : 'Failed to load farmer profile');
-        } finally {
-            setLoading(false);
-        }
-    };
 
     if (loading) {
         return (
@@ -59,7 +43,7 @@ const FarmerProfile = () => {
             <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-100 dark:border-slate-700 p-12 text-center max-w-2xl mx-auto">
                 <div className="text-6xl mb-4">🔍</div>
                 <h3 className="text-xl font-semibold text-gray-900 dark:text-slate-100 mb-2">Farmer Not Found</h3>
-                <p className="text-gray-500 dark:text-slate-400">{error || "This farmer's profile doesn't exist."}</p>
+                <p className="text-gray-500 dark:text-slate-400">{errorMessage || "This farmer's profile doesn't exist."}</p>
                 <Button className="mt-4" onClick={() => navigate('/app/browse')}>
                     Browse Products
                 </Button>

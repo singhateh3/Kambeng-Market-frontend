@@ -5,24 +5,17 @@ import { Button } from '../components/common/Button';
 import { ImageWithFallback } from '../components/common/ImageWithFallback';
 import { SaveFarmerButton } from '../components/SaveFarmerButton';
 import { useAuth } from '../hooks/useAuth';
+import { useProductQuery } from '../hooks/queries/productQueries';
 import api from '../services/api';
 
 const ProductDetail = () => {
     const { productId } = useParams();
     const navigate = useNavigate();
     const { user } = useAuth();
-    const [product, setProduct] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+    const { data: product, isLoading: loading, error } = useProductQuery(productId);
     const [quantity, setQuantity] = useState(1);
     const [activeImage, setActiveImage] = useState(0);
     const [farmerSaved, setFarmerSaved] = useState(false);
-
-    useEffect(() => {
-        if (productId) {
-            fetchProduct();
-        }
-    }, [productId]);
 
     // Only buyers can save farmers, and this only makes sense once we know
     // which farmer the loaded product belongs to.
@@ -39,41 +32,6 @@ const ProductDetail = () => {
 
         return () => { cancelled = true; };
     }, [product?.farmer?.id, user?.role]);
-
-    const fetchProduct = async () => {
-        try {
-            setLoading(true);
-            setError(null);
-
-            const response = await api.get(`/products/${productId}`);
-
-            // Handle different response formats
-            let productData = null;
-
-            if (response.data && response.data.data) {
-                // Standard Laravel Resource response
-                productData = response.data.data;
-            } else if (response.data && response.data.id) {
-                // Direct product data
-                productData = response.data;
-            } else if (response.data) {
-                // Fallback
-                productData = response.data;
-            }
-
-            if (productData && productData.id) {
-                setProduct(productData);
-            } else {
-                console.error('No product data found in response');
-                setError('Product not found');
-            }
-        } catch (err) {
-            console.error('Error fetching product:', err);
-            setError(err.response?.data?.message || 'Failed to load product details');
-        } finally {
-            setLoading(false);
-        }
-    };
 
     const handleQuantityChange = (e) => {
         const value = parseInt(e.target.value) || 1;
@@ -113,7 +71,9 @@ const ProductDetail = () => {
                     <p className="text-sm text-gray-400 dark:text-slate-500 mt-2">Product ID: {productId}</p>
                 )}
                 {error && (
-                    <p className="text-sm text-red-500 dark:text-red-400 mt-2">Error: {error}</p>
+                    <p className="text-sm text-red-500 dark:text-red-400 mt-2">
+                        Error: {error.response?.data?.message || 'Failed to load product details'}
+                    </p>
                 )}
                 <Button className="mt-4" onClick={() => navigate('/app/browse')}>
                     Browse Products
@@ -299,9 +259,12 @@ const ProductDetail = () => {
                                 </div>
                             )}
 
-                            {/* Actions */}
+                            {/* Actions — viewing is public; ordering is buyer-only (or
+                                anonymous, who can start checkout and are prompted to
+                                sign in only at submit time). Farmers/admins never get
+                                the order action. */}
                             <div className="pt-4 space-y-3">
-                                {isBuyer && isAvailable && !isExpired && (
+                                {(isBuyer || !user) && isAvailable && !isExpired && (
                                     <>
                                         <div className="flex items-center space-x-4">
                                             <div className="flex items-center space-x-2">
@@ -330,12 +293,12 @@ const ProductDetail = () => {
                                         </button>
                                     </>
                                 )}
-                                {isBuyer && !isAvailable && !isExpired && (
+                                {(isBuyer || !user) && !isAvailable && !isExpired && (
                                     <button className="w-full bg-gray-300 dark:bg-slate-700 text-gray-600 dark:text-slate-400 py-3 rounded-xl cursor-not-allowed font-semibold text-lg" disabled>
                                         Sold Out
                                     </button>
                                 )}
-                                {isBuyer && isExpired && (
+                                {(isBuyer || !user) && isExpired && (
                                     <button className="w-full bg-gray-300 dark:bg-slate-700 text-gray-600 dark:text-slate-400 py-3 rounded-xl cursor-not-allowed font-semibold text-lg" disabled>
                                         Expired
                                     </button>
@@ -347,13 +310,6 @@ const ProductDetail = () => {
                                     >
                                         📦 View My Products
                                     </button>
-                                )}
-                                {!user && (
-                                    <Link to="/login">
-                                        <button className="w-full bg-green-600 text-white py-3 rounded-xl hover:bg-green-700 transition font-semibold text-lg">
-                                            Login to Order
-                                        </button>
-                                    </Link>
                                 )}
                             </div>
                         </div>

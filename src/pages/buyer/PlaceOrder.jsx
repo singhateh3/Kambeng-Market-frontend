@@ -1,8 +1,11 @@
 // src/pages/buyer/PlaceOrder.jsx
 import { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
+import { useProductQuery } from '../../hooks/queries/productQueries';
 import api from '../../services/api';
+import { buildReturnState } from '../../utils/authRedirect';
+import { clearPendingCheckout, readPendingCheckout, savePendingCheckout } from '../../utils/pendingCheckout';
 
 // Enhanced Skeleton with more detail
 const PlaceOrderSkeleton = () => (
@@ -128,10 +131,15 @@ const SubmittingOverlay = () => (
 const PlaceOrder = () => {
     const { productId } = useParams();
     const navigate = useNavigate();
-    const { user } = useAuth();
-    const [loading, setLoading] = useState(true);
+    const location = useLocation();
+    const { user, isAuthenticated } = useAuth();
+    // Shares the same cache/query key as ProductDetail/Browse — if the
+    // buyer just came from viewing this product, this is instant; either
+    // way TanStack Query still revalidates against live price/availability
+    // per its staleTime, and the actual order call is re-validated
+    // server-side regardless of what's shown here.
+    const { data: product, isLoading: loading } = useProductQuery(productId);
     const [submitting, setSubmitting] = useState(false);
-    const [product, setProduct] = useState(null);
     const [success, setSuccess] = useState(null);
     const [error, setError] = useState(null);
     const [showSuccessOverlay, setShowSuccessOverlay] = useState(false);
@@ -146,24 +154,17 @@ const PlaceOrder = () => {
     });
 
     useEffect(() => {
-        fetchProduct();
-        // Pre-fill delivery address from user profile if available
-        if (user?.location) {
+        // Restore what an anonymous visitor typed before being sent to
+        // sign in, if this is that same product and it hasn't expired.
+        // Falls back to the profile-location prefill only when there's
+        // nothing to restore, so a typed pending address always wins.
+        const pending = readPendingCheckout(productId);
+        if (pending) {
+            setFormData(f => ({ ...f, ...pending }));
+        } else if (user?.location) {
             setFormData(f => ({ ...f, delivery_address: user.location }));
         }
     }, [productId]);
-
-    const fetchProduct = async () => {
-        try {
-            setLoading(true);
-            const response = await api.get(`/products/${productId}`);
-            setProduct(response.data.data);
-        } catch (err) {
-            setError('Failed to load product details');
-        } finally {
-            setLoading(false);
-        }
-    };
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -177,6 +178,18 @@ const PlaceOrder = () => {
         // Validate delivery address for farmer_delivery
         if (formData.delivery_method === 'farmer_delivery' && !formData.delivery_address.trim()) {
             setFieldErrors(f => ({ ...f, delivery_address: 'Please provide a delivery address so the farmer knows where to deliver.' }));
+            return;
+        }
+
+        // Anonymous visitors can fill this form, but placing the order
+        // requires an account — stash what they entered, send them to sign
+        // in, and bring them straight back here afterward. The backend is
+        // never called with an unauthenticated request; this is a UX
+        // redirect, not a substitute for the auth:sanctum middleware that
+        // actually protects order creation.
+        if (!isAuthenticated) {
+            savePendingCheckout(productId, formData);
+            navigate('/login', { state: buildReturnState(location) });
             return;
         }
 
@@ -195,6 +208,7 @@ const PlaceOrder = () => {
                 special_instructions: formData.special_instructions || null,
             });
 
+            clearPendingCheckout();
             setSuccess('Order placed successfully!');
             setShowSuccessOverlay(true);
         } catch (err) {
@@ -468,7 +482,7 @@ const PlaceOrder = () => {
                                 formData.delivery_method === 'farmer_delivery' && formData.delivery_deadline && {
                                     label: 'Deadline', value: new Date(formData.delivery_deadline).toLocaleDateString()
                                 },
-                                { label: 'Payment', value: '💵 Cash on Delivery' },
+                                { label: 'Payment', value: '🔒 Secure payment via ModemPay' },
                             ].filter(Boolean).map((row, i) => (
                                 <div key={i} className="flex items-start justify-between gap-4">
                                     <span className="text-xs text-slate-500 dark:text-slate-400 flex-shrink-0">{row.label}</span>
@@ -505,7 +519,7 @@ const PlaceOrder = () => {
                         </button>
                         <button
                             type="button"
-                            onClick={() => navigate('/app/browse')}
+                            onClick={() => { clearPendingCheckout(); navigate('/app/browse'); }}
                             disabled={submitting}
                             className="px-6 text-sm font-semibold text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 py-3.5 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-50 transition cursor-pointer"
                         >

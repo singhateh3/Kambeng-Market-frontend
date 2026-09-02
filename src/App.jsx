@@ -52,27 +52,24 @@ export const App = () => {
                         <Route path="/register" element={<Register />} />
                         <Route path="/forgot-password" element={<ForgotPassword />} />
 
-                        {/* PROTECTED ROUTES */}
-                        <Route
-                            path="/app"
-                            element={
-                                <ProtectedRoute>
-                                    <Layout />
-                                </ProtectedRoute>
-                            }
-                        >
+                        {/* /app — the layout itself is no longer gated on auth, since
+                            some of its children (browse, product detail, place-order,
+                            farmer profile) are now public. Every route that still
+                            needs auth declares its own <ProtectedRoute> explicitly
+                            instead of inheriting it implicitly from this parent. */}
+                        <Route path="/app" element={<Layout />}>
                             <Route index element={<Navigate to="/app/dashboard" />} />
-                            <Route path="dashboard" element={<Dashboard />} />
-                            <Route path="profile" element={<Profile />} />
+                            <Route path="dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+                            <Route path="profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
 
                             {/* Farmer Routes */}
-                            <Route 
-                                path="products" 
+                            <Route
+                                path="products"
                                 element={
                                     <ProtectedRoute requiredRole="farmer">
                                         <Products />
                                     </ProtectedRoute>
-                                } 
+                                }
                             />
                             <Route
                                 path="products/create"
@@ -91,40 +88,29 @@ export const App = () => {
                                 }
                             />
 
-                            {/* Buyer Routes */}
-                            <Route 
-                                path="browse" 
-                                element={
-                                    <ProtectedRoute requiredRole="buyer">
-                                        <Browse />
-                                    </ProtectedRoute>
-                                } 
-                            />
-                            <Route 
-                                path="place-order/:productId" 
-                                element={
-                                    <ProtectedRoute requiredRole="buyer">
-                                        <PlaceOrder />
-                                    </ProtectedRoute>
-                                } 
-                            />
+                            {/* Public marketplace — browsing/viewing needs no account.
+                                The backend already serves these endpoints publicly;
+                                the only thing that ever gated them was this route
+                                nesting. Buyer-only actions (placing an order, saving a
+                                farmer) are gated inside the components themselves, not
+                                the route, so farmers/admins can still view but don't
+                                get buyer affordances, and anonymous visitors can browse
+                                and start checkout before being asked to sign in. */}
+                            <Route path="browse" element={<Browse />} />
+                            <Route path="place-order/:productId" element={<PlaceOrder />} />
+                            <Route path="products/:productId" element={<ProductDetail />} />
+                            <Route path="farmers/:userId" element={<FarmerProfile />} />
 
-                            {/* Product Detail - Accessible by both farmers and buyers */}
-                            <Route path="products/:productId" element={<ProtectedRoute><ProductDetail /></ProtectedRoute>} />
-
-                            {/* Farmer public profile - Accessible by any authenticated user */}
-                            <Route path="farmers/:userId" element={<ProtectedRoute><FarmerProfile /></ProtectedRoute>} />
-
-                            {/* Saved Farmers - Buyers only */}
+                            {/* Saved Farmers - Buyers only (private) */}
                             <Route path="saved-farmers" element={<ProtectedRoute requiredRole="buyer"><SavedFarmers /></ProtectedRoute>} />
 
-                            {/* Orders - Accessible by both farmers and buyers */}
+                            {/* Orders - Accessible by both farmers and buyers (private) */}
                             <Route path="orders" element={<ProtectedRoute><Orders /></ProtectedRoute>} />
                             <Route path="orders/:orderId" element={<ProtectedRoute><OrderDetailsPage /></ProtectedRoute>} />
                             <Route path="orders/:orderId/review" element={<ProtectedRoute><WriteReview /></ProtectedRoute>} />
                             <Route path="orders/:orderId/report" element={<ProtectedRoute requiredRole="buyer"><ReportIssue /></ProtectedRoute>} />
 
-                            {/* Notifications - Accessible by all authenticated users */}
+                            {/* Notifications - Accessible by all authenticated users (private) */}
                             <Route path="notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
 
                             {/* Admin Routes */}

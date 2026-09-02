@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import { buildReturnState } from '../utils/authRedirect';
 import { NotificationBell } from './NotificationBell';
 import { ThemeToggle } from './ThemeToggle';
 
@@ -130,7 +131,9 @@ export const Layout = () => {
                     <div className="hidden lg:flex items-center gap-1 bg-slate-50 dark:bg-slate-900 rounded-full p-1">
                         {navLink('/app/dashboard', 'Dashboard')}
                         {isFarmer && navLink('/app/products', 'My Products')}
-                        {isBuyer  && navLink('/app/browse', 'Browse')}
+                        {/* Browse is public — visible to every role (and anon, via the
+                            unauthenticated nav branch below), not just buyers. */}
+                        {navLink('/app/browse', 'Browse')}
                         {navLink('/app/orders', 'Orders')}
                         {isBuyer  && navLink('/app/saved-farmers', 'Saved Farmers')}
                         {isAdmin  && navLink('/app/admin/users', 'Users')}
@@ -164,7 +167,12 @@ export const Layout = () => {
                             )}
                         </button>
 
-                        {/* Profile dropdown */}
+                        {/* Profile dropdown — only meaningful once signed in. Browse,
+                            product detail, place-order, and the public farmer profile
+                            all render inside this Layout without requiring auth now,
+                            so an anonymous visitor gets sign-in/sign-up links here
+                            instead of a broken "Account" menu. */}
+                        {user ? (
                         <div className="relative order-2" ref={dropdownRef}>
                             <button
                                 onClick={() => { setMenuOpen(!menuOpen); setMobileMenuOpen(false); }}
@@ -226,6 +234,24 @@ export const Layout = () => {
                                 </div>
                             )}
                         </div>
+                        ) : (
+                        <div className="order-2 flex items-center gap-2">
+                            <Link
+                                to="/login"
+                                state={buildReturnState(location)}
+                                className="text-[13px] font-bold text-slate-600 dark:text-slate-300 no-underline hover:text-green-700 dark:hover:text-green-400 transition px-2"
+                            >
+                                Sign in
+                            </Link>
+                            <Link
+                                to="/register"
+                                state={buildReturnState(location)}
+                                className="bg-green-600 text-white text-[13px] font-bold px-3.5 py-1.5 rounded-full no-underline hover:bg-green-700 transition"
+                            >
+                                Sign up
+                            </Link>
+                        </div>
+                        )}
 
                         <div className="order-3">
                             <NotificationBell />
@@ -247,7 +273,7 @@ export const Layout = () => {
                     <div id="mobile-nav-panel" className="lg:hidden border-t border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-3 space-y-1">
                         {mobileNavLink('/app/dashboard', 'Dashboard')}
                         {isFarmer && mobileNavLink('/app/products', 'My Products')}
-                        {isBuyer  && mobileNavLink('/app/browse', 'Browse')}
+                        {mobileNavLink('/app/browse', 'Browse')}
                         {mobileNavLink('/app/orders', 'Orders')}
                         {isBuyer  && mobileNavLink('/app/saved-farmers', 'Saved Farmers')}
                         {isAdmin  && mobileNavLink('/app/admin/users', 'Users')}

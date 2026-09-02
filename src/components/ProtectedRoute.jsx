@@ -1,9 +1,11 @@
 // src/components/ProtectedRoute.jsx
-import { Navigate } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import { buildReturnState } from '../utils/authRedirect';
 
 export const ProtectedRoute = ({ children, requiredRole }) => {
     const { user, isLoading } = useAuth();
+    const location = useLocation();
 
     // Show loading state
     if (isLoading) {
@@ -14,9 +16,9 @@ export const ProtectedRoute = ({ children, requiredRole }) => {
         );
     }
 
-    // Redirect to login if not authenticated
+    // Redirect to login if not authenticated, remembering where to return.
     if (!user) {
-        return <Navigate to="/login" replace />;
+        return <Navigate to="/login" state={buildReturnState(location)} replace />;
     }
 
     // Check role-based access
