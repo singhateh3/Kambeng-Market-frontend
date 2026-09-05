@@ -6,10 +6,12 @@ import { Button } from '../../components/common/Button';
 import ReviewStars from '../../components/ReviewStars';
 import { useAuth } from '../../hooks/useAuth';
 import api from '../../services/api';
+import { formatPaymentMethod } from '../../utils/paymentMethod';
 import { DisputeStatusBadge } from './DisputeStatusBadge';
 import { PaymentStatusBadge } from './PaymentStatusBadge';
 
 const REPORTABLE_STATUSES = ['confirmed', 'shipped', 'delivered'];
+const ACTIVE_DISPUTE_STATUSES = ['open', 'under_review'];
 
 const OrderDetailsPage = () => {
     const { orderId } = useParams();
@@ -79,6 +81,26 @@ const OrderDetailsPage = () => {
         }
     };
 
+    // Releases the farmer's payout immediately instead of waiting for the
+    // 3-day auto-release job (see OrderController::confirm on the backend).
+    const handleConfirmReceipt = async () => {
+        try {
+            setLoadingAction(true);
+            const response = await api.post(`/orders/${orderId}/confirm`);
+            setSuccess(response.data?.message || 'Order confirmed and farmer payout released');
+            setShowConfirmModal(false);
+            setConfirmAction(null);
+            fetchOrderDetails();
+            setTimeout(() => setSuccess(null), 3000);
+        } catch (err) {
+            console.error('Error confirming order:', err);
+            setError(err.response?.data?.message || 'Failed to confirm order');
+            setTimeout(() => setError(null), 3000);
+        } finally {
+            setLoadingAction(false);
+        }
+    };
+
     const openConfirmModal = (action) => {
         setConfirmAction(action);
         setShowConfirmModal(true);
@@ -98,6 +120,8 @@ const OrderDetailsPage = () => {
             handleStatusUpdate('delivered');
         } else if (confirmAction === 'cancel') {
             handleCancelOrder();
+        } else if (confirmAction === 'release_payout') {
+            handleConfirmReceipt();
         }
     };
 
@@ -106,6 +130,7 @@ const OrderDetailsPage = () => {
     // of reusing that component.
     const getStatusColor = (status) => {
         const colors = {
+            awaiting_payment: 'bg-orange-100 dark:bg-orange-900/40 text-orange-800 dark:text-orange-300',
             pending: 'bg-yellow-100 dark:bg-yellow-900/40 text-yellow-800 dark:text-yellow-300',
             confirmed: 'bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-300',
             shipped: 'bg-purple-100 dark:bg-purple-900/40 text-purple-800 dark:text-purple-300',
@@ -117,6 +142,7 @@ const OrderDetailsPage = () => {
 
     const getStatusIcon = (status) => {
         const icons = {
+            awaiting_payment: '💳',
             pending: '⏳',
             confirmed: '✅',
             shipped: '🚚',
@@ -128,6 +154,7 @@ const OrderDetailsPage = () => {
 
     const getStatusLabel = (status) => {
         const labels = {
+            awaiting_payment: 'Awaiting payment',
             pending: 'Pending',
             confirmed: 'Confirmed',
             shipped: 'Shipped',
@@ -174,6 +201,15 @@ const OrderDetailsPage = () => {
                 confirmText: 'Yes, Cancel Order',
                 confirmColor: 'bg-red-600 hover:bg-red-700',
                 iconColor: 'text-red-600 dark:text-red-400',
+            },
+            release_payout: {
+                icon: '✅',
+                iconBg: 'bg-green-100 dark:bg-green-900/40',
+                title: 'Confirm Order Received',
+                message: "Confirm that you've received your order in good condition. This releases the farmer's payment immediately instead of waiting for the automatic 3-day release.",
+                confirmText: 'Yes, Release Payment',
+                confirmColor: 'bg-green-600 hover:bg-green-700',
+                iconColor: 'text-green-600 dark:text-green-400',
             },
         };
         return contents[confirmAction] || contents.confirm;
@@ -251,6 +287,8 @@ const OrderDetailsPage = () => {
     const review = order?.review || null;
     const dispute = order?.dispute || null;
     const canReport = isBuyer && REPORTABLE_STATUSES.includes(order?.status) && !dispute;
+    const hasActiveDispute = dispute && ACTIVE_DISPUTE_STATUSES.includes(dispute.status);
+    const canConfirmReceipt = isBuyer && order?.status === 'delivered' && order?.payout_status === 'pending_release' && !hasActiveDispute;
 
     return (
         <div className="max-w-4xl mx-auto">
@@ -364,7 +402,7 @@ const OrderDetailsPage = () => {
                             <div>
                                 <p className="text-sm text-gray-500 dark:text-slate-400">Payment</p>
                                 <p className="font-medium text-gray-900 dark:text-slate-100 flex items-center gap-2 flex-wrap">
-                                    <span>{(order?.payment_method || 'cod') === 'cod' ? '💵 Cash on Delivery' : order.payment_method}</span>
+                                    <span>{formatPaymentMethod(order?.payment_method)}</span>
                                     <PaymentStatusBadge status={order?.payment_status || 'pending'} />
                                 </p>
                             </div>
@@ -563,6 +601,15 @@ const OrderDetailsPage = () => {
                                 isLoading={loadingAction}
                             >
                                 Cancel Order
+                            </Button>
+                        )}
+                        {canConfirmReceipt && (
+                            <Button
+                                variant="primary"
+                                onClick={() => openConfirmModal('release_payout')}
+                                isLoading={loadingAction}
+                            >
+                                ✅ Confirm Order Received
                             </Button>
                         )}
                         {isBuyer && order?.status === 'delivered' && !order?.review && (

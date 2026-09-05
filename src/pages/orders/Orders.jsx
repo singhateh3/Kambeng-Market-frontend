@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { OrdersSkeleton } from '../../components/common/skeletons/OrdersSkeleton';
 import { useAuth } from '../../hooks/useAuth';
-import { useCancelOrderMutation, useOrdersQuery, useUpdateOrderStatusMutation } from '../../hooks/queries/orderQueries';
+import { useCancelOrderMutation, useConfirmOrderMutation, useOrdersQuery, useUpdateOrderStatusMutation } from '../../hooks/queries/orderQueries';
 import { OrderCard } from './OrderCard';
 import { OrderDetails } from './OrderDetails';
 
@@ -21,7 +21,8 @@ const Orders = () => {
 
     const updateStatusMutation = useUpdateOrderStatusMutation();
     const cancelOrderMutation = useCancelOrderMutation();
-    const loadingAction = updateStatusMutation.isPending || cancelOrderMutation.isPending;
+    const confirmOrderMutation = useConfirmOrderMutation();
+    const loadingAction = updateStatusMutation.isPending || cancelOrderMutation.isPending || confirmOrderMutation.isPending;
 
     const flash = (type, msg) => {
         if (type === 'success') { setSuccess(msg); setTimeout(() => setSuccess(null), 3000); }
@@ -48,6 +49,15 @@ const Orders = () => {
             flash('success', 'Order cancelled successfully');
         } catch (err) {
             flash('error', err.response?.data?.message || 'Failed to cancel order');
+        }
+    };
+
+    const handleConfirmReceipt = async (orderId) => {
+        try {
+            const response = await confirmOrderMutation.mutateAsync(orderId);
+            flash('success', response.data?.message || 'Order confirmed and farmer payout released');
+        } catch (err) {
+            flash('error', err.response?.data?.message || 'Failed to confirm order');
         }
     };
 
@@ -185,6 +195,7 @@ const Orders = () => {
                     onClose={() => { setShowModal(false); setSelectedOrder(null); }}
                     onStatusUpdate={handleStatusUpdate}
                     onCancelOrder={handleCancelOrder}
+                    onConfirmReceipt={handleConfirmReceipt}
                     loadingAction={loadingAction}
                 />
             )}

@@ -30,7 +30,11 @@ const getMock = vi.fn((url) => {
     return Promise.reject(new Error(`Unexpected GET ${url}`));
 });
 const postMock = vi.fn((url) => {
-    if (url === '/orders') return Promise.resolve({ data: { data: { id: 99 } } });
+    if (url === '/orders') {
+        return Promise.resolve({
+            data: { success: true, data: { order_id: 99, payment_link: 'https://pay.modempay.com/intent/abc123', status: 'awaiting_payment' } },
+        });
+    }
     return Promise.reject(new Error(`Unexpected POST ${url}`));
 });
 
@@ -91,6 +95,11 @@ describe('Anonymous checkout round trip', () => {
         localStorage.clear();
         getMock.mockClear();
         postMock.mockClear();
+        // jsdom doesn't implement real navigation — stub location.href so
+        // the ModemPay redirect (window.location.href = payment_link) is
+        // just an assignment we can assert on, not a "not implemented" error.
+        delete window.location;
+        window.location = { href: '' };
     });
 
     it('stashes the form, redirects to login, restores on return, and only submits on an explicit second click', async () => {
@@ -137,7 +146,11 @@ describe('Anonymous checkout round trip', () => {
             expect.objectContaining({ product_id: 7, special_instructions: 'Leave at the gate please' })
         );
 
-        // 7) Pending checkout state is cleared after the successful order.
+        // 7) Pending checkout state is cleared after the order is created.
         expect(readPendingCheckout('7')).toBeNull();
+
+        // 8) Buyer is sent straight to ModemPay's hosted checkout — no
+        //    "order placed" screen, since the order isn't real until paid.
+        await waitFor(() => expect(window.location.href).toBe('https://pay.modempay.com/intent/abc123'));
     });
 });

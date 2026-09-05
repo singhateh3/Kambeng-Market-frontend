@@ -8,8 +8,11 @@ import ReviewStars from '../../components/ReviewStars';
 import { DisputeStatusBadge } from './DisputeStatusBadge';
 import { OrderStatusBadge } from './OrderStatusBadge';
 import { PaymentStatusBadge } from './PaymentStatusBadge';
+import { formatPaymentMethod } from '../../utils/paymentMethod';
 
 const REPORTABLE_STATUSES = ['confirmed', 'shipped', 'delivered'];
+
+const ACTIVE_DISPUTE_STATUSES = ['open', 'under_review'];
 
 export const OrderDetails = ({
     order,
@@ -18,6 +21,7 @@ export const OrderDetails = ({
     onClose,
     onStatusUpdate,
     onCancelOrder,
+    onConfirmReceipt,
     loadingAction
 }) => {
     const [showConfirmModal, setShowConfirmModal] = useState(false);
@@ -66,6 +70,8 @@ export const OrderDetails = ({
     const review = order?.review || null;
     const dispute = order?.dispute || null;
     const canReport = isBuyer && REPORTABLE_STATUSES.includes(status) && !dispute;
+    const hasActiveDispute = dispute && ACTIVE_DISPUTE_STATUSES.includes(dispute.status);
+    const canConfirmReceipt = isBuyer && status === 'delivered' && order?.payout_status === 'pending_release' && !hasActiveDispute;
 
     const getStatusIcon = (status) => {
         const icons = {
@@ -101,6 +107,8 @@ export const OrderDetails = ({
     const handleConfirmAction = () => {
         if (confirmAction === 'cancel') {
             onCancelOrder(orderId);
+        } else if (confirmAction === 'release_payout') {
+            onConfirmReceipt(orderId);
         }
         setShowConfirmModal(false);
         setConfirmAction(null);
@@ -121,6 +129,15 @@ export const OrderDetails = ({
                 icon: '❌',
                 confirmText: 'Yes, Cancel Order',
                 confirmColor: 'bg-red-600 hover:bg-red-700'
+            };
+        }
+        if (confirmAction === 'release_payout') {
+            return {
+                title: 'Confirm Order Received',
+                message: "Confirm that you've received your order in good condition. This releases the farmer's payment immediately instead of waiting for the automatic 3-day release.",
+                icon: '✅',
+                confirmText: 'Yes, Release Payment',
+                confirmColor: 'bg-green-600 hover:bg-green-700'
             };
         }
         return {
@@ -263,7 +280,7 @@ export const OrderDetails = ({
                                 <div className="min-w-0">
                                     <p className="text-sm text-slate-500 dark:text-slate-400">Payment</p>
                                     <p className="font-medium text-slate-900 dark:text-slate-100 flex items-center gap-2 flex-wrap">
-                                        <span>{paymentMethod === 'cod' ? '💵 Cash on Delivery' : paymentMethod}</span>
+                                        <span>{formatPaymentMethod(paymentMethod)}</span>
                                         <PaymentStatusBadge status={paymentStatus} />
                                     </p>
                                 </div>
@@ -465,6 +482,15 @@ export const OrderDetails = ({
                                     isLoading={loadingAction}
                                 >
                                     Cancel Order
+                                </Button>
+                            )}
+                            {canConfirmReceipt && (
+                                <Button
+                                    variant="primary"
+                                    onClick={() => handleActionClick('release_payout')}
+                                    isLoading={loadingAction}
+                                >
+                                    ✅ Confirm Order Received
                                 </Button>
                             )}
                             {isBuyer && status === 'delivered' && !review && (

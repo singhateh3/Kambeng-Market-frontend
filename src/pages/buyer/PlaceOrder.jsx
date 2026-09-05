@@ -79,48 +79,29 @@ const PlaceOrderSkeleton = () => (
     </div>
 );
 
-// Success animation overlay
-const OrderSuccessOverlay = ({ onComplete }) => {
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            onComplete();
-        }, 2000);
-        return () => clearTimeout(timer);
-    }, [onComplete]);
-
-    return (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex flex-col items-center justify-center z-50 animate-in fade-in duration-300">
-            <div className="bg-white dark:bg-slate-800 rounded-2xl p-8 max-w-sm w-full mx-4 text-center shadow-2xl animate-in zoom-in-95 duration-300">
-                <div className="w-20 h-20 bg-green-100 dark:bg-green-900/40 rounded-full flex items-center justify-center mx-auto mb-4 animate-bounce">
-                    <svg className="w-10 h-10 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                    </svg>
-                </div>
-                <h3 className="text-xl font-bold text-slate-900 dark:text-slate-100 mb-2">Order Placed! 🎉</h3>
-                <p className="text-sm text-slate-500 dark:text-slate-400">
-                    Your order has been successfully placed. Redirecting to orders...
-                </p>
-                <div className="mt-4 w-full bg-slate-100 dark:bg-slate-700 rounded-full h-1.5 overflow-hidden">
-                    <div className="bg-green-600 h-1.5 rounded-full animate-progress" style={{ width: '100%', animation: 'progress 2s ease-in-out' }} />
-                </div>
-            </div>
-        </div>
-    );
-};
-
-// Loading overlay for order submission
-const SubmittingOverlay = () => (
+// Loading overlay for order submission — also covers the brief moment
+// between the order being created and the browser actually navigating to
+// ModemPay's hosted payment page, since there's nothing else to show in
+// between (no "order placed" state exists anymore — the order isn't real/
+// farmer-visible until payment is confirmed, see OrderController::store).
+const SubmittingOverlay = ({ redirecting }) => (
     <div className="fixed inset-0 bg-white/80 dark:bg-slate-950/80 backdrop-blur-sm flex flex-col items-center justify-center z-50 animate-in fade-in duration-200">
         <div className="bg-white dark:bg-slate-800 rounded-2xl p-8 max-w-sm w-full mx-4 text-center shadow-xl">
             <div className="relative w-20 h-20 mx-auto mb-4">
                 <div className="absolute inset-0 border-4 border-slate-100 dark:border-slate-700 rounded-full"></div>
                 <div className="absolute inset-0 border-4 border-t-green-600 dark:border-t-green-400 border-r-transparent border-b-transparent border-l-transparent rounded-full animate-spin"></div>
                 <div className="absolute inset-0 flex items-center justify-center">
-                    <span className="text-3xl">📦</span>
+                    <span className="text-3xl">{redirecting ? '🔒' : '📦'}</span>
                 </div>
             </div>
-            <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100 mb-2">Placing Your Order</h3>
-            <p className="text-sm text-slate-500 dark:text-slate-400">Please wait while we process your order...</p>
+            <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100 mb-2">
+                {redirecting ? 'Redirecting to Payment' : 'Placing Your Order'}
+            </h3>
+            <p className="text-sm text-slate-500 dark:text-slate-400">
+                {redirecting
+                    ? "Taking you to ModemPay's secure checkout..."
+                    : 'Please wait while we process your order...'}
+            </p>
             <div className="mt-4 w-full bg-slate-100 dark:bg-slate-700 rounded-full h-1 overflow-hidden">
                 <div className="bg-green-600 h-1 rounded-full animate-pulse" style={{ width: '60%' }} />
             </div>
@@ -140,9 +121,8 @@ const PlaceOrder = () => {
     // server-side regardless of what's shown here.
     const { data: product, isLoading: loading } = useProductQuery(productId);
     const [submitting, setSubmitting] = useState(false);
-    const [success, setSuccess] = useState(null);
+    const [redirecting, setRedirecting] = useState(false);
     const [error, setError] = useState(null);
-    const [showSuccessOverlay, setShowSuccessOverlay] = useState(false);
     const [fieldErrors, setFieldErrors] = useState({});
     const [formData, setFormData] = useState({
         quantity: 1,
@@ -198,7 +178,7 @@ const PlaceOrder = () => {
         setFieldErrors({});
 
         try {
-            await api.post('/orders', {
+            const response = await api.post('/orders', {
                 product_id: parseInt(productId),
                 quantity: formData.quantity,
                 delivery_method: formData.delivery_method,
@@ -209,8 +189,18 @@ const PlaceOrder = () => {
             });
 
             clearPendingCheckout();
-            setSuccess('Order placed successfully!');
-            setShowSuccessOverlay(true);
+
+            // ModemPay is the only payment method — the order isn't real
+            // until its payment_link is paid (see OrderController::store),
+            // so the buyer goes straight there instead of an "order placed"
+            // screen. A full navigation (not react-router) since the link
+            // is an external, ModemPay-hosted checkout page.
+            const paymentLink = response.data?.data?.payment_link;
+            if (!paymentLink) {
+                throw new Error('Order was created but no payment link was returned. Please check your orders and try again.');
+            }
+            setRedirecting(true);
+            window.location.href = paymentLink;
         } catch (err) {
             const backendErrors = err.response?.data?.errors;
             if (backendErrors) {
@@ -225,10 +215,6 @@ const PlaceOrder = () => {
             }
             setSubmitting(false);
         }
-    };
-
-    const handleSuccessComplete = () => {
-        navigate('/app/orders');
     };
 
     const total = product ? (product.price * formData.quantity).toFixed(2) : '0.00';
@@ -529,11 +515,8 @@ const PlaceOrder = () => {
                 </form>
             </div>
 
-            {/* Submitting overlay */}
-            {submitting && !showSuccessOverlay && <SubmittingOverlay />}
-
-            {/* Success overlay */}
-            {showSuccessOverlay && <OrderSuccessOverlay onComplete={handleSuccessComplete} />}
+            {/* Submitting / redirecting-to-payment overlay */}
+            {submitting && <SubmittingOverlay redirecting={redirecting} />}
         </div>
     );
 };

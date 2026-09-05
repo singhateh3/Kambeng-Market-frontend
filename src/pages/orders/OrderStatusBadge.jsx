@@ -6,6 +6,11 @@ export const OrderStatusBadge = ({ status }) => {
         // look — pending/confirmed/shipped/delivered/cancelled must stay
         // distinguishable from each other at a glance.
         const configs = {
+            awaiting_payment: {
+                label: 'Awaiting payment',
+                color: 'bg-orange-100 dark:bg-orange-900/40 text-orange-800 dark:text-orange-300',
+                icon: '💳'
+            },
             pending: {
                 label: 'Pending',
                 color: 'bg-yellow-100 dark:bg-yellow-900/40 text-yellow-800 dark:text-yellow-300',

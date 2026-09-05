@@ -32,6 +32,7 @@ const CreateProduct = lazy(() => import('./pages/farmer/CreateProduct'));
 const EditProduct = lazy(() => import('./pages/farmer/EditProduct'));
 const Products = lazy(() => import('./pages/farmer/Products'));
 const OrderDetailsPage = lazy(() => import('./pages/orders/OrderDetailsPage'));
+const PaymentReturn = lazy(() => import('./pages/orders/PaymentReturn'));
 const Orders = lazy(() => import('./pages/orders/Orders'));
 const WriteReview = lazy(() => import('./pages/orders/WriteReview'));
 const ReportIssue = lazy(() => import('./pages/orders/ReportIssue'));
@@ -106,6 +107,7 @@ export const App = () => {
 
                             {/* Orders - Accessible by both farmers and buyers (private) */}
                             <Route path="orders" element={<ProtectedRoute><Orders /></ProtectedRoute>} />
+                            <Route path="orders/:orderId/payment-return" element={<ProtectedRoute><PaymentReturn /></ProtectedRoute>} />
                             <Route path="orders/:orderId" element={<ProtectedRoute><OrderDetailsPage /></ProtectedRoute>} />
                             <Route path="orders/:orderId/review" element={<ProtectedRoute><WriteReview /></ProtectedRoute>} />
                             <Route path="orders/:orderId/report" element={<ProtectedRoute requiredRole="buyer"><ReportIssue /></ProtectedRoute>} />

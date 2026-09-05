@@ -64,3 +64,18 @@ export const useCancelOrderMutation = () => {
         },
     });
 };
+
+// Buyer confirms a delivered order — releases the farmer's payout
+// immediately instead of waiting for the 3-day auto-release
+// (see OrderController::confirm / PayoutReleaseService on the backend).
+export const useConfirmOrderMutation = () => {
+    const queryClient = useQueryClient();
+    const { user } = useAuth();
+
+    return useMutation({
+        mutationFn: (orderId) => api.post(`/orders/${orderId}/confirm`),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: orderKeys.all(user?.id) });
+        },
+    });
+};

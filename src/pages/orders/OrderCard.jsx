@@ -2,6 +2,7 @@
 import { DisputeStatusBadge } from './DisputeStatusBadge';
 import { OrderStatusBadge } from './OrderStatusBadge';
 import { PaymentStatusBadge } from './PaymentStatusBadge';
+import { formatPaymentMethod } from '../../utils/paymentMethod';
 
 export const OrderCard = ({ 
     order, 
@@ -95,7 +96,7 @@ export const OrderCard = ({
                         <div className="sm:col-span-2 flex items-center gap-2 flex-wrap">
                             <span className="text-slate-500 dark:text-slate-400">Payment:</span>
                             <span className="text-slate-700 dark:text-slate-300">
-                                {paymentMethod === 'cod' ? 'Cash on Delivery' : paymentMethod}
+                                {formatPaymentMethod(paymentMethod)}
                             </span>
                             <PaymentStatusBadge status={paymentStatus} />
                         </div>
