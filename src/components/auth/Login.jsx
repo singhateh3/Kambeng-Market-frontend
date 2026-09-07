@@ -121,7 +121,7 @@ export const Login = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-slate-950 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 relative">
+        <div className="min-h-screen bg-gray-50 dark:bg-slate-900 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 relative">
             <div className="absolute top-4 right-4">
                 <ThemeToggle />
             </div>
@@ -159,7 +159,7 @@ export const Login = () => {
                                     placeholder="Enter your email"
                                     value={formData.email}
                                     onChange={handleChange}
-                                    className={`w-full px-4 py-3 border rounded-xl bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 placeholder:text-gray-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition ${
+                                    className={`w-full px-4 py-3 border rounded-xl bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100 placeholder:text-gray-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition ${
                                         fieldErrors.email ? 'border-red-500 dark:border-red-500' : 'border-gray-200 dark:border-slate-600'
                                     }`}
                                     required
@@ -181,7 +181,7 @@ export const Login = () => {
                                         placeholder="Enter your password"
                                         value={formData.password}
                                         onChange={handleChange}
-                                        className={`w-full px-4 py-3 border rounded-xl bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 placeholder:text-gray-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition ${
+                                        className={`w-full px-4 py-3 border rounded-xl bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100 placeholder:text-gray-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition ${
                                             fieldErrors.password ? 'border-red-500 dark:border-red-500' : 'border-gray-200 dark:border-slate-600'
                                         }`}
                                         required
@@ -218,7 +218,7 @@ export const Login = () => {
                                         id="remember"
                                         type="checkbox"
                                         name="remember"
-                                        className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 dark:border-slate-600 dark:bg-slate-800 rounded"
+                                        className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 dark:border-slate-600 dark:bg-slate-700 rounded"
                                         checked={formData.remember}
                                         onChange={handleChange}
                                     />

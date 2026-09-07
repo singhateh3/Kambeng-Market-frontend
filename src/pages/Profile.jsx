@@ -205,7 +205,7 @@ const Profile = () => {
         `w-full px-3 py-2 border rounded-lg text-sm outline-none transition ${
             validationErrors[field]
                 ? 'border-red-300 dark:border-red-700 focus:border-red-400 dark:focus:border-red-600 bg-red-50 dark:bg-red-900/20 text-slate-900 dark:text-slate-100'
-                : 'border-slate-200 dark:border-slate-700 focus:border-green-400 dark:focus:border-green-600 focus:bg-white dark:focus:bg-slate-800 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100'
+                : 'border-slate-200 dark:border-slate-700 focus:border-green-400 dark:focus:border-green-600 focus:bg-white dark:focus:bg-slate-700 bg-slate-50 dark:bg-slate-700 text-slate-900 dark:text-slate-100'
         }`;
 
     const labelClass = "block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1.5";
@@ -213,7 +213,7 @@ const Profile = () => {
     const errorClass = "mt-1.5 text-xs text-red-600 dark:text-red-400 flex items-center gap-1";
 
     return (
-        <div className="bg-slate-50 dark:bg-slate-950 min-h-screen">
+        <div className="bg-slate-50 dark:bg-slate-900 min-h-screen">
             {/* Header */}
             <div className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800">
                 <div className="max-w-6xl mx-auto px-6 py-5 flex items-center justify-between flex-wrap gap-3">

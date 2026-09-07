@@ -277,7 +277,7 @@ const ProductDetail = () => {
                                                     max={product.quantity}
                                                     value={quantity}
                                                     onChange={handleQuantityChange}
-                                                    className="w-20 px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-900 text-gray-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-green-500"
+                                                    className="w-20 px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-green-500"
                                                 />
                                             </div>
                                             <span className="text-sm text-gray-500 dark:text-slate-400">

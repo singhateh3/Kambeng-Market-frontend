@@ -132,7 +132,7 @@ const RegularDashboard = () => {
     };
 
     return (
-        <div className="bg-slate-50 dark:bg-slate-950 min-h-screen">
+        <div className="bg-slate-50 dark:bg-slate-900 min-h-screen">
             <div className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800">
                 <div className="max-w-6xl mx-auto px-6 py-5 flex items-start justify-between flex-wrap gap-3">
                     <div>

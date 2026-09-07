@@ -65,7 +65,7 @@ export const ReportIssueForm = ({ orderId, productName, onSuccess, onCancel }) =
                     <select
                         value={reason}
                         onChange={(e) => setReason(e.target.value)}
-                        className="w-full px-4 py-3 border border-gray-200 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-900 text-gray-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition"
+                        className="w-full px-4 py-3 border border-gray-200 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition"
                     >
                         <option value="">Select a reason...</option>
                         {REASONS.map((r) => (
@@ -87,7 +87,7 @@ export const ReportIssueForm = ({ orderId, productName, onSuccess, onCancel }) =
                         value={description}
                         onChange={(e) => setDescription(e.target.value)}
                         maxLength={1000}
-                        className="w-full px-4 py-3 border border-gray-200 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-900 text-gray-900 dark:text-slate-100 placeholder:text-gray-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition"
+                        className="w-full px-4 py-3 border border-gray-200 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100 placeholder:text-gray-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition"
                     />
                 </div>
 

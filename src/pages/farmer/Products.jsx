@@ -263,7 +263,7 @@ const Products = () => {
     if (initialLoading) return <ProductsSkeleton />;
 
     return (
-        <div className="bg-slate-50 dark:bg-slate-950 min-h-screen">
+        <div className="bg-slate-50 dark:bg-slate-900 min-h-screen">
             <div className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800">
                 <div className="max-w-6xl mx-auto px-6 py-5 flex items-center justify-between flex-wrap gap-3">
                     <div>
@@ -316,7 +316,7 @@ const Products = () => {
                                             setShowSuggestions(true);
                                         }
                                     }}
-                                    className="w-full pl-9 pr-10 py-2 border border-slate-200 dark:border-slate-700 rounded-lg text-sm bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 outline-none focus:border-green-400 dark:focus:border-green-600 focus:bg-white dark:focus:bg-slate-900 transition"
+                                    className="w-full pl-9 pr-10 py-2 border border-slate-200 dark:border-slate-700 rounded-lg text-sm bg-slate-50 dark:bg-slate-700 text-slate-900 dark:text-slate-100 outline-none focus:border-green-400 dark:focus:border-green-600 focus:bg-white dark:focus:bg-slate-700 transition"
                                     autoComplete="off"
                                 />
                                 {filters.search && (
@@ -385,7 +385,7 @@ const Products = () => {
                         <select
                             value={filters.category}
                             onChange={(e) => handleFilterChange('category', e.target.value)}
-                            className="px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg text-sm bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 outline-none focus:border-green-400 dark:focus:border-green-600 focus:bg-white dark:focus:bg-slate-900 transition sm:w-48 cursor-pointer"
+                            className="px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg text-sm bg-slate-50 dark:bg-slate-700 text-slate-700 dark:text-slate-300 outline-none focus:border-green-400 dark:focus:border-green-600 focus:bg-white dark:focus:bg-slate-700 transition sm:w-48 cursor-pointer"
                         >
                             <option value="">All categories</option>
                             {categories.map((cat) => (
@@ -397,7 +397,7 @@ const Products = () => {
                         <select
                             value={filters.status}
                             onChange={(e) => handleFilterChange('status', e.target.value)}
-                            className="px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg text-sm bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 outline-none focus:border-green-400 dark:focus:border-green-600 focus:bg-white dark:focus:bg-slate-900 transition sm:w-40 cursor-pointer"
+                            className="px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg text-sm bg-slate-50 dark:bg-slate-700 text-slate-700 dark:text-slate-300 outline-none focus:border-green-400 dark:focus:border-green-600 focus:bg-white dark:focus:bg-slate-700 transition sm:w-40 cursor-pointer"
                         >
                             <option value="">All status</option>
                             <option value="active">Active</option>

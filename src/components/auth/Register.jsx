@@ -60,14 +60,14 @@ export const Register = () => {
     };
 
     const inputClass = (field) =>
-        `w-full px-4 py-3 border rounded-xl bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 placeholder:text-gray-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition ${
+        `w-full px-4 py-3 border rounded-xl bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100 placeholder:text-gray-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition ${
             errors[field] ? 'border-red-500 dark:border-red-500' : 'border-gray-200 dark:border-slate-600'
         }`;
     const labelClass = 'block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1';
     const errorClass = 'mt-1 text-sm text-red-600 dark:text-red-400';
 
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-slate-950 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 relative">
+        <div className="min-h-screen bg-gray-50 dark:bg-slate-900 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 relative">
             <div className="absolute top-4 right-4">
                 <ThemeToggle />
             </div>

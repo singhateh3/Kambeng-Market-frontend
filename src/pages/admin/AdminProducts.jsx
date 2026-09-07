@@ -395,7 +395,7 @@ const AdminProducts = () => {
                                         setShowSearchHistory(true);
                                     }
                                 }}
-                                className="w-full pl-9 pr-10 py-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-gray-900 dark:text-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                                className="w-full pl-9 pr-10 py-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                                 autoComplete="off"
                             />
                             {searchValue && (
@@ -442,7 +442,7 @@ const AdminProducts = () => {
                     </div>
 
                     <select
-                        className="px-3 py-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-gray-900 dark:text-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                        className="px-3 py-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                         value={filters.status}
                         onChange={(e) => setFilters({ ...filters, status: e.target.value, page: 1 })}
                     >
@@ -452,7 +452,7 @@ const AdminProducts = () => {
                     </select>
 
                     <select
-                        className="px-3 py-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-gray-900 dark:text-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                        className="px-3 py-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                         value={filters.category}
                         onChange={(e) => setFilters({ ...filters, category: e.target.value, page: 1 })}
                     >

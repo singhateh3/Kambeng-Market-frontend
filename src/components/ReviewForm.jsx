@@ -75,7 +75,7 @@ export const ReviewForm = ({ orderId, productName, onSuccess, onCancel }) => {
                         placeholder="Share your experience with this product..."
                         value={comment}
                         onChange={(e) => setComment(e.target.value)}
-                        className="w-full px-4 py-3 border border-gray-200 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-900 text-gray-900 dark:text-slate-100 placeholder:text-gray-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition"
+                        className="w-full px-4 py-3 border border-gray-200 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100 placeholder:text-gray-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition"
                     />
                 </div>
 

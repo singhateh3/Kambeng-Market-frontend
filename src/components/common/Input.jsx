@@ -23,7 +23,7 @@ export const Input = ({
                 <input
                     className={`
                         w-full px-4 py-2 border rounded-lg
-                        bg-white dark:bg-slate-800
+                        bg-white dark:bg-slate-700
                         text-slate-900 dark:text-slate-100
                         placeholder:text-slate-400 dark:placeholder:text-slate-500
                         focus:outline-none focus:ring-2 focus:ring-primary-500 dark:focus:ring-primary-400

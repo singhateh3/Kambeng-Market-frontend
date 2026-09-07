@@ -113,7 +113,7 @@ export const Layout = () => {
     return (
         <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
             {/* Navbar */}
-            <nav className="bg-white dark:bg-slate-800 sticky top-0 z-50 shadow-[0_1px_0_rgba(15,23,42,0.06)] dark:shadow-[0_1px_0_rgba(255,255,255,0.06)]">
+            <nav className="bg-white dark:bg-slate-950 sticky top-0 z-50 shadow-[0_1px_0_rgba(15,23,42,0.06)] dark:shadow-[0_1px_0_rgba(255,255,255,0.06)]">
                 <div className="max-w-6xl mx-auto px-6 flex items-center gap-6" style={{ height: 64 }}>
                     {/* Logo — wordmark hides below sm so the icon + hamburger/avatar/bell
                         cluster reliably fit one row at 320-375px; aria-label keeps the
@@ -270,7 +270,7 @@ export const Layout = () => {
                     styling via mobileNavLink(). Closes on item click, route change,
                     hamburger re-toggle, or Escape (see the effects above). */}
                 {mobileMenuOpen && (
-                    <div id="mobile-nav-panel" className="lg:hidden border-t border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-3 space-y-1">
+                    <div id="mobile-nav-panel" className="lg:hidden border-t border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-950 px-4 py-3 space-y-1">
                         {mobileNavLink('/app/dashboard', 'Dashboard')}
                         {isFarmer && mobileNavLink('/app/products', 'My Products')}
                         {mobileNavLink('/app/browse', 'Browse')}

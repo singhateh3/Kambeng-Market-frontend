@@ -371,7 +371,7 @@ import api from '../../services/api';
             <div className="bg-white dark:bg-slate-800 shadow rounded-lg p-4 mb-6">
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                     <select
-                        className="px-3 py-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-gray-900 dark:text-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                        className="px-3 py-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                         value={filters.status}
                         onChange={(e) => setFilters({ ...filters, status: e.target.value, page: 1 })}
                     >
@@ -383,7 +383,7 @@ import api from '../../services/api';
                     <input
                         type="text"
                         placeholder="Search farmers..."
-                        className="px-3 py-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-gray-900 dark:text-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                        className="px-3 py-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                         value={filters.search}
                         onChange={(e) => setFilters({ ...filters, search: e.target.value, page: 1 })}
                     />
@@ -731,7 +731,7 @@ import api from '../../services/api';
                                 Rejection Reason *
                             </label>
                             <textarea
-                                className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-gray-900 dark:text-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                                className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
                                 rows="3"
                                 value={rejectionReason}
                                 onChange={(e) => setRejectionReason(e.target.value)}
@@ -784,7 +784,7 @@ import api from '../../services/api';
                             Rejection Reason *
                         </label>
                         <textarea
-                            className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-gray-900 dark:text-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                            className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
                             rows="3"
                             value={bulkRejectionReason}
                             onChange={(e) => setBulkRejectionReason(e.target.value)}

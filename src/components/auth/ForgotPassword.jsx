@@ -31,7 +31,7 @@ export const ForgotPassword = () => {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-slate-950 py-12 px-4 sm:px-6 lg:px-8 relative">
+        <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-slate-900 py-12 px-4 sm:px-6 lg:px-8 relative">
             <div className="absolute top-4 right-4">
                 <ThemeToggle />
             </div>

@@ -74,7 +74,7 @@ const Browse = () => {
     if (isLoading) return <BrowseSkeleton />;
 
     return (
-        <div className="bg-slate-50 dark:bg-slate-950 min-h-screen">
+        <div className="bg-slate-50 dark:bg-slate-900 min-h-screen">
             {/* Header */}
             <div className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800">
                 <div className="max-w-6xl mx-auto px-6 py-5">
@@ -97,7 +97,7 @@ const Browse = () => {
                             placeholder="Search products or farmers..."
                             value={searchValue}
                             onChange={(e) => setSearchValue(e.target.value)}
-                            className="w-full pl-9 pr-9 py-2 border border-slate-200 dark:border-slate-700 rounded-lg text-sm bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 outline-none focus:border-green-400 dark:focus:border-green-500 focus:bg-white dark:focus:bg-slate-800 transition"
+                            className="w-full pl-9 pr-9 py-2 border border-slate-200 dark:border-slate-700 rounded-lg text-sm bg-slate-50 dark:bg-slate-700 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 outline-none focus:border-green-400 dark:focus:border-green-500 focus:bg-white dark:focus:bg-slate-700 transition"
                             autoComplete="off"
                         />
                         {searchValue && (
@@ -119,7 +119,7 @@ const Browse = () => {
                     <select
                         value={category}
                         onChange={(e) => setCategory(e.target.value)}
-                        className="px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg text-sm bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200 outline-none focus:border-green-400 dark:focus:border-green-500 focus:bg-white dark:focus:bg-slate-800 transition sm:w-48 cursor-pointer"
+                        className="px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg text-sm bg-slate-50 dark:bg-slate-700 text-slate-700 dark:text-slate-200 outline-none focus:border-green-400 dark:focus:border-green-500 focus:bg-white dark:focus:bg-slate-700 transition sm:w-48 cursor-pointer"
                     >
                         <option value="">All categories</option>
                         {categories.map((cat) => (
@@ -130,7 +130,7 @@ const Browse = () => {
                         value={region}
                         onChange={(e) => setRegion(e.target.value)}
                         aria-label="Filter by region"
-                        className="px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg text-sm bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200 outline-none focus:border-green-400 dark:focus:border-green-500 focus:bg-white dark:focus:bg-slate-800 transition sm:w-48 cursor-pointer"
+                        className="px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg text-sm bg-slate-50 dark:bg-slate-700 text-slate-700 dark:text-slate-200 outline-none focus:border-green-400 dark:focus:border-green-500 focus:bg-white dark:focus:bg-slate-700 transition sm:w-48 cursor-pointer"
                     >
                         <option value="">All regions</option>
                         {regions.map((r) => (

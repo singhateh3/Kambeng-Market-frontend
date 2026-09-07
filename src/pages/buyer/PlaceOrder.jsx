@@ -9,7 +9,7 @@ import { clearPendingCheckout, readPendingCheckout, savePendingCheckout } from '
 
 // Enhanced Skeleton with more detail
 const PlaceOrderSkeleton = () => (
-    <div className="bg-slate-50 dark:bg-slate-950 min-h-screen">
+    <div className="bg-slate-50 dark:bg-slate-900 min-h-screen">
         <div className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800">
             <div className="max-w-2xl mx-auto px-6 py-5">
                 <div className="h-7 w-48 bg-slate-200 dark:bg-slate-700 rounded animate-pulse mb-2" />
@@ -223,10 +223,10 @@ const PlaceOrder = () => {
     const today = new Date().toISOString().split('T')[0];
 
     const inputClass = (field) =>
-        `w-full px-3 py-2.5 border rounded-lg text-sm outline-none transition bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 ${
+        `w-full px-3 py-2.5 border rounded-lg text-sm outline-none transition bg-slate-50 dark:bg-slate-700 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 ${
             fieldErrors[field]
                 ? 'border-red-300 dark:border-red-700 focus:border-red-400 dark:focus:border-red-500 bg-red-50 dark:bg-red-950/40'
-                : 'border-slate-200 dark:border-slate-600 focus:border-green-400 dark:focus:border-green-500 focus:bg-white dark:focus:bg-slate-900'
+                : 'border-slate-200 dark:border-slate-600 focus:border-green-400 dark:focus:border-green-500 focus:bg-white dark:focus:bg-slate-700'
         }`;
 
     const labelClass = "block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1.5";
@@ -235,7 +235,7 @@ const PlaceOrder = () => {
 
     if (!product) {
         return (
-            <div className="bg-slate-50 dark:bg-slate-950 min-h-screen flex items-center justify-center p-6">
+            <div className="bg-slate-50 dark:bg-slate-900 min-h-screen flex items-center justify-center p-6">
                 <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-center p-16 max-w-sm w-full">
                     <div className="text-5xl mb-3">❌</div>
                     <h3 className="text-base font-bold text-slate-900 dark:text-slate-100 mb-1">Product not found</h3>
@@ -252,7 +252,7 @@ const PlaceOrder = () => {
     }
 
     return (
-        <div className="bg-slate-50 dark:bg-slate-950 min-h-screen">
+        <div className="bg-slate-50 dark:bg-slate-900 min-h-screen">
             {/* Header */}
             <div className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800">
                 <div className="max-w-2xl mx-auto px-6 py-5 flex items-center justify-between">
@@ -446,7 +446,7 @@ const PlaceOrder = () => {
                             value={formData.special_instructions}
                             onChange={handleChange}
                             disabled={submitting}
-                            className="w-full px-3 py-2.5 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 outline-none focus:border-green-400 dark:focus:border-green-500 focus:bg-white dark:focus:bg-slate-900 transition resize-none disabled:opacity-50"
+                            className="w-full px-3 py-2.5 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-slate-50 dark:bg-slate-700 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 outline-none focus:border-green-400 dark:focus:border-green-500 focus:bg-white dark:focus:bg-slate-700 transition resize-none disabled:opacity-50"
                         />
                     </div>
 

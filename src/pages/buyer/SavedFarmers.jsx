@@ -26,7 +26,7 @@ const SavedFarmers = () => {
     };
 
     return (
-        <div className="bg-slate-50 dark:bg-slate-950 min-h-screen">
+        <div className="bg-slate-50 dark:bg-slate-900 min-h-screen">
             <div className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800">
                 <div className="max-w-4xl mx-auto px-6 py-5">
                     <h1 className="text-xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight">Saved farmers</h1>
