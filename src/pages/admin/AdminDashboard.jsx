@@ -1,113 +1,23 @@
 // src/pages/admin/AdminDashboard.jsx
-import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { AdminDashboardSkeleton } from '../../components/common/skeletons/AdminDashboardSkeleton';
 import { useAuth } from '../../hooks/useAuth';
-import { useCachedFetch } from '../../hooks/useCachedFetch';
+import { useAdminDashboardStatsQuery } from '../../hooks/queries/dashboardQueries';
 
 const AdminDashboard = () => {
     const { user } = useAuth();
-    const [stats, setStats] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const [pendingVerifications, setPendingVerifications] = useState(0);
-    const [refreshing, setRefreshing] = useState(false);
 
-    // Use cached fetch for stats - cache for 2 minutes
-    const {
-        data: cachedStats,
-        isCached,
-        refresh: refreshStats,
-        invalidateCache: invalidateStatsCache
-    } = useCachedFetch('/admin/dashboard/statistics', {
-        ttl: 2 * 60 * 1000, // 2 minutes
-        onSuccess: (data) => {
-            // Handle different response formats
-            if (data) {
-                let statsData = null;
+    const { data: stats, isLoading: loading, isFetching, dataUpdatedAt, refetch } = useAdminDashboardStatsQuery();
 
-                // Extract stats data from response
-                if (data.data) {
-                    statsData = data.data;
-                } else if (data.users || data.orders || data.products) {
-                    statsData = data;
-                } else if (data.success && data.data) {
-                    statsData = data.data;
-                }
-
-                if (statsData) {
-                    setStats(statsData);
-
-                    // Try to get pending verifications from stats.
-                    // AdminDashboardController::statistics() actually returns
-                    // users.unverified_farmers — check that first, keeping the
-                    // other shapes as fallbacks in case the backend adds them later.
-                    if (statsData.users?.unverified_farmers !== undefined) {
-                        setPendingVerifications(statsData.users.unverified_farmers);
-                    } else if (statsData.pending_verifications !== undefined) {
-                        setPendingVerifications(statsData.pending_verifications);
-                    } else if (statsData.farmer_verifications?.pending !== undefined) {
-                        setPendingVerifications(statsData.farmer_verifications.pending);
-                    } else if (statsData.users?.pending_verifications !== undefined) {
-                        setPendingVerifications(statsData.users.pending_verifications);
-                    }
-                }
-                setLoading(false);
-            }
-        },
-        onError: (error) => {
-            console.error('Error fetching stats:', error);
-            setLoading(false);
-        }
-    });
-
-    // Initial data fetch - check cache first
-    useEffect(() => {
-        // If cached stats exist, use them
-        if (cachedStats) {
-            let statsData = null;
-
-            if (cachedStats.data) {
-                statsData = cachedStats.data;
-            } else if (cachedStats.users || cachedStats.orders || cachedStats.products) {
-                statsData = cachedStats;
-            }
-
-            if (statsData) {
-                setStats(statsData);
-
-                // Try to get pending verifications from cached stats (see the
-                // matching onSuccess handler above for why unverified_farmers
-                // is checked first).
-                if (statsData.users?.unverified_farmers !== undefined) {
-                    setPendingVerifications(statsData.users.unverified_farmers);
-                } else if (statsData.pending_verifications !== undefined) {
-                    setPendingVerifications(statsData.pending_verifications);
-                } else if (statsData.farmer_verifications?.pending !== undefined) {
-                    setPendingVerifications(statsData.farmer_verifications.pending);
-                } else if (statsData.users?.pending_verifications !== undefined) {
-                    setPendingVerifications(statsData.users.pending_verifications);
-                }
-            }
-            setLoading(false);
-        }
-    }, []);
-
-    // Handle refresh with loading state
-    const handleRefresh = useCallback(async () => {
-        setRefreshing(true);
-        setLoading(true);
-
-        try {
-            // Invalidate and refresh stats
-            invalidateStatsCache();
-            await refreshStats();
-        } catch (error) {
-            console.error('Error refreshing data:', error);
-        } finally {
-            setRefreshing(false);
-            setLoading(false);
-        }
-    }, [refreshStats, invalidateStatsCache]);
+    // AdminDashboardController::statistics() returns users.unverified_farmers
+    // — check that first, keeping the other shapes as fallbacks in case the
+    // backend adds them later.
+    const pendingVerifications =
+        stats?.users?.unverified_farmers ??
+        stats?.pending_verifications ??
+        stats?.farmer_verifications?.pending ??
+        stats?.users?.pending_verifications ??
+        0;
 
     const fmt = (amount) => {
         if (amount === undefined || amount === null) return 'GMD 0.00';
@@ -149,13 +59,7 @@ const AdminDashboard = () => {
                             <h1 className="text-xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight">Admin Dashboard</h1>
                             <div className="flex items-center gap-2 mt-0.5">
                                 <p className="text-sm text-slate-500 dark:text-slate-400">Welcome back, {user?.name}!</p>
-                                {isCached && (
-                                    <span className="text-xs bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300 px-2 py-0.5 rounded-full flex items-center gap-1 animate-in fade-in duration-300">
-                                        <span className="w-1.5 h-1.5 bg-green-600 dark:bg-green-400 rounded-full animate-pulse"></span>
-                                        Cached
-                                    </span>
-                                )}
-                                {refreshing && (
+                                {isFetching && (
                                     <span className="text-xs bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 px-2 py-0.5 rounded-full flex items-center gap-1 animate-in fade-in duration-300">
                                         <svg className="w-3 h-3 animate-spin" fill="none" viewBox="0 0 24 24">
                                             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
@@ -175,17 +79,17 @@ const AdminDashboard = () => {
                 <div className="flex items-center justify-between text-xs text-slate-400 dark:text-slate-500 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-1.5">
                     <div className="flex items-center gap-4">
                         <span className="flex items-center gap-1">
-                            <span className={`w-2 h-2 rounded-full ${isCached ? 'bg-green-500' : 'bg-blue-500'}`}></span>
-                            {isCached ? 'Using cached data' : 'Live data'}
+                            <span className={`w-2 h-2 rounded-full ${isFetching ? 'bg-blue-500 animate-pulse' : 'bg-green-500'}`}></span>
+                            {isFetching ? 'Refreshing...' : 'Up to date'}
                         </span>
-                        <span>Last updated: {new Date().toLocaleTimeString()}</span>
+                        <span>Last updated: {dataUpdatedAt ? new Date(dataUpdatedAt).toLocaleTimeString() : '—'}</span>
                     </div>
                     <button
-                        onClick={handleRefresh}
-                        disabled={refreshing}
+                        onClick={() => refetch()}
+                        disabled={isFetching}
                         className="text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300 font-medium disabled:opacity-50"
                     >
-                        {refreshing ? 'Refreshing...' : 'Force refresh'}
+                        {isFetching ? 'Refreshing...' : 'Force refresh'}
                     </button>
                 </div>
             </div>

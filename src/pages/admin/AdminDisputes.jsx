@@ -1,10 +1,10 @@
 // src/pages/admin/AdminDisputes.jsx
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Alert } from '../../components/common/Alert';
 import { Button } from '../../components/common/Button';
 import { Skeleton } from '../../components/common/skeletons/Skeleton';
+import { useAdminDisputesQuery, useUpdateDisputeStatusMutation } from '../../hooks/queries/adminQueries';
 import { DisputeStatusBadge } from '../orders/DisputeStatusBadge';
-import api from '../../services/api';
 
 const STATUS_FILTERS = [
     { value: '', label: 'All statuses' },
@@ -44,40 +44,24 @@ const AdminDisputesSkeleton = () => (
 );
 
 const AdminDisputes = () => {
-    const [disputes, setDisputes] = useState([]);
-    const [isInitialLoad, setIsInitialLoad] = useState(true);
-    const [loading, setLoading] = useState(false);
     const [status, setStatus] = useState('');
     const [page, setPage] = useState(1);
-    const [pagination, setPagination] = useState({ current_page: 1, last_page: 1, per_page: 20, total: 0 });
     const [selectedDispute, setSelectedDispute] = useState(null);
     const [actionStatus, setActionStatus] = useState('');
     const [adminNote, setAdminNote] = useState('');
-    const [loadingAction, setLoadingAction] = useState(false);
     const [success, setSuccess] = useState(null);
     const [error, setError] = useState(null);
 
-    useEffect(() => { fetchDisputes(); }, [status, page]);
+    const {
+        data: disputesData,
+        isLoading: isInitialLoad,
+        isFetching: loading,
+    } = useAdminDisputesQuery({ status, page });
+    const disputes = disputesData?.disputes || [];
+    const pagination = disputesData?.pagination || { current_page: 1, last_page: 1, per_page: 20, total: 0 };
 
-    const fetchDisputes = async () => {
-        try {
-            setLoading(true);
-            const params = new URLSearchParams({
-                status: String(status ?? ''),
-                page: String(page),
-                per_page: '20',
-            });
-            const response = await api.get(`/admin/disputes?${params}`);
-            setDisputes(response.data.data || []);
-            setPagination(response.data.meta || { current_page: 1, last_page: 1, per_page: 20, total: 0 });
-        } catch (err) {
-            console.error('Error fetching disputes:', err);
-            flash('error', 'Failed to load disputes');
-        } finally {
-            setLoading(false);
-            setIsInitialLoad(false);
-        }
-    };
+    const updateStatusMutation = useUpdateDisputeStatusMutation();
+    const loadingAction = updateStatusMutation.isPending;
 
     const flash = (type, msg) => {
         if (type === 'success') { setSuccess(msg); setTimeout(() => setSuccess(null), 3000); }
@@ -105,18 +89,15 @@ const AdminDisputes = () => {
     const handleUpdateStatus = async () => {
         if (!actionStatus) return;
         try {
-            setLoadingAction(true);
-            await api.patch(`/admin/disputes/${selectedDispute.id}/status`, {
+            await updateStatusMutation.mutateAsync({
+                disputeId: selectedDispute.id,
                 status: actionStatus,
-                ...(adminNote ? { admin_note: adminNote } : {}),
+                adminNote,
             });
             flash('success', 'Dispute updated successfully');
             closeModal();
-            fetchDisputes();
         } catch (err) {
             flash('error', err.response?.data?.message || 'Failed to update dispute');
-        } finally {
-            setLoadingAction(false);
         }
     };
 

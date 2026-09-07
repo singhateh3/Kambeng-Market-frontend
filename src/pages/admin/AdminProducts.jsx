@@ -1,11 +1,16 @@
 // src/pages/admin/AdminProducts.jsx
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Alert } from '../../components/common/Alert';
 import { Button } from '../../components/common/Button';
 import { Skeleton } from '../../components/common/skeletons/Skeleton';
+import {
+    useAdminProductsQuery,
+    useBulkDeleteAdminProductsMutation,
+    useDeleteAdminProductMutation,
+} from '../../hooks/queries/adminQueries';
+import { useCategoriesQuery } from '../../hooks/queries/productQueries';
 import { useDebounce } from '../../hooks/useDebounce';
-import api from '../../services/api';
 
 // Admin Products Skeleton Component
 const AdminProductsSkeleton = () => (
@@ -87,9 +92,6 @@ const AdminProductsSkeleton = () => (
 );
 
 const AdminProducts = () => {
-    const [products, setProducts] = useState([]);
-    const [isInitialLoad, setIsInitialLoad] = useState(true);
-    const [loading, setLoading] = useState(false);
     const [filters, setFilters] = useState({
         status: '',
         category: '',
@@ -98,20 +100,12 @@ const AdminProducts = () => {
         expired: false,
         page: 1,
     });
-    const [pagination, setPagination] = useState({
-        current_page: 1,
-        last_page: 1,
-        per_page: 20,
-        total: 0,
-    });
     const [selectedProducts, setSelectedProducts] = useState([]);
     const [showModal, setShowModal] = useState(false);
     const [selectedProduct, setSelectedProduct] = useState(null);
     const [modalAction, setModalAction] = useState('');
     const [success, setSuccess] = useState(null);
     const [error, setError] = useState(null);
-    const [loadingAction, setLoadingAction] = useState(false);
-    const [categories, setCategories] = useState([]);
     const [searchHistory, setSearchHistory] = useState([]);
     const [showSearchHistory, setShowSearchHistory] = useState(false);
     const [searchValue, setSearchValue] = useState('');
@@ -122,51 +116,24 @@ const AdminProducts = () => {
     // Debounce search to avoid too many API calls
     const debouncedSearch = useDebounce(filters.search, 300);
 
-    // Fetch products when filters change (except search on every keystroke)
+    const {
+        data: productsData,
+        isLoading: isInitialLoad,
+        isFetching: loading,
+        refetch: refetchProducts,
+    } = useAdminProductsQuery({ ...filters, search: debouncedSearch });
+    const products = productsData?.products || [];
+    const pagination = productsData?.pagination || { current_page: 1, last_page: 1, per_page: 20, total: 0 };
+
+    const { data: categories = [] } = useCategoriesQuery();
+
+    const deleteProductMutation = useDeleteAdminProductMutation();
+    const bulkDeleteMutation = useBulkDeleteAdminProductsMutation();
+    const loadingAction = deleteProductMutation.isPending || bulkDeleteMutation.isPending;
+
     useEffect(() => {
-        fetchProducts();
-        fetchCategories();
         loadSearchHistory();
-    }, [filters.status, filters.category, filters.page, debouncedSearch, filters.expiring_soon, filters.expired]);
-
-    const fetchProducts = useCallback(async () => {
-        try {
-            setLoading(true);
-            const params = new URLSearchParams({
-                status: filters.status || '',
-                category: filters.category || '',
-                search: debouncedSearch || '',
-                expiring_soon: filters.expiring_soon ? 'true' : '',
-                expired: filters.expired ? 'true' : '',
-                page: filters.page || 1,
-                per_page: 20,
-            });
-            const response = await api.get(`/admin/products?${params}`);
-            setProducts(response.data.data || []);
-            setPagination(response.data.meta || {
-                current_page: 1,
-                last_page: 1,
-                per_page: 20,
-                total: 0
-            });
-        } catch (err) {
-            console.error('Error fetching products:', err);
-            setError('Failed to load products');
-            setTimeout(() => setError(null), 3000);
-        } finally {
-            setLoading(false);
-            setIsInitialLoad(false);
-        }
-    }, [filters.status, filters.category, filters.page, debouncedSearch, filters.expiring_soon, filters.expired]);
-
-    const fetchCategories = async () => {
-        try {
-            const response = await api.get('/products/categories');
-            setCategories(response.data.data || []);
-        } catch (err) {
-            console.error('Error fetching categories:', err);
-        }
-    };
+    }, []);
 
     const loadSearchHistory = () => {
         try {
@@ -191,18 +158,14 @@ const AdminProducts = () => {
         if (!confirm('Are you sure you want to delete this product? This action cannot be undone.')) return;
 
         try {
-            setLoadingAction(true);
-            await api.delete(`/admin/products/${productId}`);
+            await deleteProductMutation.mutateAsync(productId);
             setSuccess('Product deleted successfully');
             setShowModal(false);
-            fetchProducts();
             setTimeout(() => setSuccess(null), 3000);
         } catch (err) {
             console.error('Error deleting product:', err);
             setError('Failed to delete product');
             setTimeout(() => setError(null), 3000);
-        } finally {
-            setLoadingAction(false);
         }
     };
 
@@ -215,20 +178,14 @@ const AdminProducts = () => {
         if (!confirm(`Are you sure you want to delete ${selectedProducts.length} products?`)) return;
 
         try {
-            setLoadingAction(true);
-            await api.post('/admin/products/bulk-delete', {
-                product_ids: selectedProducts,
-            });
+            await bulkDeleteMutation.mutateAsync(selectedProducts);
             setSuccess(`${selectedProducts.length} products deleted successfully`);
             setSelectedProducts([]);
-            fetchProducts();
             setTimeout(() => setSuccess(null), 3000);
         } catch (err) {
             console.error('Error deleting products:', err);
             setError('Failed to delete products');
             setTimeout(() => setError(null), 3000);
-        } finally {
-            setLoadingAction(false);
         }
     };
 
@@ -300,7 +257,7 @@ const AdminProducts = () => {
         setShowSearchHistory(false);
         if (filters.search.trim()) {
             saveSearchToHistory(filters.search);
-            fetchProducts();
+            refetchProducts();
         }
     };
 

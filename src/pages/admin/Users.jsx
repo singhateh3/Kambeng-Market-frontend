@@ -1,34 +1,29 @@
 // src/pages/admin/AdminUsers.jsx
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Alert } from '../../components/common/Alert';
 import { Button } from '../../components/common/Button';
 import { Modal } from '../../components/Modal';
+import {
+    useAdminUsersQuery,
+    useDeleteUserMutation,
+    useUpdateUserRoleMutation,
+    useVerifyFarmerMutation,
+} from '../../hooks/queries/adminQueries';
 import { useAuth } from '../../hooks/useAuth';
 import { useDebounce } from '../../hooks/useDebounce';
-import api from '../../services/api';
 
 const AdminUsers = () => {
     const { user: currentUser } = useAuth();
-    const [users, setUsers] = useState([]);
-    const [isInitialLoad, setIsInitialLoad] = useState(true);
-    const [loading, setLoading] = useState(false);
     const [filters, setFilters] = useState({
         role: '',
         search: '',
         verified: '',
         page: 1,
     });
-    const [pagination, setPagination] = useState({
-        current_page: 1,
-        last_page: 1,
-        per_page: 20,
-        total: 0,
-    });
     const [selectedUsers, setSelectedUsers] = useState([]);
     const [showModal, setShowModal] = useState(false);
     const [selectedUser, setSelectedUser] = useState(null);
     const [modalAction, setModalAction] = useState('');
-    const [loadingAction, setLoadingAction] = useState(false);
     const [success, setSuccess] = useState(null);
     const [error, setError] = useState(null);
 
@@ -41,61 +36,41 @@ const AdminUsers = () => {
         setFilters(f => ({ ...f, search: debouncedSearch, page: 1 }));
     }, [debouncedSearch]);
 
-    // Isolated primary fetch engine
-    const fetchUsers = useCallback(async () => {
-        try {
-            setLoading(true);
-            const params = new URLSearchParams({
-                role: filters.role || '',
-                search: filters.search || '',
-                verified: filters.verified || '',
-                page: filters.page || 1,
-            });
-            const response = await api.get(`/admin/users?${params}`);
-            setUsers(response.data.data || []);
-            setPagination(response.data.meta || { current_page: 1, last_page: 1, per_page: 20, total: 0 });
-        } catch (err) {
-            console.error('Error fetching users:', err);
-            setError('Failed to load users');
-        } finally {
-            setLoading(false);
-            setIsInitialLoad(false);
-        }
-    }, [filters.role, filters.search, filters.verified, filters.page]);
+    const {
+        data: usersData,
+        isLoading: isInitialLoad,
+        isFetching: loading,
+        refetch: refetchUsers,
+    } = useAdminUsersQuery(filters);
+    const users = usersData?.users || [];
+    const pagination = usersData?.pagination || { current_page: 1, last_page: 1, per_page: 20, total: 0 };
 
-    useEffect(() => {
-        fetchUsers();
-    }, [fetchUsers]);
+    const updateRoleMutation = useUpdateUserRoleMutation();
+    const verifyFarmerMutation = useVerifyFarmerMutation();
+    const deleteUserMutation = useDeleteUserMutation();
+    const loadingAction = updateRoleMutation.isPending || verifyFarmerMutation.isPending || deleteUserMutation.isPending;
 
     const handleRoleChange = async (userId, role) => {
         try {
-            setLoadingAction(true);
-            await api.put(`/admin/users/${userId}/role`, { role });
+            await updateRoleMutation.mutateAsync({ userId, role });
             setSuccess('User role updated successfully');
-            fetchUsers();
             setTimeout(() => setSuccess(null), 3000);
         } catch (err) {
             console.error('Error updating role:', err);
             setError('Failed to update user role');
             setTimeout(() => setError(null), 3000);
-        } finally {
-            setLoadingAction(false);
         }
     };
 
     const handleVerifyFarmer = async (userId) => {
         try {
-            setLoadingAction(true);
-            await api.post(`/admin/users/${userId}/verify`);
+            await verifyFarmerMutation.mutateAsync(userId);
             setSuccess('Farmer verified successfully');
-            fetchUsers();
             setTimeout(() => setSuccess(null), 3000);
         } catch (err) {
             console.error('Error verifying farmer:', err);
             setError('Failed to verify farmer');
             setTimeout(() => setError(null), 3000);
-        } finally {
-            setLoadingAction(false);
         }
     };
 
@@ -103,18 +78,14 @@ const AdminUsers = () => {
         if (!confirm('Are you sure you want to delete this user? This action cannot be undone.')) return;
 
         try {
-            setLoadingAction(true);
-            await api.delete(`/admin/users/${userId}`);
+            await deleteUserMutation.mutateAsync(userId);
             setSuccess('User deleted successfully');
             setShowModal(false);
-            fetchUsers();
             setTimeout(() => setSuccess(null), 3000);
         } catch (err) {
             console.error('Error deleting user:', err);
             setError('Failed to delete user');
             setTimeout(() => setError(null), 3000);
-        } finally {
-            setLoadingAction(false);
         }
     };
 
@@ -127,20 +98,16 @@ const AdminUsers = () => {
         if (!confirm(`Are you sure you want to delete ${selectedUsers.length} users?`)) return;
 
         try {
-            setLoadingAction(true);
             for (const userId of selectedUsers) {
-                await api.delete(`/admin/users/${userId}`);
+                await deleteUserMutation.mutateAsync(userId);
             }
             setSuccess(`${selectedUsers.length} users deleted successfully`);
             setSelectedUsers([]);
-            fetchUsers();
             setTimeout(() => setSuccess(null), 3000);
         } catch (err) {
             console.error('Error deleting users:', err);
             setError('Failed to delete users');
             setTimeout(() => setError(null), 3000);
-        } finally {
-            setLoadingAction(false);
         }
     };
 
@@ -242,7 +209,7 @@ const AdminUsers = () => {
                         variant="secondary"
                         onClick={() => {
                             setFilters({ ...filters, page: 1 });
-                            fetchUsers();
+                            refetchUsers();
                         }}
                     >
                         Apply Filters

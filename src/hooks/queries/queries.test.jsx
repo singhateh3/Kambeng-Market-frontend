@@ -9,23 +9,29 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { useDeleteAdminProductMutation, useAdminProductsQuery, useAdminDisputesQuery, useUpdateDisputeStatusMutation } from './adminQueries';
 import { useCancelOrderMutation, useOrdersQuery } from './orderQueries';
 import { useProductsQuery } from './productQueries';
 import { useSavedFarmersQuery, useToggleSavedFarmerMutation } from './savedFarmerQueries';
 
+// role: 'admin' so the admin-only query hooks (gated on it) are exercised
+// too — none of the non-admin hooks used elsewhere in this file care
+// about role, so sharing one mock user across both is safe.
 vi.mock('../useAuth', () => ({
-    useAuth: () => ({ user: { id: 1 }, isAuthenticated: true }),
+    useAuth: () => ({ user: { id: 1, role: 'admin' }, isAuthenticated: true }),
 }));
 
 const getMock = vi.fn();
 const postMock = vi.fn().mockResolvedValue({});
 const deleteMock = vi.fn().mockResolvedValue({});
+const patchMock = vi.fn().mockResolvedValue({});
 
 vi.mock('../../services/api', () => ({
     default: {
         get: (...args) => getMock(...args),
         post: (...args) => postMock(...args),
         delete: (...args) => deleteMock(...args),
+        patch: (...args) => patchMock(...args),
     },
 }));
 
@@ -123,5 +129,69 @@ describe('saved-farmer mutation invalidation', () => {
 
         await waitFor(() => expect(getMock).toHaveBeenCalledTimes(2));
         expect(deleteMock).toHaveBeenCalledWith('/saved-farmers/3');
+    });
+});
+
+describe('admin product mutation invalidation', () => {
+    beforeEach(() => {
+        getMock.mockReset();
+        deleteMock.mockClear();
+    });
+
+    it('deleting a product refetches the admin products list', async () => {
+        getMock.mockResolvedValue({ data: { data: [{ id: 9 }], meta: { current_page: 1, last_page: 1, per_page: 20, total: 1 } } });
+
+        const Consumer = () => {
+            const { data } = useAdminProductsQuery({ status: '', category: '', search: '', page: 1 });
+            const deleteMutation = useDeleteAdminProductMutation();
+            return (
+                <div>
+                    <span>products:{data?.products?.length ?? 'loading'}</span>
+                    <button onClick={() => deleteMutation.mutate(9)}>delete</button>
+                </div>
+            );
+        };
+
+        withClient(<Consumer />);
+
+        await waitFor(() => expect(screen.getByText('products:1')).toBeInTheDocument());
+        expect(getMock).toHaveBeenCalledTimes(1);
+
+        await userEvent.setup().click(screen.getByText('delete'));
+
+        await waitFor(() => expect(getMock).toHaveBeenCalledTimes(2));
+        expect(deleteMock).toHaveBeenCalledWith('/admin/products/9');
+    });
+});
+
+describe('admin dispute mutation invalidation', () => {
+    beforeEach(() => {
+        getMock.mockReset();
+        patchMock.mockClear();
+    });
+
+    it('updating a dispute status refetches the admin disputes list', async () => {
+        getMock.mockResolvedValue({ data: { data: [{ id: 4 }], meta: { current_page: 1, last_page: 1, per_page: 20, total: 1 } } });
+
+        const Consumer = () => {
+            const { data } = useAdminDisputesQuery({ status: '', page: 1 });
+            const updateMutation = useUpdateDisputeStatusMutation();
+            return (
+                <div>
+                    <span>disputes:{data?.disputes?.length ?? 'loading'}</span>
+                    <button onClick={() => updateMutation.mutate({ disputeId: 4, status: 'resolved' })}>resolve</button>
+                </div>
+            );
+        };
+
+        withClient(<Consumer />);
+
+        await waitFor(() => expect(screen.getByText('disputes:1')).toBeInTheDocument());
+        expect(getMock).toHaveBeenCalledTimes(1);
+
+        await userEvent.setup().click(screen.getByText('resolve'));
+
+        await waitFor(() => expect(getMock).toHaveBeenCalledTimes(2));
+        expect(patchMock).toHaveBeenCalledWith('/admin/disputes/4/status', { status: 'resolved' });
     });
 });

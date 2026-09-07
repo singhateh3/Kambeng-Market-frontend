@@ -1,10 +1,10 @@
 // src/pages/Dashboard.jsx
-import { lazy, Suspense, useEffect, useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { lazy, Suspense, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { DashboardSkeleton } from '../components/common/skeletons/DashboardSkeleton';
 import ReviewStars from '../components/ReviewStars';
 import { useAuth } from '../hooks/useAuth';
-import api from '../services/api';
+import { useBuyerDashboardQuery, useFarmerDashboardQuery } from '../hooks/queries/dashboardQueries';
 
 // Lazy load AdminDashboard to avoid loading it for non-admin users
 const AdminDashboard = lazy(() => import('./admin/AdminDashboard'));
@@ -22,31 +22,26 @@ const Dashboard = () => {
     return <RegularDashboard />;
 };
 
-// Rest of your RegularDashboard component remains the same...
 const RegularDashboard = () => {
     const { user, refreshUser } = useAuth();
-    const location = useLocation();
-    const [stats, setStats] = useState({
+    const [refreshing, setRefreshing] = useState(false);
+    const isFarmer = user?.role === 'farmer';
+    const isBuyer = user?.role === 'buyer';
+
+    // Only one of these is ever `enabled` (gated on role inside the hooks),
+    // so only one actually fetches — the other just sits idle with no data.
+    const farmerQuery = useFarmerDashboardQuery();
+    const buyerQuery = useBuyerDashboardQuery();
+    const { data, isLoading: loading, refetch } = isFarmer ? farmerQuery : buyerQuery;
+
+    const stats = data?.stats ?? {
         total_products: 0, active_products: 0, total_orders: 0,
         pending_orders: 0, total_revenue: 0, orders_placed: 0,
         average_rating: 0, total_reviews: 0,
-    });
-    const [loading, setLoading] = useState(true);
-    const [refreshing, setRefreshing] = useState(false);
-    const [recentOrders, setRecentOrders] = useState([]);
-    const [recentProducts, setRecentProducts] = useState([]);
-    const [savedFarmers, setSavedFarmers] = useState([]);
-
-    // Depend on primitives (id + role), not the whole `user` object. If
-    // AuthContext ever returns a new object reference for `user` after
-    // refreshUser() — which it very likely does — depending on the full
-    // object here caused this effect to re-fire on every refresh, on top
-    // of the explicit fetchDashboardData() call inside handleRefresh,
-    // resulting in duplicate requests every time "Refresh" was clicked.
-    useEffect(() => {
-        fetchDashboardData();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [user?.id, user?.role, location.key]);
+    };
+    const recentOrders = data?.recentOrders ?? [];
+    const recentProducts = data?.recentProducts ?? [];
+    const savedFarmers = data?.savedFarmers ?? [];
 
     const fmt = (amount) => {
         if (amount === undefined || amount === null) return 'GMD 0.00';
@@ -54,67 +49,14 @@ const RegularDashboard = () => {
         return isNaN(n) ? 'GMD 0.00' : `GMD ${n.toFixed(2)}`;
     };
 
-    const fetchDashboardData = async () => {
-        try {
-            setLoading(true);
-            if (user?.role === 'farmer') {
-                const [statsRes, ordersRes, productsRes] = await Promise.all([
-                    api.get('/farmer/profile/statistics').catch(() => ({ data: { data: {} } })),
-                    api.get('/orders?per_page=5').catch(() => ({ data: { data: [] } })),
-                    api.get('/my-products?per_page=5').catch(() => ({ data: { data: [] } })),
-                ]);
-                setStats({
-                    total_products: statsRes.data.data?.total_products || 0,
-                    active_products: statsRes.data.data?.active_products || 0,
-                    total_orders: statsRes.data.data?.total_orders || 0,
-                    pending_orders: statsRes.data.data?.pending_orders || 0,
-                    total_revenue: statsRes.data.data?.total_revenue || 0,
-                    orders_placed: 0,
-                    // Coerce to Number defensively — Laravel avg()/withAvg()
-                    // aggregates can come back as strings on some DB drivers,
-                    // and this value gets .toFixed()'d further down. Calling
-                    // .toFixed on a string throws.
-                    average_rating: Number(statsRes.data.data?.average_rating ?? 0) || 0,
-                    total_reviews: statsRes.data.data?.total_reviews || 0,
-                });
-                setRecentOrders(ordersRes.data.data || []);
-                setRecentProducts(productsRes.data.data || []);
-            } else if (user?.role === 'buyer') {
-                const [ordersRes, savedFarmersRes] = await Promise.all([
-                    api.get('/orders?per_page=5').catch(() => ({ data: { data: [], meta: { total: 0 } } })),
-                    api.get('/saved-farmers?per_page=3').catch(() => ({ data: { data: [], meta: { total: 0 } } })),
-                ]);
-                setStats({
-                    total_products: 0, active_products: 0,
-                    total_orders: ordersRes.data.meta?.total || 0,
-                    pending_orders: ordersRes.data.data?.filter(o => o.status === 'pending').length || 0,
-                    total_revenue: 0,
-                    orders_placed: ordersRes.data.meta?.total || 0,
-                    average_rating: 0,
-                    total_reviews: 0,
-                });
-                setRecentOrders(ordersRes.data.data || []);
-                setRecentProducts([]);
-                setSavedFarmers(savedFarmersRes.data.data || []);
-            }
-        } catch (e) {
-            console.error(e);
-        } finally {
-            setLoading(false);
-        }
-    };
-
     const handleRefresh = async () => {
         setRefreshing(true);
         await refreshUser();
-        await fetchDashboardData();
+        await refetch();
         setRefreshing(false);
     };
 
     if (loading) return <DashboardSkeleton />;
-
-    const isFarmer = user?.role === 'farmer';
-    const isBuyer = user?.role === 'buyer';
 
     // Pale bg-*-50/text-*-700 → dark-tinted bg + light text, same pattern
     // established in Alert.jsx — keeps each status visually distinct rather
