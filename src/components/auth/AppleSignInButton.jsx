@@ -18,6 +18,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { resolveReturnTo } from '../../utils/authRedirect';
 import { loadExternalScript } from '../../utils/loadExternalScript';
+import { isProfileComplete } from '../../utils/profileCompletion';
 
 const SERVICES_ID = import.meta.env.VITE_APPLE_SERVICES_ID;
 const REDIRECT_URI = import.meta.env.VITE_APPLE_REDIRECT_URI;
@@ -69,7 +70,20 @@ export const AppleSignInButton = () => {
             const name = result?.user?.name;
 
             const response = await loginWithApple(idToken, name);
-            const fallback = response?.data?.user?.role === 'admin' ? '/app/admin/dashboard' : '/app/dashboard';
+            const authedUser = response?.data?.user;
+            const fallback = authedUser?.role === 'admin' ? '/app/admin/dashboard' : '/app/dashboard';
+
+            // Apple never provides phone/location either (see
+            // SocialAuthService, backend) — same gap, same fix as
+            // GoogleSignInButton: send an incomplete account to
+            // /complete-profile instead of straight to its normal
+            // destination, carrying along whatever return-to state (e.g. an
+            // in-progress checkout) this page was rendered with.
+            if (authedUser && !isProfileComplete(authedUser)) {
+                navigate('/complete-profile', { state: location.state, replace: true });
+                return;
+            }
+
             navigate(resolveReturnTo(location.state, fallback));
         } catch (err) {
             // Apple rejects the signIn() promise on user cancel too — that's
