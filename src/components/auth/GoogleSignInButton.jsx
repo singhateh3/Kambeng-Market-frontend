@@ -12,6 +12,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { resolveReturnTo } from '../../utils/authRedirect';
 import { loadExternalScript } from '../../utils/loadExternalScript';
+import { isProfileComplete } from '../../utils/profileCompletion';
 
 const CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
@@ -31,7 +32,22 @@ export const GoogleSignInButton = () => {
             setError(null);
             try {
                 const response = await loginWithGoogle(googleResponse.credential);
-                const fallback = response?.data?.user?.role === 'admin' ? '/app/admin/dashboard' : '/app/dashboard';
+                const authedUser = response?.data?.user;
+                const fallback = authedUser?.role === 'admin' ? '/app/admin/dashboard' : '/app/dashboard';
+
+                // Google never provides phone/location (see SocialAuthService,
+                // backend) — a brand-new account, or a returning one that
+                // never finished this step, still needs to fill them in
+                // before landing on its normal destination. The intended
+                // destination (checkout return, or the role fallback above)
+                // travels along as router state so CompleteProfile can send
+                // them there itself once they're done, via the same
+                // resolveReturnTo() mechanism used everywhere else.
+                if (authedUser && !isProfileComplete(authedUser)) {
+                    navigate('/complete-profile', { state: location.state, replace: true });
+                    return;
+                }
+
                 navigate(resolveReturnTo(location.state, fallback));
             } catch (err) {
                 console.error('Google sign-in error:', err);

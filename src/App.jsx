@@ -17,6 +17,7 @@ const namedLazy = (importFn, name) =>
 
 // Use plain lazy() for components that use export default
 const Home = lazy(() => import('./pages/Home'));
+const CompleteProfile = lazy(() => import('./pages/CompleteProfile'));
 const Dashboard = lazy(() => import('./pages/Dashboard'));
 const Browse = lazy(() => import('./pages/Browse'));
 const Notifications = lazy(() => import('./pages/Notifications'));
@@ -52,6 +53,11 @@ export const App = () => {
                         <Route path="/login" element={<Login />} />
                         <Route path="/register" element={<Register />} />
                         <Route path="/forgot-password" element={<ForgotPassword />} />
+                        {/* Post-Google-sign-in profile completion (missing phone/location)
+                            — needs an authenticated user but sits outside the /app shell,
+                            same as /login and /register, since it's a one-off gate rather
+                            than a page within the normal app navigation. */}
+                        <Route path="/complete-profile" element={<ProtectedRoute><CompleteProfile /></ProtectedRoute>} />
 
                         {/* /app — the layout itself is no longer gated on auth, since
                             some of its children (browse, product detail, place-order,

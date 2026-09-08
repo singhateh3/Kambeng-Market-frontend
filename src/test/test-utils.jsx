@@ -7,6 +7,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { AuthProvider } from '../context/AuthContext';
+import { ThemeProvider } from '../context/ThemeContext';
 
 export const renderWithProviders = (ui, { route = '/' } = {}) => {
     const queryClient = new QueryClient({
@@ -18,7 +19,9 @@ export const renderWithProviders = (ui, { route = '/' } = {}) => {
         ...render(
             <QueryClientProvider client={queryClient}>
                 <MemoryRouter initialEntries={[route]}>
-                    <AuthProvider>{ui}</AuthProvider>
+                    <ThemeProvider>
+                        <AuthProvider>{ui}</AuthProvider>
+                    </ThemeProvider>
                 </MemoryRouter>
             </QueryClientProvider>
         ),
