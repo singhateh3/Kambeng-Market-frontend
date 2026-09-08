@@ -89,8 +89,98 @@ describe('CompleteProfile', () => {
         await user.type(screen.getByPlaceholderText('Enter your location'), 'Serrekunda');
         await user.click(screen.getByRole('button', { name: 'Continue' }));
 
-        expect(authService.updateProfile).toHaveBeenCalledWith({ phone: '+2207000000', location: 'Serrekunda' });
+        expect(authService.updateProfile).toHaveBeenCalledWith({ phone: '+2207000000', location: 'Serrekunda', role: 'buyer' });
         await waitFor(() => expect(screen.getByText('dashboard')).toBeInTheDocument());
+    });
+
+    it('shows farm fields only after choosing "Farmer", and requires them before submitting', async () => {
+        signedInAs({ id: 1, name: 'New Farmer', email: 'farmer@example.com', role: 'buyer', phone: null, location: null });
+
+        const user = userEvent.setup();
+        renderAt('/complete-profile');
+        await waitFor(() => expect(screen.getByPlaceholderText('Enter your phone number')).toBeInTheDocument());
+
+        // Buyer is the default (matches the account's current role) — no
+        // farm fields until "Farmer" is explicitly chosen.
+        expect(screen.queryByPlaceholderText('Enter your farm name')).not.toBeInTheDocument();
+
+        await user.click(screen.getByRole('button', { name: /Farmer/ }));
+        expect(screen.getByPlaceholderText('Enter your farm name')).toBeInTheDocument();
+
+        await user.type(screen.getByPlaceholderText('Enter your phone number'), '+2207000000');
+        await user.type(screen.getByPlaceholderText('Enter your location'), 'Serrekunda');
+        await user.click(screen.getByRole('button', { name: 'Continue' }));
+
+        expect(await screen.findByText('Farm name is required')).toBeInTheDocument();
+        expect(screen.getByText('Farm location is required')).toBeInTheDocument();
+        expect(authService.updateProfile).not.toHaveBeenCalled();
+    });
+
+    it('submits the buyer -> farmer upgrade with farm details, and returns to the dashboard', async () => {
+        signedInAs({ id: 1, name: 'New Farmer', email: 'farmer@example.com', role: 'buyer', phone: null, location: null });
+        authService.updateProfile.mockResolvedValue({
+            data: {
+                id: 1, name: 'New Farmer', email: 'farmer@example.com', role: 'farmer',
+                phone: '+2207000000', location: 'Serrekunda',
+                farmer_profile: { farm_name: 'Green Valley Farm', farm_location: 'Brikama', bio: null },
+            },
+        });
+
+        const user = userEvent.setup();
+        renderAt('/complete-profile');
+        await waitFor(() => expect(screen.getByPlaceholderText('Enter your phone number')).toBeInTheDocument());
+
+        await user.type(screen.getByPlaceholderText('Enter your phone number'), '+2207000000');
+        await user.type(screen.getByPlaceholderText('Enter your location'), 'Serrekunda');
+        await user.click(screen.getByRole('button', { name: /Farmer/ }));
+        await user.type(screen.getByPlaceholderText('Enter your farm name'), 'Green Valley Farm');
+        await user.type(screen.getByPlaceholderText('Enter farm location'), 'Brikama');
+        await user.click(screen.getByRole('button', { name: 'Continue' }));
+
+        expect(authService.updateProfile).toHaveBeenCalledWith({
+            phone: '+2207000000',
+            location: 'Serrekunda',
+            role: 'farmer',
+            farm_name: 'Green Valley Farm',
+            farm_location: 'Brikama',
+        });
+        await waitFor(() => expect(screen.getByText('dashboard')).toBeInTheDocument());
+    });
+
+    it('switching back to Buyer after picking Farmer drops the farm-field requirement', async () => {
+        signedInAs({ id: 1, name: 'Undecided', email: 'undecided@example.com', role: 'buyer', phone: null, location: null });
+        authService.updateProfile.mockResolvedValue({
+            data: { id: 1, name: 'Undecided', email: 'undecided@example.com', role: 'buyer', phone: '+2207000000', location: 'Serrekunda' },
+        });
+
+        const user = userEvent.setup();
+        renderAt('/complete-profile');
+        await waitFor(() => expect(screen.getByPlaceholderText('Enter your phone number')).toBeInTheDocument());
+
+        await user.click(screen.getByRole('button', { name: /Farmer/ }));
+        expect(screen.getByPlaceholderText('Enter your farm name')).toBeInTheDocument();
+
+        await user.click(screen.getByRole('button', { name: /Buyer/ }));
+        expect(screen.queryByPlaceholderText('Enter your farm name')).not.toBeInTheDocument();
+
+        await user.type(screen.getByPlaceholderText('Enter your phone number'), '+2207000000');
+        await user.type(screen.getByPlaceholderText('Enter your location'), 'Serrekunda');
+        await user.click(screen.getByRole('button', { name: 'Continue' }));
+
+        expect(authService.updateProfile).toHaveBeenCalledWith({ phone: '+2207000000', location: 'Serrekunda', role: 'buyer' });
+    });
+
+    it('pre-selects Farmer and pre-fills farm details for a farmer only missing phone/location', async () => {
+        signedInAs({
+            id: 2, name: 'Existing Farmer', email: 'existing-farmer@example.com', role: 'farmer',
+            phone: null, location: null,
+            farmer_profile: { farm_name: 'Sunrise Farm', farm_location: 'Banjul', bio: null },
+        });
+
+        renderAt('/complete-profile');
+
+        await waitFor(() => expect(screen.getByPlaceholderText('Enter your farm name')).toHaveValue('Sunrise Farm'));
+        expect(screen.getByPlaceholderText('Enter farm location')).toHaveValue('Banjul');
     });
 
     it('returns to checkout instead of the dashboard when that was the saved destination', async () => {
