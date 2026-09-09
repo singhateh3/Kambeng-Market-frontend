@@ -1,6 +1,7 @@
 // src/pages/admin/FarmerVerification.jsx
 import { useEffect, useState } from 'react';
 import { Alert } from '../../components/common/Alert';
+import { Avatar } from '../../components/common/Avatar';
 import { Button } from '../../components/common/Button';
 import { Modal } from '../../components/Modal';
 import { useAuth } from '../../hooks/useAuth';
@@ -457,9 +458,7 @@ import api from '../../services/api';
                                                 </td>
                                                 <td className="px-4 py-3 whitespace-nowrap">
                                                     <div className="flex items-center">
-                                                        <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-slate-700 flex items-center justify-center text-sm font-medium text-gray-600 dark:text-slate-300">
-                                                            {farmer.name?.[0]?.toUpperCase() || 'U'}
-                                                        </div>
+                                                        <Avatar src={farmer.avatar} name={farmer.name} size="sm" />
                                                         <div className="ml-3">
                                                             <div className="text-sm font-medium text-gray-900 dark:text-slate-100">
                                                                 {farmer.name}
@@ -606,18 +605,7 @@ import api from '../../services/api';
                 {selectedFarmer && (
                     <div className="p-6 space-y-5">
                         <div className="flex items-center gap-4 min-w-0">
-                            <div className="w-14 h-14 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-xl font-medium text-slate-600 dark:text-slate-300 flex-shrink-0 overflow-hidden">
-                                {selectedFarmer.avatar ? (
-                                    <img
-                                        src={selectedFarmer.avatar}
-                                        alt={selectedFarmer.name}
-                                        className="w-full h-full object-cover"
-                                        onError={(e) => { e.target.style.display = 'none'; }}
-                                    />
-                                ) : (
-                                    selectedFarmer.name?.[0]?.toUpperCase() || 'U'
-                                )}
-                            </div>
+                            <Avatar src={selectedFarmer.avatar} name={selectedFarmer.name} size="lg" />
                             <div className="min-w-0">
                                 <h3 className="font-semibold text-slate-900 dark:text-slate-100 break-words">{selectedFarmer.name}</h3>
                                 <p className="text-sm text-slate-500 dark:text-slate-400 break-words">{selectedFarmer.email}</p>
@@ -716,9 +704,7 @@ import api from '../../services/api';
                     <div className="p-6">
                         <div className="mb-4">
                             <div className="flex items-center mb-4 min-w-0">
-                                <div className="w-12 h-12 rounded-full bg-gray-200 dark:bg-slate-700 flex items-center justify-center text-lg font-medium text-gray-600 dark:text-slate-300 flex-shrink-0">
-                                    {selectedFarmer.name?.[0]?.toUpperCase() || 'U'}
-                                </div>
+                                <Avatar src={selectedFarmer.avatar} name={selectedFarmer.name} size="lg" />
                                 <div className="ml-4 min-w-0">
                                     <h3 className="font-semibold text-gray-900 dark:text-slate-100 break-words">{selectedFarmer.name}</h3>
                                     <p className="text-sm text-gray-500 dark:text-slate-400 break-words">{selectedFarmer.farmer_profile?.farm_name || 'No farm name'}</p>

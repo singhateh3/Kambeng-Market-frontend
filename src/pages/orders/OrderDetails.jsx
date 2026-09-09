@@ -1,6 +1,7 @@
 // src/pages/orders/OrderDetails.jsx
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { Avatar } from '../../components/common/Avatar';
 import { Button } from '../../components/common/Button';
 import { ImageWithFallback } from '../../components/common/ImageWithFallback';
 import { Modal } from '../../components/Modal';
@@ -326,9 +327,7 @@ export const OrderDetails = ({
                             <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-4 border border-slate-100 dark:border-slate-700">
                                 {isFarmer ? (
                                     <div className="flex items-center min-w-0">
-                                        <div className="w-12 h-12 rounded-full bg-slate-300 dark:bg-slate-700 flex items-center justify-center text-lg font-medium text-slate-600 dark:text-slate-300 flex-shrink-0">
-                                            {buyerName?.[0]?.toUpperCase() || 'U'}
-                                        </div>
+                                        <Avatar src={buyer?.avatar} name={buyerName} size="lg" />
                                         <div className="ml-3 min-w-0">
                                             <p className="font-medium text-slate-900 dark:text-slate-100 break-words">
                                                 {buyerName}
@@ -352,9 +351,7 @@ export const OrderDetails = ({
                                     </div>
                                 ) : (
                                     <div className="flex items-center min-w-0">
-                                        <div className="w-12 h-12 rounded-full bg-slate-300 dark:bg-slate-700 flex items-center justify-center text-lg font-medium text-slate-600 dark:text-slate-300 flex-shrink-0">
-                                            {farmerName?.[0]?.toUpperCase() || 'F'}
-                                        </div>
+                                        <Avatar src={productFarmer?.avatar} name={farmerName} size="lg" />
                                         <div className="ml-3 min-w-0">
                                             <p className="font-medium text-slate-900 dark:text-slate-100 break-words">
                                                 {farmerName}

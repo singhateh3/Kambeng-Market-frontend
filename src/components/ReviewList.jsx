@@ -1,6 +1,7 @@
 // src/components/ReviewList.jsx
 import { useEffect, useState } from 'react';
 import api from '../services/api';
+import { Avatar } from './common/Avatar';
 import ReviewStars from './ReviewStars'; // ✅ Fixed - default import (no curly braces)
 
 export const ReviewList = ({ productId }) => {
@@ -117,9 +118,7 @@ const ReviewItem = ({ review }) => {
         <div className="border border-gray-100 dark:border-slate-700 rounded-xl p-4 bg-white dark:bg-slate-800">
             <div className="flex items-start justify-between">
                 <div className="flex items-center space-x-3">
-                    <div className="w-10 h-10 rounded-full bg-green-100 dark:bg-green-900/40 flex items-center justify-center text-green-700 dark:text-green-300 font-medium">
-                        {review.user?.name?.[0]?.toUpperCase() || 'U'}
-                    </div>
+                    <Avatar src={review.user?.avatar} name={review.user?.name} size="md" />
                     <div>
                         <p className="font-medium text-gray-900 dark:text-slate-100">{review.user?.name || 'Anonymous'}</p>
                         <ReviewStars rating={review.rating} size="sm" />

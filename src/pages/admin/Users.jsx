@@ -1,6 +1,7 @@
 // src/pages/admin/AdminUsers.jsx
 import { useEffect, useState } from 'react';
 import { Alert } from '../../components/common/Alert';
+import { Avatar } from '../../components/common/Avatar';
 import { Button } from '../../components/common/Button';
 import { Modal } from '../../components/Modal';
 import {
@@ -269,9 +270,7 @@ const AdminUsers = () => {
                                             </td>
                                             <td className="px-4 py-3 whitespace-nowrap">
                                                 <div className="flex items-center">
-                                                    <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-slate-700 flex items-center justify-center text-sm font-medium text-gray-600 dark:text-slate-300">
-                                                        {user.name?.[0]?.toUpperCase() || 'U'}
-                                                    </div>
+                                                    <Avatar src={user.avatar} name={user.name} size="sm" />
                                                     <div className="ml-3 min-w-0">
                                                         <div className="text-sm font-medium text-gray-900 dark:text-slate-100 truncate max-w-[180px]" title={user.name}>
                                                             {user.name}
@@ -419,9 +418,7 @@ const AdminUsers = () => {
                         ) : (
                             <div className="space-y-3">
                                 <div className="flex items-center min-w-0">
-                                    <div className="w-12 h-12 rounded-full bg-gray-200 dark:bg-slate-700 flex items-center justify-center text-lg font-medium text-gray-600 dark:text-slate-300 flex-shrink-0">
-                                        {selectedUser.name?.[0]?.toUpperCase() || 'U'}
-                                    </div>
+                                    <Avatar src={selectedUser.avatar} name={selectedUser.name} size="lg" />
                                     <div className="ml-3 min-w-0">
                                         <div className="font-semibold text-gray-900 dark:text-slate-100 break-words">{selectedUser.name}</div>
                                         <div className="text-sm text-gray-500 dark:text-slate-400 break-words">{selectedUser.email}</div>

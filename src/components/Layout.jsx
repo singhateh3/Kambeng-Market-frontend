@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { buildReturnState } from '../utils/authRedirect';
+import { Avatar } from './common/Avatar';
 import { NotificationBell } from './NotificationBell';
 import { ThemeToggle } from './ThemeToggle';
 
@@ -181,9 +182,7 @@ export const Layout = () => {
                                 aria-expanded={menuOpen}
                                 className="flex items-center gap-2 bg-transparent border-none cursor-pointer pl-1 pr-1 lg:pr-2.5 py-1 rounded-full hover:bg-slate-50 dark:hover:bg-slate-700 transition"
                             >
-                                <div className="w-8 h-8 rounded-full bg-green-600 text-white flex items-center justify-center text-sm font-black flex-shrink-0 ring-2 ring-green-100 dark:ring-green-900">
-                                    {user?.name?.charAt(0)?.toUpperCase() || 'U'}
-                                </div>
+                                <Avatar src={user?.avatar} name={user?.name} size="sm" className="ring-2 ring-green-100 dark:ring-green-900" />
                                 {/* Name + chevron hide below lg — the avatar alone is the
                                     "compact" mobile profile control; the button and dropdown
                                     panel below are otherwise unchanged. */}
@@ -200,12 +199,15 @@ export const Layout = () => {
 
                             {menuOpen && (
                                 <div className="absolute right-0 mt-2 w-60 bg-white dark:bg-slate-800 rounded-2xl shadow-xl shadow-slate-900/10 dark:shadow-black/40 z-50 overflow-hidden">
-                                    <div className="px-4 py-3.5 bg-slate-50 dark:bg-slate-900">
-                                        <p className="text-[14px] font-black text-slate-900 dark:text-slate-100 leading-tight">{user?.name}</p>
-                                        <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">{user?.email}</p>
-                                        <span className={`inline-block mt-2 text-[11px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full border capitalize ${roleColors[user?.role] || 'bg-slate-100 text-slate-600 border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-600'}`}>
-                                            {user?.role}
-                                        </span>
+                                    <div className="px-4 py-3.5 bg-slate-50 dark:bg-slate-900 flex items-center gap-3">
+                                        <Avatar src={user?.avatar} name={user?.name} size="md" />
+                                        <div className="min-w-0">
+                                            <p className="text-[14px] font-black text-slate-900 dark:text-slate-100 leading-tight truncate">{user?.name}</p>
+                                            <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5 truncate">{user?.email}</p>
+                                            <span className={`inline-block mt-2 text-[11px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full border capitalize ${roleColors[user?.role] || 'bg-slate-100 text-slate-600 border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-600'}`}>
+                                                {user?.role}
+                                            </span>
+                                        </div>
                                     </div>
 
                                     <div className="py-1">

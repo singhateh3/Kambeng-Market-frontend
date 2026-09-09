@@ -1,6 +1,7 @@
 // src/pages/Dashboard.jsx
 import { lazy, Suspense, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { Avatar } from '../components/common/Avatar';
 import { DashboardSkeleton } from '../components/common/skeletons/DashboardSkeleton';
 import ReviewStars from '../components/ReviewStars';
 import { useAuth } from '../hooks/useAuth';
@@ -287,9 +288,7 @@ const RegularDashboard = () => {
                                             to={`/app/farmers/${farmer.id}`}
                                             className="flex items-center gap-2.5 py-2.5 border-b border-slate-50 dark:border-slate-800 last:border-0 no-underline hover:opacity-80 transition"
                                         >
-                                            <div className="w-9 h-9 rounded-full bg-green-100 dark:bg-green-900/40 flex items-center justify-center text-sm font-bold text-green-700 dark:text-green-300 flex-shrink-0">
-                                                {displayName?.[0]?.toUpperCase() || 'F'}
-                                            </div>
+                                            <Avatar src={farmer.avatar} name={farmer.name || displayName} size="sm" />
                                             <div className="min-w-0">
                                                 <p className="text-sm font-semibold text-slate-900 dark:text-slate-100 truncate">{displayName}</p>
                                                 {farmer.location && (

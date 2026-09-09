@@ -1,6 +1,7 @@
 // src/pages/buyer/SavedFarmers.jsx
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { Avatar } from '../../components/common/Avatar';
 import { Footer } from '../../components/Footer';
 import { useSavedFarmersQuery, useToggleSavedFarmerMutation } from '../../hooks/queries/savedFarmerQueries';
 
@@ -81,9 +82,7 @@ const SavedFarmers = () => {
                                             to={`/app/farmers/${farmer.id}`}
                                             className="flex items-center gap-3 min-w-0 flex-1 no-underline hover:opacity-80 transition"
                                         >
-                                            <div className="w-11 h-11 rounded-full bg-green-100 dark:bg-green-900/40 flex items-center justify-center text-base font-bold text-green-700 dark:text-green-300 flex-shrink-0">
-                                                {displayName?.[0]?.toUpperCase() || 'F'}
-                                            </div>
+                                            <Avatar src={farmer.avatar} name={farmer.name || displayName} size="md" />
                                             <div className="min-w-0">
                                                 <div className="flex items-center gap-2 flex-wrap">
                                                     <p className="text-sm font-bold text-slate-900 dark:text-slate-100 truncate">{displayName}</p>

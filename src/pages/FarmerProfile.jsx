@@ -1,6 +1,7 @@
 // src/pages/FarmerProfile.jsx
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { Avatar } from '../components/common/Avatar';
 import { Button } from '../components/common/Button';
 import { SaveFarmerButton } from '../components/SaveFarmerButton';
 import { useAuth } from '../hooks/useAuth';
@@ -72,9 +73,7 @@ const FarmerProfile = () => {
                 <div className="p-6 md:p-8">
                     <div className="flex items-start justify-between gap-4 flex-wrap">
                         <div className="flex items-center gap-4 min-w-0">
-                            <div className="w-16 h-16 rounded-full bg-green-100 dark:bg-green-900/40 flex items-center justify-center text-2xl font-bold text-green-700 dark:text-green-300 flex-shrink-0">
-                                {displayName?.[0]?.toUpperCase() || 'F'}
-                            </div>
+                            <Avatar src={farmerUser.avatar} name={farmerUser.name || displayName} size="lg" />
                             <div className="min-w-0">
                                 <div className="flex items-center gap-2 flex-wrap">
                                     <h1 className="text-xl font-bold text-gray-900 dark:text-slate-100 truncate">{displayName}</h1>

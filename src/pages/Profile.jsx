@@ -1,7 +1,14 @@
 // src/pages/Profile.jsx
 import { useEffect, useState } from 'react';
+import { Avatar } from '../components/common/Avatar';
 import { ProfileSkeleton } from '../components/common/skeletons/ProfileSkeleton';
 import { useAuth } from '../hooks/useAuth';
+
+// Client-side check only — a first pass for instant feedback and to avoid
+// a wasted upload; the backend (UpdateProfileRequest) is the authoritative
+// check and enforces the exact same limits.
+const ALLOWED_AVATAR_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+const MAX_AVATAR_BYTES = 5 * 1024 * 1024;
 
 const Profile = () => {
     const { user, refreshUser, updateProfile } = useAuth();
@@ -11,6 +18,8 @@ const Profile = () => {
     const [error, setError] = useState(null);
     const [validationErrors, setValidationErrors] = useState({});
     const [isRefreshing, setIsRefreshing] = useState(false);
+    const [avatarLoading, setAvatarLoading] = useState(false);
+    const [avatarError, setAvatarError] = useState(null);
     const [formData, setFormData] = useState({
         name: user?.name || '',
         phone: user?.phone || '',
@@ -18,7 +27,6 @@ const Profile = () => {
         bio: user?.farmer_profile?.bio || '',
         farm_name: user?.farmer_profile?.farm_name || '',
         farm_location: user?.farmer_profile?.farm_location || '',
-        avatar: null,
     });
 
     useEffect(() => {
@@ -37,7 +45,6 @@ const Profile = () => {
                 bio: user?.farmer_profile?.bio || '',
                 farm_name: user?.farmer_profile?.farm_name || '',
                 farm_location: user?.farmer_profile?.farm_location || '',
-                avatar: null,
             });
         }
     }, [user]);
@@ -89,36 +96,11 @@ const Profile = () => {
                 submitData.append('farm_location', formData.farm_location?.trim() || '');
             }
 
-            // Add avatar if selected
-            if (formData.avatar) {
-                // Validate file size (max 5MB)
-                if (formData.avatar.size > 5 * 1024 * 1024) {
-                    setValidationErrors({ avatar: 'Image size should be less than 5MB' });
-                    setIsLoading(false);
-                    return;
-                }
-
-                // Validate file type
-                const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-                if (!allowedTypes.includes(formData.avatar.type)) {
-                    setValidationErrors({ avatar: 'Please upload a valid image (JPEG, PNG, GIF, or WebP)' });
-                    setIsLoading(false);
-                    return;
-                }
-
-                submitData.append('avatar', formData.avatar);
-            }
-
             await updateProfile(submitData);
 
             flash('success', 'Profile updated successfully!');
             setIsEditing(false);
             await refreshUser();
-
-            // Reset file input
-            const fileInput = document.querySelector('input[type="file"]');
-            if (fileInput) fileInput.value = '';
-
         } catch (err) {
             console.error('❌ Profile update error:', err);
 
@@ -145,14 +127,53 @@ const Profile = () => {
         }
     };
 
-    const handleFileChange = (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            setFormData({ ...formData, avatar: file });
-            // Clear validation error for avatar
-            if (validationErrors.avatar) {
-                setValidationErrors({ ...validationErrors, avatar: null });
-            }
+    // Avatar upload/removal is deliberately independent of the "Edit
+    // profile" form below — it's a single-purpose action (see the [Avatar]
+    // / "Change photo" pattern), not another field to stage and save
+    // together with name/phone/location. Reuses the same updateProfile() ->
+    // PUT /user/profile path either way.
+    const handleAvatarFileSelected = async (e) => {
+        const file = e.target.files?.[0];
+        e.target.value = ''; // allow re-selecting the same file next time
+        if (!file) return;
+
+        setAvatarError(null);
+        if (!ALLOWED_AVATAR_TYPES.includes(file.type)) {
+            setAvatarError('Please upload a JPEG, PNG, or WebP image.');
+            return;
+        }
+        if (file.size > MAX_AVATAR_BYTES) {
+            setAvatarError('Image must be smaller than 5MB.');
+            return;
+        }
+
+        setAvatarLoading(true);
+        try {
+            const submitData = new FormData();
+            submitData.append('avatar', file);
+            await updateProfile(submitData);
+            flash('success', 'Profile picture updated!');
+        } catch (err) {
+            setAvatarError(
+                err.response?.data?.errors?.avatar?.[0] ||
+                err.response?.data?.message ||
+                'Could not upload your photo. Please try again.'
+            );
+        } finally {
+            setAvatarLoading(false);
+        }
+    };
+
+    const handleRemoveAvatar = async () => {
+        setAvatarError(null);
+        setAvatarLoading(true);
+        try {
+            await updateProfile({ remove_avatar: true });
+            flash('success', 'Profile picture removed.');
+        } catch (err) {
+            setAvatarError(err.response?.data?.message || 'Could not remove your photo. Please try again.');
+        } finally {
+            setAvatarLoading(false);
         }
     };
 
@@ -174,12 +195,8 @@ const Profile = () => {
             bio: user?.farmer_profile?.bio || '',
             farm_name: user?.farmer_profile?.farm_name || '',
             farm_location: user?.farmer_profile?.farm_location || '',
-            avatar: null,
         });
         setValidationErrors({});
-        // Reset file input
-        const fileInput = document.querySelector('input[type="file"]');
-        if (fileInput) fileInput.value = '';
     };
 
     if (!user) return <ProfileSkeleton />;
@@ -295,10 +312,16 @@ const Profile = () => {
                     <div className="space-y-4">
                         {/* Avatar card */}
                         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-6 text-center">
-                            <div className="w-20 h-20 rounded-full bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300 flex items-center justify-center text-3xl font-bold mx-auto mb-4 overflow-hidden">
-                                {user?.avatar
-                                    ? <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" />
-                                    : user?.name?.charAt(0)?.toUpperCase() || 'U'}
+                            <div className="relative w-fit mx-auto mb-4">
+                                <Avatar src={user?.avatar} name={user?.name} size="xl" />
+                                {avatarLoading && (
+                                    <div className="absolute inset-0 rounded-full bg-black/50 flex items-center justify-center">
+                                        <svg className="w-6 h-6 animate-spin text-white" fill="none" viewBox="0 0 24 24">
+                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+                                        </svg>
+                                    </div>
+                                )}
                             </div>
                             <h2 className="text-base font-bold text-slate-900 dark:text-slate-100 mb-0.5">{user?.name}</h2>
                             <p className="text-xs text-slate-400 dark:text-slate-500 mb-3">{user?.email}</p>
@@ -309,6 +332,34 @@ const Profile = () => {
                             }`}>
                                 {user?.role}
                             </span>
+
+                            <div className="mt-4 flex items-center justify-center gap-3">
+                                <label className={`text-xs font-semibold text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300 ${avatarLoading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}>
+                                    {user?.avatar ? 'Change photo' : 'Add photo'}
+                                    <input
+                                        type="file"
+                                        accept="image/jpeg,image/png,image/webp"
+                                        onChange={handleAvatarFileSelected}
+                                        disabled={avatarLoading}
+                                        className="hidden"
+                                    />
+                                </label>
+                                {user?.avatar && (
+                                    <>
+                                        <span className="text-slate-300 dark:text-slate-600">·</span>
+                                        <button
+                                            type="button"
+                                            onClick={handleRemoveAvatar}
+                                            disabled={avatarLoading}
+                                            className="text-xs font-semibold text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 bg-transparent border-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                                        >
+                                            Remove
+                                        </button>
+                                    </>
+                                )}
+                            </div>
+                            {avatarError && <p className="mt-2 text-xs text-red-600 dark:text-red-400">{avatarError}</p>}
+                            <p className="mt-1.5 text-[11px] text-slate-400 dark:text-slate-500">JPEG, PNG, or WebP. Max 5MB.</p>
                         </div>
 
                         {/* Verification card — farmers only */}
@@ -389,29 +440,6 @@ const Profile = () => {
                                                     <span>{validationErrors.location}</span>
                                                 </p>
                                             )}
-                                        </div>
-                                        <div className="sm:col-span-2">
-                                            <label className={labelClass}>Profile picture</label>
-                                            <input
-                                                type="file"
-                                                accept="image/*"
-                                                onChange={handleFileChange}
-                                                className={`w-full text-sm text-slate-600 dark:text-slate-300 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-green-50 dark:file:bg-green-900/40 file:text-green-700 dark:file:text-green-300 hover:file:bg-green-100 dark:hover:file:bg-green-900/60 ${
-                                                    validationErrors.avatar ? 'border-red-300 dark:border-red-700' : ''
-                                                }`}
-                                            />
-                                            {formData.avatar && (
-                                                <p className="mt-1 text-xs text-green-600 dark:text-green-400">
-                                                    ✅ Selected: {formData.avatar.name} ({(formData.avatar.size / 1024).toFixed(1)} KB)
-                                                </p>
-                                            )}
-                                            {validationErrors.avatar && (
-                                                <p className={errorClass}>
-                                                    <span>⚠️</span>
-                                                    <span>{validationErrors.avatar}</span>
-                                                </p>
-                                            )}
-                                            <p className="mt-1 text-xs text-slate-400 dark:text-slate-500">Max 5MB. Supported: JPEG, PNG, GIF, WebP</p>
                                         </div>
                                     </div>
                                 </div>

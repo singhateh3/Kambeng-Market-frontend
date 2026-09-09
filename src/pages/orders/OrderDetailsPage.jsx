@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { Alert } from '../../components/common/Alert';
+import { Avatar } from '../../components/common/Avatar';
 import { Button } from '../../components/common/Button';
 import ReviewStars from '../../components/ReviewStars';
 import { useAuth } from '../../hooks/useAuth';
@@ -446,9 +447,7 @@ const OrderDetailsPage = () => {
                             <h3 className="font-semibold text-gray-900 dark:text-slate-100 mb-3">Buyer Information</h3>
                             <div className="bg-gray-50 dark:bg-slate-900 rounded-lg p-4">
                                 <div className="flex items-start space-x-4">
-                                    <div className="w-12 h-12 rounded-full bg-gray-300 dark:bg-slate-700 flex items-center justify-center text-lg font-medium text-gray-600 dark:text-slate-300">
-                                        {buyer?.name?.[0]?.toUpperCase() || 'U'}
-                                    </div>
+                                    <Avatar src={buyer?.avatar} name={buyer?.name} size="lg" />
                                     <div className="flex-1">
                                         <p className="font-medium text-gray-900 dark:text-slate-100">
                                             {buyer?.name || 'Unknown Buyer'}
@@ -480,9 +479,7 @@ const OrderDetailsPage = () => {
                             <h3 className="font-semibold text-gray-900 dark:text-slate-100 mb-3">Farmer Information</h3>
                             <div className="bg-gray-50 dark:bg-slate-900 rounded-lg p-4">
                                 <div className="flex items-start space-x-4">
-                                    <div className="w-12 h-12 rounded-full bg-gray-300 dark:bg-slate-700 flex items-center justify-center text-lg font-medium text-gray-600 dark:text-slate-300">
-                                        {farmer?.name?.[0]?.toUpperCase() || 'F'}
-                                    </div>
+                                    <Avatar src={farmer?.avatar} name={farmer?.name} size="lg" />
                                     <div className="flex-1">
                                         <p className="font-medium text-gray-900 dark:text-slate-100">
                                             {farmer?.name || 'Unknown Farmer'}

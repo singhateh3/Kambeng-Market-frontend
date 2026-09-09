@@ -1,6 +1,7 @@
 // src/pages/ProductDetail.jsx
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Avatar } from '../components/common/Avatar';
 import { Button } from '../components/common/Button';
 import { ImageWithFallback } from '../components/common/ImageWithFallback';
 import { SaveFarmerButton } from '../components/SaveFarmerButton';
@@ -234,9 +235,7 @@ const ProductDetail = () => {
                                     <h3 className="font-semibold text-gray-900 dark:text-slate-100 mb-2">Sold by</h3>
                                     <div className="flex items-center justify-between gap-3">
                                         <Link to={`/app/farmers/${product.farmer.id}`} className="flex items-center min-w-0 no-underline hover:opacity-80 transition">
-                                            <div className="w-10 h-10 rounded-full bg-green-100 dark:bg-green-900/40 flex items-center justify-center text-sm font-medium text-green-700 dark:text-green-300 flex-shrink-0">
-                                                {product.farmer.name?.[0]?.toUpperCase() || 'F'}
-                                            </div>
+                                            <Avatar src={product.farmer.avatar} name={product.farmer.name} size="md" />
                                             <div className="ml-3 min-w-0">
                                                 <p className="font-medium text-gray-900 dark:text-slate-100 truncate">
                                                     {product.farmer.name || 'Unknown Farmer'}
