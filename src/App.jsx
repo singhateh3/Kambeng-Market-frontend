@@ -1,6 +1,6 @@
 // src/App.jsx
-import { Suspense, lazy } from 'react';
-import { Navigate, Route, Routes } from 'react-router-dom';
+import { Suspense, lazy, useEffect } from 'react';
+import { Navigate, Route, Routes, useNavigate } from 'react-router-dom';
 import { Layout } from './components/Layout';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { PublicLayout } from './components/PublicLayout';
@@ -10,6 +10,7 @@ import { Register } from './components/auth/Register';
 import { LoadingScreen } from './components/common/LoadingScreen';
 import { AuthProvider } from './context/AuthContext';
 import { NotificationProvider } from './context/NotificationContext';
+import { setNavigate } from './utils/navigationRef';
 
 // Helper to handle both named and default exports
 const namedLazy = (importFn, name) =>
@@ -41,6 +42,14 @@ const FarmerProfile = lazy(() => import('./pages/FarmerProfile'));
 const SavedFarmers = lazy(() => import('./pages/buyer/SavedFarmers'));
 
 export const App = () => {
+    const navigate = useNavigate();
+
+    // Registers the router's navigate() for services/api.js's 401
+    // interceptor to use — see utils/navigationRef.js for why.
+    useEffect(() => {
+        setNavigate(navigate);
+    }, [navigate]);
+
     return (
         <AuthProvider>
             <NotificationProvider>

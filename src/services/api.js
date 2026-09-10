@@ -1,5 +1,8 @@
 // src/services/api.js
 import axios from 'axios';
+import { queryClient } from '../lib/queryClient';
+import { buildReturnState } from '../utils/authRedirect';
+import { getNavigate } from '../utils/navigationRef';
 
 // Vite uses import.meta.env instead of process.env
 const API_URL = import.meta.env.VITE_API_URL || 'https://kambeng-market.onrender.com/api';
@@ -78,14 +81,31 @@ api.interceptors.response.use(
         // Handle unauthorized - only redirect to login, don't logout
         if (error.response?.status === 401) {
             // Check if it's NOT an auth endpoint
-            const isAuthEndpoint = error.config?.url?.includes('/login') || 
+            const isAuthEndpoint = error.config?.url?.includes('/login') ||
                                   error.config?.url?.includes('/register') ||
                                   error.config?.url?.includes('/forgot-password');
-            
+
             // Only redirect if not on login page and not an auth endpoint
             if (!isAuthEndpoint && !window.location.pathname.includes('/login')) {
                 localStorage.removeItem('authToken');
-                window.location.href = '/login';
+                // Same cache wipe AuthContext's own login()/logout() do — a
+                // hard reload used to make this implicit; a client-side
+                // navigate() (below) doesn't tear down the JS heap, so it
+                // must be done explicitly here instead.
+                queryClient.clear();
+
+                // Client-side navigate (not window.location.href) so the
+                // current location can travel as React Router `state` via
+                // the app's existing return-path mechanism (see
+                // utils/authRedirect.js) — a hard reload can't carry that.
+                // Falls back to a hard redirect only in the narrow window
+                // before App.jsx's useEffect has registered navigate().
+                const navigate = getNavigate();
+                if (navigate) {
+                    navigate('/login', { state: buildReturnState(window.location), replace: true });
+                } else {
+                    window.location.href = '/login';
+                }
             }
         }
         
