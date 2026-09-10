@@ -3,6 +3,7 @@ import { lazy, Suspense, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Avatar } from '../components/common/Avatar';
 import { DashboardSkeleton } from '../components/common/skeletons/DashboardSkeleton';
+import { Skeleton } from '../components/common/skeletons/Skeleton';
 import ReviewStars from '../components/ReviewStars';
 import { useAuth } from '../hooks/useAuth';
 import { useBuyerDashboardQuery, useFarmerDashboardQuery } from '../hooks/queries/dashboardQueries';
@@ -56,8 +57,6 @@ const RegularDashboard = () => {
         await refetch();
         setRefreshing(false);
     };
-
-    if (loading) return <DashboardSkeleton />;
 
     // Pale bg-*-50/text-*-700 → dark-tinted bg + light text, same pattern
     // established in Alert.jsx — keeps each status visually distinct rather
@@ -117,37 +116,45 @@ const RegularDashboard = () => {
                 {isFarmer && (
                     <>
                         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
-                            {[
-                                { label: 'Total products', value: stats.total_products, icon: '🌾', to: '/app/products' },
-                                { label: 'Active listings', value: stats.active_products, icon: '✅', to: '/app/products' },
-                                { label: 'Total orders', value: stats.total_orders, icon: '📦', to: '/app/orders' },
-                                { label: 'Revenue', value: fmt(stats.total_revenue), icon: '💰', to: null },
-                            ].map((s, i) => <StatCard key={i} {...s} />)}
+                            {loading
+                                ? [1, 2, 3, 4].map((i) => <StatCardSkeleton key={i} />)
+                                : [
+                                    { label: 'Total products', value: stats.total_products, icon: '🌾', to: '/app/products' },
+                                    { label: 'Active listings', value: stats.active_products, icon: '✅', to: '/app/products' },
+                                    { label: 'Total orders', value: stats.total_orders, icon: '📦', to: '/app/orders' },
+                                    { label: 'Revenue', value: fmt(stats.total_revenue), icon: '💰', to: null },
+                                ].map((s, i) => <StatCard key={i} {...s} />)}
                         </div>
 
                         {/* Farmer Rating Card */}
                         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-5 mb-6 hover:shadow-md transition-shadow">
-                            <div className="flex items-center justify-between flex-wrap gap-3">
-                                <div>
-                                    <p className="text-xs text-slate-500 dark:text-slate-400">Your Rating</p>
-                                    <div className="flex items-center gap-3 mt-1">
-                                        <ReviewStars rating={stats.average_rating} size="lg" />
-                                        <span className="text-sm font-bold text-slate-900 dark:text-slate-100">
-                                            {stats.average_rating.toFixed(1)}
-                                        </span>
+                            {loading ? (
+                                <RatingCardSkeleton />
+                            ) : (
+                                <>
+                                    <div className="flex items-center justify-between flex-wrap gap-3">
+                                        <div>
+                                            <p className="text-xs text-slate-500 dark:text-slate-400">Your Rating</p>
+                                            <div className="flex items-center gap-3 mt-1">
+                                                <ReviewStars rating={stats.average_rating} size="lg" />
+                                                <span className="text-sm font-bold text-slate-900 dark:text-slate-100">
+                                                    {stats.average_rating.toFixed(1)}
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div className="text-right">
+                                            <p className="text-2xl font-extrabold text-slate-900 dark:text-slate-100">
+                                                {stats.total_reviews}
+                                            </p>
+                                            <p className="text-xs text-slate-500 dark:text-slate-400">Total Reviews</p>
+                                        </div>
                                     </div>
-                                </div>
-                                <div className="text-right">
-                                    <p className="text-2xl font-extrabold text-slate-900 dark:text-slate-100">
-                                        {stats.total_reviews}
-                                    </p>
-                                    <p className="text-xs text-slate-500 dark:text-slate-400">Total Reviews</p>
-                                </div>
-                            </div>
-                            {stats.total_reviews === 0 && (
-                                <p className="text-xs text-slate-400 dark:text-slate-500 mt-2">
-                                    No reviews yet. Keep selling to get feedback from buyers!
-                                </p>
+                                    {stats.total_reviews === 0 && (
+                                        <p className="text-xs text-slate-400 dark:text-slate-500 mt-2">
+                                            No reviews yet. Keep selling to get feedback from buyers!
+                                        </p>
+                                    )}
+                                </>
                             )}
                         </div>
                     </>
@@ -155,11 +162,13 @@ const RegularDashboard = () => {
 
                 {isBuyer && (
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-                        {[
-                            { label: 'Orders placed', value: stats.orders_placed, icon: '🛒', to: '/app/orders' },
-                            { label: 'Pending orders', value: stats.pending_orders, icon: '⏳', to: '/app/orders' },
-                            { label: 'Browse products', value: '→', icon: '🔍', to: '/app/browse' },
-                        ].map((s, i) => <StatCard key={i} {...s} />)}
+                        {loading
+                            ? [1, 2, 3].map((i) => <StatCardSkeleton key={i} />)
+                            : [
+                                { label: 'Orders placed', value: stats.orders_placed, icon: '🛒', to: '/app/orders' },
+                                { label: 'Pending orders', value: stats.pending_orders, icon: '⏳', to: '/app/orders' },
+                                { label: 'Browse products', value: '→', icon: '🔍', to: '/app/browse' },
+                            ].map((s, i) => <StatCard key={i} {...s} />)}
                     </div>
                 )}
 
@@ -176,7 +185,7 @@ const RegularDashboard = () => {
                             <span className="text-sm font-bold text-slate-900 dark:text-slate-100">Recent orders</span>
                             <Link to="/app/orders" className="text-xs font-semibold text-green-600 dark:text-green-400 no-underline hover:text-green-700 dark:hover:text-green-300">View all →</Link>
                         </div>
-                        {recentOrders.length === 0 ? (
+                        {loading ? <PanelListSkeleton /> : recentOrders.length === 0 ? (
                             <div className="text-center py-10 text-slate-400 dark:text-slate-500 text-sm">No orders yet</div>
                         ) : recentOrders.map((order) => (
                             <div key={order.id} className="flex items-center justify-between gap-3 py-2.5 border-b border-slate-50 dark:border-slate-800 last:border-0">
@@ -215,7 +224,7 @@ const RegularDashboard = () => {
                                     <span className="text-sm font-bold text-slate-900 dark:text-slate-100">Recent products</span>
                                     <Link to="/app/products" className="text-xs font-semibold text-green-600 dark:text-green-400 no-underline hover:text-green-700 dark:hover:text-green-300">View all →</Link>
                                 </div>
-                                {recentProducts.length === 0 ? (
+                                {loading ? <PanelListSkeleton /> : recentProducts.length === 0 ? (
                                     <div className="text-center py-10">
                                         <p className="text-slate-400 dark:text-slate-500 text-sm mb-3">No products listed yet</p>
                                         <Link to="/app/products/create" className="bg-green-600 text-white text-xs font-semibold px-4 py-2 rounded-lg no-underline hover:bg-green-700 transition">
@@ -270,7 +279,7 @@ const RegularDashboard = () => {
                                         {savedFarmers.length > 0 ? 'View all →' : 'Browse all →'}
                                     </Link>
                                 </div>
-                                {savedFarmers.length === 0 ? (
+                                {loading ? <PanelListSkeleton /> : savedFarmers.length === 0 ? (
                                     <div className="text-center py-10">
                                         <p className="text-slate-400 dark:text-slate-500 text-sm mb-3">Save farmers for quick ordering</p>
                                         <Link to="/app/browse" className="bg-green-600 text-white text-xs font-semibold px-4 py-2 rounded-lg no-underline hover:bg-green-700 transition">
@@ -306,6 +315,45 @@ const RegularDashboard = () => {
         </div>
     );
 };
+
+// Local skeletons for the dynamic (query-backed) regions of the dashboard
+// only — the header, verification banner, and action cards above are all
+// derived from `user` (already resolved by the time RegularDashboard
+// renders) and never need to wait on these.
+const StatCardSkeleton = () => (
+    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-5">
+        <Skeleton className="h-7 w-7 mb-3" />
+        <Skeleton className="h-8 w-16 mb-1" />
+        <Skeleton className="h-3 w-24" />
+    </div>
+);
+
+const RatingCardSkeleton = () => (
+    <div className="flex items-center justify-between flex-wrap gap-3">
+        <div>
+            <Skeleton className="h-3 w-20 mb-2" />
+            <Skeleton className="h-6 w-32" />
+        </div>
+        <div className="text-right">
+            <Skeleton className="h-7 w-10 mb-1 ml-auto" />
+            <Skeleton className="h-3 w-20" />
+        </div>
+    </div>
+);
+
+const PanelListSkeleton = () => (
+    <div>
+        {[1, 2, 3].map((i) => (
+            <div key={i} className="flex items-center justify-between gap-3 py-2.5 border-b border-slate-50 dark:border-slate-800 last:border-0">
+                <div className="min-w-0 flex-1">
+                    <Skeleton className="h-4 w-32 mb-1.5" />
+                    <Skeleton className="h-3 w-24" />
+                </div>
+                <Skeleton className="h-5 w-16 rounded-full flex-shrink-0" />
+            </div>
+        ))}
+    </div>
+);
 
 const StatCard = ({ label, value, icon, to }) => {
     const content = (

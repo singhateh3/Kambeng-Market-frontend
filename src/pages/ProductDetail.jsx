@@ -4,6 +4,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { Avatar } from '../components/common/Avatar';
 import { Button } from '../components/common/Button';
 import { ImageWithFallback } from '../components/common/ImageWithFallback';
+import { Skeleton } from '../components/common/skeletons/Skeleton';
 import { SaveFarmerButton } from '../components/SaveFarmerButton';
 import { useAuth } from '../hooks/useAuth';
 import { useProductQuery } from '../hooks/queries/productQueries';
@@ -54,39 +55,12 @@ const ProductDetail = () => {
         ? product.is_available 
         : (product?.status === 'active' && product?.quantity > 0);
 
-    if (loading) {
-        return (
-            <div className="flex items-center justify-center h-64">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 dark:border-green-400"></div>
-            </div>
-        );
-    }
-
-    if (error || !product || !product.id) {
-        return (
-            <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-100 dark:border-slate-700 p-12 text-center max-w-2xl mx-auto">
-                <div className="text-6xl mb-4">🔍</div>
-                <h3 className="text-xl font-semibold text-gray-900 dark:text-slate-100 mb-2">Product Not Found</h3>
-                <p className="text-gray-500 dark:text-slate-400">The product you're looking for doesn't exist or has been removed.</p>
-                {productId && (
-                    <p className="text-sm text-gray-400 dark:text-slate-500 mt-2">Product ID: {productId}</p>
-                )}
-                {error && (
-                    <p className="text-sm text-red-500 dark:text-red-400 mt-2">
-                        Error: {error.response?.data?.message || 'Failed to load product details'}
-                    </p>
-                )}
-                <Button className="mt-4" onClick={() => navigate('/app/browse')}>
-                    Browse Products
-                </Button>
-            </div>
-        );
-    }
-
     return (
         <div className="max-w-5xl mx-auto">
             <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-100 dark:border-slate-700 overflow-hidden">
-                {/* Back Button */}
+                {/* Back Button — static chrome, not dependent on the product
+                    fetch, so it renders immediately rather than waiting
+                    behind the loading/error states below. */}
                 <div className="p-4 border-b border-gray-100 dark:border-slate-700">
                     <button
                         onClick={handleGoBack}
@@ -99,6 +73,26 @@ const ProductDetail = () => {
                     </button>
                 </div>
 
+                {loading ? (
+                    <ProductDetailSkeleton />
+                ) : error || !product || !product.id ? (
+                    <div className="p-12 text-center">
+                        <div className="text-6xl mb-4">🔍</div>
+                        <h3 className="text-xl font-semibold text-gray-900 dark:text-slate-100 mb-2">Product Not Found</h3>
+                        <p className="text-gray-500 dark:text-slate-400">The product you're looking for doesn't exist or has been removed.</p>
+                        {productId && (
+                            <p className="text-sm text-gray-400 dark:text-slate-500 mt-2">Product ID: {productId}</p>
+                        )}
+                        {error && (
+                            <p className="text-sm text-red-500 dark:text-red-400 mt-2">
+                                Error: {error.response?.data?.message || 'Failed to load product details'}
+                            </p>
+                        )}
+                        <Button className="mt-4" onClick={() => navigate('/app/browse')}>
+                            Browse Products
+                        </Button>
+                    </div>
+                ) : (
                 <div className="p-6 md:p-8">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                         {/* Product Image */}
@@ -314,9 +308,48 @@ const ProductDetail = () => {
                         </div>
                     </div>
                 </div>
+                )}
             </div>
         </div>
     );
 };
+
+// Skeleton for the product image/info grid only — the "Back" button above
+// is static chrome and already renders before this, unconditionally.
+const ProductDetailSkeleton = () => (
+    <div className="p-6 md:p-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div>
+                <Skeleton className="w-full h-64 sm:h-80 md:h-96 rounded-xl" />
+                <div className="flex gap-2 mt-4">
+                    {[1, 2, 3].map((i) => (
+                        <Skeleton key={i} className="w-20 h-20 rounded-lg flex-shrink-0" />
+                    ))}
+                </div>
+            </div>
+            <div className="space-y-4">
+                <div>
+                    <Skeleton className="h-7 w-3/4 mb-2" />
+                    <Skeleton className="h-4 w-24" />
+                </div>
+                <Skeleton className="h-4 w-40" />
+                <div className="border-t border-b border-gray-100 dark:border-slate-700 py-4">
+                    <Skeleton className="h-9 w-32 mb-2" />
+                    <Skeleton className="h-4 w-20" />
+                </div>
+                <div className="space-y-3">
+                    {[1, 2, 3, 4].map((i) => (
+                        <div key={i} className="flex justify-between">
+                            <Skeleton className="h-4 w-32" />
+                            <Skeleton className="h-4 w-20" />
+                        </div>
+                    ))}
+                </div>
+                <Skeleton className="h-24 w-full rounded-xl" />
+                <Skeleton className="h-12 w-full rounded-xl" />
+            </div>
+        </div>
+    </div>
+);
 
 export default ProductDetail;

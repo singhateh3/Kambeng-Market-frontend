@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Footer } from '../components/Footer';
 import { ImageWithFallback } from '../components/common/ImageWithFallback';
-import { BrowseSkeleton } from '../components/common/skeletons/BrowseSkeleton';
+import { Skeleton } from '../components/common/skeletons/Skeleton';
 import { useAuth } from '../hooks/useAuth';
 import { useDebounce } from '../hooks/useDebounce';
 import { useCategoriesQuery, useProductsQuery, useRegionsQuery } from '../hooks/queries/productQueries';
@@ -70,8 +70,6 @@ const Browse = () => {
             searchInputRef.current.focus();
         }
     };
-
-    if (isLoading) return <BrowseSkeleton />;
 
     return (
         <div className="bg-slate-50 dark:bg-slate-900 min-h-screen">
@@ -193,9 +191,14 @@ const Browse = () => {
                     )}
                 </div>
 
-                {/* Products grid container with smooth opacity transitions */}
+                {/* Products grid container with smooth opacity transitions.
+                    Only this region shows a loading state — the header,
+                    search/filter bar, and category pills above render
+                    immediately regardless of product-fetch status. */}
                 <div className={`transition-opacity duration-200 ${isFetching ? 'opacity-60 pointer-events-none' : 'opacity-100'}`}>
-                    {error ? (
+                    {isLoading ? (
+                        <ProductGridSkeleton />
+                    ) : error ? (
                         <div className="bg-white dark:bg-slate-900 border border-red-200 dark:border-red-800 rounded-xl text-center py-20">
                             <div className="text-5xl mb-3">⚠️</div>
                             <h3 className="text-base font-bold text-slate-900 dark:text-slate-100 mb-1">Something went wrong</h3>
@@ -266,6 +269,28 @@ const Browse = () => {
         </div>
     );
 };
+
+// Local skeleton for the product grid only — the page's header, search
+// bar, filter dropdowns, and category pills render immediately from their
+// own already-fast/cached queries and never wait on this.
+const ProductGridSkeleton = () => (
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+        {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+            <div key={i} className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+                <Skeleton className="w-full h-36" />
+                <div className="p-3">
+                    <Skeleton className="h-3 w-20 mb-1" />
+                    <Skeleton className="h-4 w-3/4 mb-1.5" />
+                    <div className="flex items-center justify-between mb-2.5">
+                        <Skeleton className="h-5 w-16" />
+                        <Skeleton className="h-3 w-12" />
+                    </div>
+                    <Skeleton className="h-8 w-full rounded-lg" />
+                </div>
+            </div>
+        ))}
+    </div>
+);
 
 // Declared strictly outside the main container scope to safeguard input structural focus tracking
 const ProductCard = ({ product, navigate, user }) => {

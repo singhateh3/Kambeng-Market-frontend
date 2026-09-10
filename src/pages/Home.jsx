@@ -1,5 +1,5 @@
 // src/pages/Home.jsx
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ImageWithFallback } from '../components/common/ImageWithFallback';
 import { Skeleton } from "../components/common/skeletons/Skeleton";
@@ -7,7 +7,7 @@ import ReviewStars from '../components/ReviewStars';
 import { ThemeToggle } from '../components/ThemeToggle';
 import { useAuth } from '../hooks/useAuth';
 import { useCategoriesQuery, useFeaturedProductsQuery } from '../hooks/queries/productQueries';
-import api from '../services/api';
+import { usePublicStatisticsQuery } from '../hooks/queries/publicQueries';
 import { getImageUrl } from '../utils/imageUtils';
 
 const CATEGORY_ICONS = {
@@ -22,28 +22,19 @@ const getCategoryIcon = (category) => CATEGORY_ICONS[category] || '📦';
 const Home = () => {
     const { user, isAuthenticated } = useAuth();
     const navigate = useNavigate();
-    const [stats, setStats] = useState(null);
-    const [statsLoading, setStatsLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
 
-    // Products/categories are now cached, shared, public server state via
-    // TanStack Query. Statistics stays a plain fetch — it's not part of
-    // this migration pass (not product/farmer data) and this keeps that
-    // one endpoint's failure independent of the other two, exactly as the
-    // previous Promise.allSettled-style handling did.
+    // Products/categories/statistics are all cached, shared, public server
+    // state via TanStack Query now. Statistics is intentionally NOT part of
+    // `loading` below — it has its own small stats-strip skeleton further
+    // down, so a slow/uncached statistics response never blocks the static
+    // hero/categories/featured-products content (which is typically already
+    // warm from a previous visit) from painting immediately.
     const { data: featuredProducts = [], isLoading: productsLoading } = useFeaturedProductsQuery();
     const { data: categories = [], isLoading: categoriesLoading } = useCategoriesQuery();
+    const { data: stats, isLoading: statsLoading } = usePublicStatisticsQuery();
 
-    useEffect(() => {
-        let cancelled = false;
-        api.get('/public/statistics')
-            .then((res) => { if (!cancelled) setStats(res.data?.data || null); })
-            .catch((err) => console.error('Error fetching statistics:', err))
-            .finally(() => { if (!cancelled) setStatsLoading(false); });
-        return () => { cancelled = true; };
-    }, []);
-
-    const loading = productsLoading || categoriesLoading || statsLoading;
+    const loading = productsLoading || categoriesLoading;
 
     const handleSearch = (e) => {
         e.preventDefault();
@@ -162,20 +153,31 @@ const Home = () => {
                         </p>
                     </div>
 
-                    {/* Stats grid */}
+                    {/* Stats grid — its own local loading state; never blocks the
+                        rest of the page (see `loading` above). */}
                     <div className="grid grid-cols-2 gap-4">
-                        {[
-                            { emoji: '🥬', label: 'Fresh products', value: stats?.products?.active ?? '50+' },
-                            { emoji: '👨‍🌾', label: 'Verified farmers', value: stats?.users?.farmers ?? '20+' },
-                            { emoji: '📦', label: 'Orders placed', value: stats?.orders?.total ?? '100+' },
-                            { emoji: '⭐', label: 'Avg. rating', value: stats?.reviews?.average_rating ? Number(stats.reviews.average_rating).toFixed(1) : '4.8' },
-                        ].map((s, i) => (
-                            <div key={i} className="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-5">
-                                <div className="text-3xl mb-2">{s.emoji}</div>
-                                <div className="text-2xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight">{s.value}</div>
-                                <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{s.label}</div>
-                            </div>
-                        ))}
+                        {statsLoading ? (
+                            [1, 2, 3, 4].map((i) => (
+                                <div key={i} className="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-5">
+                                    <Skeleton className="h-8 w-8 mb-2" />
+                                    <Skeleton className="h-8 w-16 mb-1" />
+                                    <Skeleton className="h-4 w-20" />
+                                </div>
+                            ))
+                        ) : (
+                            [
+                                { emoji: '🥬', label: 'Fresh products', value: stats?.products?.active ?? '50+' },
+                                { emoji: '👨‍🌾', label: 'Verified farmers', value: stats?.users?.farmers ?? '20+' },
+                                { emoji: '📦', label: 'Orders placed', value: stats?.orders?.total ?? '100+' },
+                                { emoji: '⭐', label: 'Avg. rating', value: stats?.reviews?.average_rating ? Number(stats.reviews.average_rating).toFixed(1) : '4.8' },
+                            ].map((s, i) => (
+                                <div key={i} className="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-5">
+                                    <div className="text-3xl mb-2">{s.emoji}</div>
+                                    <div className="text-2xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight">{s.value}</div>
+                                    <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{s.label}</div>
+                                </div>
+                            ))
+                        )}
                     </div>
                 </div>
             </section>
