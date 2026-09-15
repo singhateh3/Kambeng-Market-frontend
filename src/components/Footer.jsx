@@ -1,6 +1,5 @@
 // src/components/Footer.jsx
 import { Link } from 'react-router-dom';
-import { useAuth } from '../hooks/useAuth';
 
 // Social accounts are not yet set up for Kambeng Market — no URLs exist
 // anywhere in the project/config. Rather than invent handles, each entry's
@@ -36,13 +35,14 @@ const socialIconClass =
     'focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900';
 
 export const Footer = () => {
-    const { isAuthenticated } = useAuth();
-
     const columns = [
         {
             title: 'Platform',
+            // Browse is public — same unconditional link the main nav
+            // uses (see Layout.jsx) — anonymous visitors can browse
+            // without signing in first.
             links: [
-                { label: 'Browse products', to: isAuthenticated ? '/app/browse' : '/login' },
+                { label: 'Browse products', to: '/app/browse' },
             ],
         },
         {
