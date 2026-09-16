@@ -163,13 +163,33 @@ import api from '../../services/api';
 
         try {
             setLoadingAction(true);
-            // Reject each selected farmer
-            for (const farmerId of selectedFarmers) {
-                await api.post(`/admin/farmers/verification/${farmerId}/reject`, {
-                    reason: bulkRejectionReason
-                });
+            // Concurrent instead of sequential — there's no backend
+            // bulk-reject endpoint (unlike bulk-approve), so this still
+            // hits the same per-farmer endpoint with the same payload,
+            // just no longer one full round-trip at a time.
+            // Promise.allSettled (not Promise.all) so one farmer's request
+            // failing doesn't abort/hide the outcome of the others, and the
+            // UI can report exactly how many actually succeeded vs failed
+            // instead of a single misleading success-or-failure message.
+            const results = await Promise.allSettled(
+                selectedFarmers.map((farmerId) =>
+                    api.post(`/admin/farmers/verification/${farmerId}/reject`, {
+                        reason: bulkRejectionReason,
+                    })
+                )
+            );
+
+            const failedCount = results.filter((result) => result.status === 'rejected').length;
+            const succeededCount = results.length - failedCount;
+
+            if (failedCount === 0) {
+                setSuccess(`${succeededCount} farmer${succeededCount === 1 ? '' : 's'} rejected successfully!`);
+            } else if (succeededCount === 0) {
+                setError(`Failed to reject ${failedCount} farmer${failedCount === 1 ? '' : 's'}. Please try again.`);
+            } else {
+                setError(`Rejected ${succeededCount} farmer${succeededCount === 1 ? '' : 's'}, but ${failedCount} failed. Please retry the failed ${failedCount === 1 ? 'one' : 'ones'}.`);
             }
-            setSuccess(`${selectedFarmers.length} farmers rejected successfully!`);
+
             setSelectedFarmers([]);
             setBulkRejectionReason('');
             setShowBulkRejectModal(false);
@@ -177,9 +197,15 @@ import api from '../../services/api';
             // Refresh user data
             await refreshUser();
 
+            // Refresh regardless of partial failure — whichever rejections
+            // did succeed already changed server-side state, so the list/
+            // stats need to reflect that even when others failed.
             fetchFarmers();
             fetchStats();
-            setTimeout(() => setSuccess(null), 3000);
+            setTimeout(() => {
+                setSuccess(null);
+                setError(null);
+            }, 3000);
         } catch (err) {
             console.error('Error bulk rejecting:', err);
             setError('Failed to reject farmers');

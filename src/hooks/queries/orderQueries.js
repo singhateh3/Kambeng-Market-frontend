@@ -15,6 +15,25 @@ export const orderKeys = {
     all: (userId) => ['orders', userId],
     lists: (userId) => [...orderKeys.all(userId), 'list'],
     list: (userId, filters) => [...orderKeys.lists(userId), filters],
+    // Nested under all(userId) — every mutation below already invalidates
+    // that whole prefix, so a status update/cancel/confirm on one order
+    // also refetches its own detail query (and the list) with no extra
+    // invalidation call needed here.
+    detail: (userId, orderId) => [...orderKeys.all(userId), 'detail', orderId],
+};
+
+export const useOrderQuery = (orderId) => {
+    const { user, isAuthenticated } = useAuth();
+
+    return useQuery({
+        queryKey: orderKeys.detail(user?.id, orderId),
+        queryFn: async ({ signal }) => {
+            const response = await api.get(`/orders/${orderId}`, { signal });
+            return response.data?.data ?? null;
+        },
+        enabled: isAuthenticated && !!user && !!orderId,
+        staleTime: 1000 * 30,
+    });
 };
 
 export const useOrdersQuery = (filters) => {

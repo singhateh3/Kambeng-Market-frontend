@@ -6,7 +6,12 @@ import { Avatar } from '../../components/common/Avatar';
 import { Button } from '../../components/common/Button';
 import ReviewStars from '../../components/ReviewStars';
 import { useAuth } from '../../hooks/useAuth';
-import api from '../../services/api';
+import {
+    useCancelOrderMutation,
+    useConfirmOrderMutation,
+    useOrderQuery,
+    useUpdateOrderStatusMutation,
+} from '../../hooks/queries/orderQueries';
 import { formatPaymentMethod } from '../../utils/paymentMethod';
 import { DisputeStatusBadge } from './DisputeStatusBadge';
 import { PaymentStatusBadge } from './PaymentStatusBadge';
@@ -18,67 +23,52 @@ const OrderDetailsPage = () => {
     const { orderId } = useParams();
     const navigate = useNavigate();
     const { user } = useAuth();
-    const [order, setOrder] = useState(null);
-    const [loading, setLoading] = useState(true);
+    const { data: order, isLoading, isError } = useOrderQuery(orderId);
     const [success, setSuccess] = useState(null);
     const [error, setError] = useState(null);
-    const [loadingAction, setLoadingAction] = useState(false);
     const [showConfirmModal, setShowConfirmModal] = useState(false);
     const [confirmAction, setConfirmAction] = useState(null);
 
+    const updateStatusMutation = useUpdateOrderStatusMutation();
+    const cancelMutation = useCancelOrderMutation();
+    const confirmReceiptMutation = useConfirmOrderMutation();
+    const loadingAction = updateStatusMutation.isPending || cancelMutation.isPending || confirmReceiptMutation.isPending;
+
+    // TanStack Query v5 dropped useQuery's inline onError — this reproduces
+    // the same transient-banner UX the old manual fetch had (a 3s "Failed to
+    // load order details" toast), now driven by the query's own error state.
     useEffect(() => {
-        fetchOrderDetails();
-    }, [orderId]);
-
-    const fetchOrderDetails = async () => {
-        try {
-            setLoading(true);
-            const response = await api.get(`/orders/${orderId}`);
-            const orderData = response.data?.data || null;
-
-            setOrder(orderData);
-        } catch (err) {
-            console.error('Error fetching order:', err);
-            setError('Failed to load order details');
-            setTimeout(() => setError(null), 3000);
-        } finally {
-            setLoading(false);
-        }
-    };
+        if (!isError) return;
+        setError('Failed to load order details');
+        const timeout = setTimeout(() => setError(null), 3000);
+        return () => clearTimeout(timeout);
+    }, [isError]);
 
     const handleStatusUpdate = async (status) => {
         try {
-            setLoadingAction(true);
-            await api.patch(`/orders/${orderId}/status`, { status });
+            await updateStatusMutation.mutateAsync({ orderId, status });
             setSuccess(`Order status updated to ${status}`);
             setShowConfirmModal(false);
             setConfirmAction(null);
-            fetchOrderDetails();
             setTimeout(() => setSuccess(null), 3000);
         } catch (err) {
             console.error('Error updating order status:', err);
             setError(err.response?.data?.message || 'Failed to update order status');
             setTimeout(() => setError(null), 3000);
-        } finally {
-            setLoadingAction(false);
         }
     };
 
     const handleCancelOrder = async () => {
         try {
-            setLoadingAction(true);
-            await api.post(`/orders/${orderId}/cancel`);
+            await cancelMutation.mutateAsync(orderId);
             setSuccess('Order cancelled successfully');
             setShowConfirmModal(false);
             setConfirmAction(null);
-            fetchOrderDetails();
             setTimeout(() => setSuccess(null), 3000);
         } catch (err) {
             console.error('Error cancelling order:', err);
             setError(err.response?.data?.message || 'Failed to cancel order');
             setTimeout(() => setError(null), 3000);
-        } finally {
-            setLoadingAction(false);
         }
     };
 
@@ -86,19 +76,15 @@ const OrderDetailsPage = () => {
     // 3-day auto-release job (see OrderController::confirm on the backend).
     const handleConfirmReceipt = async () => {
         try {
-            setLoadingAction(true);
-            const response = await api.post(`/orders/${orderId}/confirm`);
+            const response = await confirmReceiptMutation.mutateAsync(orderId);
             setSuccess(response.data?.message || 'Order confirmed and farmer payout released');
             setShowConfirmModal(false);
             setConfirmAction(null);
-            fetchOrderDetails();
             setTimeout(() => setSuccess(null), 3000);
         } catch (err) {
             console.error('Error confirming order:', err);
             setError(err.response?.data?.message || 'Failed to confirm order');
             setTimeout(() => setError(null), 3000);
-        } finally {
-            setLoadingAction(false);
         }
     };
 
@@ -245,7 +231,7 @@ const OrderDetailsPage = () => {
         }
     };
 
-    if (loading) {
+    if (isLoading) {
         return (
             <div className="flex items-center justify-center h-64">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 dark:border-green-400"></div>
