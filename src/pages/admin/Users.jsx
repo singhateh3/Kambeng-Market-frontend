@@ -76,40 +76,53 @@ const AdminUsers = () => {
     };
 
     const handleDeleteUser = async (userId) => {
-        if (!confirm('Are you sure you want to delete this user? This action cannot be undone.')) return;
+        if (!confirm('Deactivate this user? Login will stop immediately, personal information will be anonymized, and any active farmer listings will be hidden. Order, payment, and dispute history will be preserved.')) return;
 
         try {
-            await deleteUserMutation.mutateAsync(userId);
-            setSuccess('User deleted successfully');
+            const response = await deleteUserMutation.mutateAsync(userId);
+            setSuccess(response.data?.message || 'User deactivated successfully');
             setShowModal(false);
             setTimeout(() => setSuccess(null), 3000);
         } catch (err) {
-            console.error('Error deleting user:', err);
-            setError('Failed to delete user');
+            console.error('Error deactivating user:', err);
+            setError(err.response?.data?.message || 'Failed to deactivate user');
             setTimeout(() => setError(null), 3000);
         }
     };
 
     const handleBulkDelete = async () => {
         if (selectedUsers.length === 0) {
-            setError('Please select users to delete');
+            setError('Please select users to deactivate');
             return;
         }
 
-        if (!confirm(`Are you sure you want to delete ${selectedUsers.length} users?`)) return;
+        if (!confirm(`Deactivate ${selectedUsers.length} user(s)? Login will stop immediately for each, personal information will be anonymized, and any active farmer listings will be hidden. Order, payment, and dispute history will be preserved.`)) return;
 
-        try {
-            for (const userId of selectedUsers) {
-                await deleteUserMutation.mutateAsync(userId);
-            }
-            setSuccess(`${selectedUsers.length} users deleted successfully`);
-            setSelectedUsers([]);
-            setTimeout(() => setSuccess(null), 3000);
-        } catch (err) {
-            console.error('Error deleting users:', err);
-            setError('Failed to delete users');
-            setTimeout(() => setError(null), 3000);
+        // Promise.allSettled — not a sequential loop — so one user's
+        // deactivation failing doesn't abort or hide the outcome of the
+        // others, and the result accurately reports how many actually
+        // succeeded vs failed instead of one blanket message. Same pattern
+        // already used for FarmerVerification's bulk-reject.
+        const results = await Promise.allSettled(
+            selectedUsers.map((userId) => deleteUserMutation.mutateAsync(userId))
+        );
+
+        const failedCount = results.filter((result) => result.status === 'rejected').length;
+        const succeededCount = results.length - failedCount;
+
+        if (failedCount === 0) {
+            setSuccess(`${succeededCount} user${succeededCount === 1 ? '' : 's'} deactivated successfully`);
+        } else if (succeededCount === 0) {
+            setError(`Failed to deactivate ${failedCount} user${failedCount === 1 ? '' : 's'}. Please try again.`);
+        } else {
+            setError(`Deactivated ${succeededCount} user${succeededCount === 1 ? '' : 's'}, but ${failedCount} failed. Please retry the failed ${failedCount === 1 ? 'one' : 'ones'}.`);
         }
+
+        setSelectedUsers([]);
+        setTimeout(() => {
+            setSuccess(null);
+            setError(null);
+        }, 3000);
     };
 
     const toggleSelect = (userId) => {
@@ -167,7 +180,7 @@ const AdminUsers = () => {
                             onClick={handleBulkDelete}
                             isLoading={loadingAction}
                         >
-                            Delete Selected ({selectedUsers.length})
+                            Deactivate Selected ({selectedUsers.length})
                         </Button>
                     )}
                 </div>
@@ -277,6 +290,11 @@ const AdminUsers = () => {
                                                             {user.id === currentUser?.id && (
                                                                 <span className="ml-2 text-xs text-primary-600 dark:text-primary-400">(You)</span>
                                                             )}
+                                                            {user.deactivated_at && (
+                                                                <span className="ml-2 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide rounded bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300">
+                                                                    Deactivated
+                                                                </span>
+                                                            )}
                                                         </div>
                                                         <div className="text-sm text-gray-500 dark:text-slate-400 truncate max-w-[180px]" title={user.email}>
                                                             {user.email}
@@ -341,7 +359,7 @@ const AdminUsers = () => {
                                                             onClick={() => openModal(user, 'delete')}
                                                             className="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300 text-xs cursor-pointer border-none bg-transparent"
                                                         >
-                                                            Delete
+                                                            Deactivate
                                                         </button>
                                                     )}
                                                 </div>
@@ -387,7 +405,7 @@ const AdminUsers = () => {
             <Modal
                 isOpen={showModal && !!selectedUser}
                 onClose={closeModal}
-                title={modalAction === 'delete' ? 'Delete User' : 'User Details'}
+                title={modalAction === 'delete' ? 'Deactivate User' : 'User Details'}
                 maxWidth="max-w-md"
             >
                 {selectedUser && (
@@ -396,10 +414,10 @@ const AdminUsers = () => {
                             <>
                                 <div className="mb-4">
                                     <p className="text-gray-600 dark:text-slate-300">
-                                        Are you sure you want to delete <strong>{selectedUser.name}</strong>?
+                                        Are you sure you want to deactivate <strong>{selectedUser.name}</strong>?
                                     </p>
                                     <p className="text-sm text-red-600 dark:text-red-400 mt-2">
-                                        This action cannot be undone. All associated data will be permanently removed.
+                                        Login will stop immediately, personal information will be anonymized, and any active farmer listings will be hidden. Order, payment, and dispute history will be preserved.
                                     </p>
                                 </div>
                                 <div className="flex justify-end space-x-4">
@@ -411,7 +429,7 @@ const AdminUsers = () => {
                                         onClick={() => handleDeleteUser(selectedUser.id)}
                                         isLoading={loadingAction}
                                     >
-                                        Delete User
+                                        Deactivate User
                                     </Button>
                                 </div>
                             </>
