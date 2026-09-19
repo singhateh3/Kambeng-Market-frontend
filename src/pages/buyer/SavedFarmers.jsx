@@ -1,5 +1,5 @@
 // src/pages/buyer/SavedFarmers.jsx
-import { useState } from 'react';
+import { useLayoutEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Avatar } from '../../components/common/Avatar';
 import { Footer } from '../../components/Footer';
@@ -8,6 +8,22 @@ import { useSavedFarmersQuery, useToggleSavedFarmerMutation } from '../../hooks/
 const SavedFarmers = () => {
     const [page, setPage] = useState(1);
     const [removingId, setRemovingId] = useState(null);
+    const footerRef = useRef(null);
+    // The fixed footer below is taken out of normal document flow, so
+    // nothing pushes the page's own content up to make room for it —
+    // measure its real rendered height (it changes across breakpoints,
+    // since its column grid stacks on narrow screens) and reserve that
+    // much bottom padding so the last row/pagination is never hidden
+    // underneath it.
+    const [footerHeight, setFooterHeight] = useState(0);
+
+    useLayoutEffect(() => {
+        const node = footerRef.current;
+        if (!node) return undefined;
+        const observer = new ResizeObserver(([entry]) => setFooterHeight(entry.contentRect.height));
+        observer.observe(node);
+        return () => observer.disconnect();
+    }, []);
 
     const { data, isLoading: isInitialLoad, isFetching: loading, error, refetch } = useSavedFarmersQuery(page);
     const savedFarmers = data?.savedFarmers || [];
@@ -27,7 +43,7 @@ const SavedFarmers = () => {
     };
 
     return (
-        <div className="bg-slate-50 dark:bg-slate-900 min-h-screen">
+        <div className="bg-slate-50 dark:bg-slate-900 min-h-screen" style={{ paddingBottom: footerHeight }}>
             <div className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800">
                 <div className="max-w-4xl mx-auto px-6 py-5">
                     <h1 className="text-xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight">Saved farmers</h1>
@@ -139,7 +155,7 @@ const SavedFarmers = () => {
                 )}
             </div>
 
-            <Footer />
+            <Footer ref={footerRef} fixed />
         </div>
     );
 };

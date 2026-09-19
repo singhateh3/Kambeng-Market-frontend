@@ -1,4 +1,5 @@
 // src/components/Footer.jsx
+import { forwardRef } from 'react';
 import { Link } from 'react-router-dom';
 
 // Social accounts are not yet set up for Kambeng Market — no URLs exist
@@ -34,7 +35,7 @@ const socialIconClass =
     'w-9 h-9 flex items-center justify-center rounded-lg transition ' +
     'focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900';
 
-export const Footer = () => {
+export const Footer = forwardRef(({ fixed = false }, ref) => {
     const columns = [
         {
             title: 'Platform',
@@ -66,7 +67,18 @@ export const Footer = () => {
         // w-screen/left-1/2/-mx-[50vw] combo re-centers the element against
         // the full viewport regardless of any ancestor's width constraint,
         // so the footer is the same size everywhere without touching Layout.
-        <footer className="bg-slate-900 px-6 pt-12 pb-8 w-screen relative left-1/2 right-1/2 -mx-[50vw]">
+        // `fixed` (opt-in, only SavedFarmers uses it today) pins the footer
+        // to the bottom of the viewport instead, so it stays put while the
+        // page content scrolls underneath it — `inset-x-0` already spans
+        // the full viewport width, so none of the breakout trick is needed.
+        <footer
+            ref={ref}
+            className={
+                fixed
+                    ? 'bg-slate-900 px-6 pt-12 pb-8 fixed inset-x-0 bottom-0 z-30'
+                    : 'bg-slate-900 px-6 pt-12 pb-8 w-screen relative left-1/2 right-1/2 -mx-[50vw]'
+            }
+        >
             <div className="max-w-6xl mx-auto">
                 <div className="grid grid-cols-2 sm:grid-cols-5 gap-8 sm:gap-8 mb-10">
                     {/* Brand */}
@@ -155,4 +167,6 @@ export const Footer = () => {
             </div>
         </footer>
     );
-};
+});
+
+Footer.displayName = 'Footer';
