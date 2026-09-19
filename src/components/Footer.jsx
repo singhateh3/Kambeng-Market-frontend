@@ -58,7 +58,15 @@ export const Footer = () => {
         // branded dark surface, same treatment as Home's CTA banner. No
         // dark: variants below since the surface itself never changes; the
         // text tones are picked for AA contrast against slate-900 specifically.
-        <footer className="bg-slate-900 px-6 pt-12 pb-8">
+        // Full-bleed breakout: on the homepage this footer is an unconstrained
+        // sibling of <Outlet/> (see PublicLayout.jsx), so it naturally spans
+        // the viewport. Other pages (Browse, SavedFarmers) render it from
+        // inside Layout.jsx's <main className="max-w-6xl mx-auto">, which
+        // would otherwise squeeze it to that same 6xl width. The
+        // w-screen/left-1/2/-mx-[50vw] combo re-centers the element against
+        // the full viewport regardless of any ancestor's width constraint,
+        // so the footer is the same size everywhere without touching Layout.
+        <footer className="bg-slate-900 px-6 pt-12 pb-8 w-screen relative left-1/2 right-1/2 -mx-[50vw]">
             <div className="max-w-6xl mx-auto">
                 <div className="grid grid-cols-2 sm:grid-cols-5 gap-8 sm:gap-8 mb-10">
                     {/* Brand */}
